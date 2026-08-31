@@ -26,6 +26,24 @@ SOC_VERSION=Ascend950PR_9599
 CORE_ARCH=dav-c310-vec
 ```
 
+If the compiler/runtime package and the full-dump simulator package are separate, keep `CANN_HOME` pointing to the compiler/runtime package and set `FULL_SIMULATOR_HOME` to the standalone `tools/simulator` directory:
+
+```bash
+export CANN_HOME=/absolute/path/to/closed/cann-9.1.0
+export FULL_SIMULATOR_HOME=/absolute/path/to/full_dump_package/tools/simulator
+source ./set_env.sh
+python3 run_test.py
+```
+
+When `FULL_SIMULATOR_HOME` is set, its simulator libraries are placed before the simulator libraries under `CANN_HOME`:
+
+```text
+$FULL_SIMULATOR_HOME/$SOC_VERSION/camodel
+$FULL_SIMULATOR_HOME/$SOC_VERSION/lib
+$FULL_SIMULATOR_HOME/dav_3510/camodel
+$FULL_SIMULATOR_HOME/dav_3510/lib
+```
+
 ## 2. Run
 
 ```bash

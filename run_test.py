@@ -397,6 +397,7 @@ def runtime_env_script(cann_home: Path, arch: str, args, run_dir: Path) -> str:
     host_machine = platform.machine()
     host_devlib = "aarch64" if host_machine in ("aarch64", "arm64") else "x86_64"
     other_devlib = "x86_64" if host_devlib == "aarch64" else "aarch64"
+    full_simulator_home = os.environ.get("FULL_SIMULATOR_HOME", "").strip()
     paths = [
         cann_home / "lib64",
         cann_home / "fwkacllib" / "lib64",
@@ -412,8 +413,16 @@ def runtime_env_script(cann_home: Path, arch: str, args, run_dir: Path) -> str:
         cann_home / "tools" / "simulator" / args.soc_version / "lib",
         cann_home / arch / "simulator" / args.soc_version / "lib",
     ]
+    if full_simulator_home:
+        full_simulator = Path(full_simulator_home).expanduser().resolve()
+        paths = [
+            full_simulator / args.soc_version / "camodel",
+            full_simulator / args.soc_version / "lib",
+            full_simulator / "dav_3510" / "camodel",
+            full_simulator / "dav_3510" / "lib",
+        ] + paths
     ld = ":".join(str(p) for p in paths if p.exists())
-    return f"""
+    script = f"""
 source {quote(cann_home / 'set_env.sh')}
 export ASCEND_HOME_PATH={quote(cann_home)}
 export ASCEND_CANN_PACKAGE_PATH={quote(cann_home)}
@@ -426,6 +435,9 @@ mkdir -p "$ASCEND_PROCESS_LOG_PATH"
 export LD_LIBRARY_PATH={quote(ld)}:${{LD_LIBRARY_PATH:-}}
 unset LD_PRELOAD
 """
+    if full_simulator_home:
+        script += f"export FULL_SIMULATOR_HOME={quote(Path(full_simulator_home).expanduser().resolve())}\n"
+    return script
 
 
 def copy_camodel_config(cann_home: Path, arch: str, args, run_dir: Path) -> None:
