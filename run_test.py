@@ -252,6 +252,17 @@ def timestamp() -> str:
     return dt.datetime.now().strftime("%Y%m%d_%H%M%S")
 
 
+def default_core_sim_dir(soc_version: str, core_arch: str) -> str:
+    env = os.environ.get("CORE_SIM_DIR")
+    if env:
+        return env
+    soc_lower = soc_version.lower()
+    arch_lower = core_arch.lower()
+    if "910_9691" in soc_lower or "9201" in arch_lower or "310r6" in arch_lower:
+        return "dav_9201"
+    return "dav_3510"
+
+
 def quote(value) -> str:
     return "'" + str(value).replace("'", "'\"'\"'") + "'"
 
@@ -363,8 +374,8 @@ def compile_runner(args, cann_home: Path, arch: str, build_dir: Path, log_path: 
     pkg_inc = cann_home / arch / "pkg_inc"
     cann_lib = cann_home / arch / "lib64"
     sim_lib = cann_home / arch / "simulator" / args.soc_version / "lib"
-    dav_lib = cann_home / arch / "simulator" / "dav_3510" / "lib"
-    dav_camodel = cann_home / arch / "simulator" / "dav_3510" / "camodel"
+    core_sim_lib = cann_home / arch / "simulator" / args.core_sim_dir / "lib"
+    core_sim_camodel = cann_home / arch / "simulator" / args.core_sim_dir / "camodel"
     devlib = cann_home / arch / "devlib"
     devlib_device = cann_home / arch / "devlib" / "device"
     device_lib = cann_home / arch / "lib64" / "device" / "lib64"
@@ -383,10 +394,10 @@ g++ -std=c++17 -O2 -Wl,-z,relro -Wl,-z,now -Wl,--allow-shlib-undefined \
   -I{quote(cann_home / arch / 'pkg_inc' / 'toolchain')} \
   -L{quote(cann_lib)} \
   -L{quote(sim_lib)} \
-  -L{quote(dav_lib)} \
-  -L{quote(dav_camodel)} \
+  -L{quote(core_sim_lib)} \
+  -L{quote(core_sim_camodel)} \
   -L{quote(devlib)} \
-  -Wl,-rpath,{quote(str(cann_lib) + ':' + str(sim_lib) + ':' + str(dav_lib) + ':' + str(dav_camodel) + ':' + str(devlib) + ':' + str(devlib_device) + ':' + str(device_lib) + ':' + str(build_dir))} \
+  -Wl,-rpath,{quote(str(cann_lib) + ':' + str(sim_lib) + ':' + str(core_sim_lib) + ':' + str(core_sim_camodel) + ':' + str(devlib) + ':' + str(devlib_device) + ':' + str(device_lib) + ':' + str(build_dir))} \
   -lruntime_camodel -lstdc++ -lascendcl -lm -ltiling_api -lplatform -lc_sec -ldl -lnnopbase
 """
     run_bash(script, cwd=REPO_ROOT, log_path=log_path)
@@ -408,8 +419,8 @@ def runtime_env_script(cann_home: Path, arch: str, args, run_dir: Path) -> str:
         cann_home / arch / "devlib" / "device",
         cann_home / arch / "devlib" / "linux" / host_devlib,
         cann_home / arch / "devlib" / "linux" / other_devlib,
-        cann_home / arch / "simulator" / "dav_3510" / "camodel",
-        cann_home / arch / "simulator" / "dav_3510" / "lib",
+        cann_home / arch / "simulator" / args.core_sim_dir / "camodel",
+        cann_home / arch / "simulator" / args.core_sim_dir / "lib",
         cann_home / "tools" / "simulator" / args.soc_version / "lib",
         cann_home / arch / "simulator" / args.soc_version / "lib",
     ]
@@ -418,8 +429,8 @@ def runtime_env_script(cann_home: Path, arch: str, args, run_dir: Path) -> str:
         paths = [
             full_simulator / args.soc_version / "camodel",
             full_simulator / args.soc_version / "lib",
-            full_simulator / "dav_3510" / "camodel",
-            full_simulator / "dav_3510" / "lib",
+            full_simulator / args.core_sim_dir / "camodel",
+            full_simulator / args.core_sim_dir / "lib",
         ] + paths
     ld = ":".join(str(p) for p in paths if p.exists())
     script = f"""
@@ -444,28 +455,34 @@ def copy_camodel_config(cann_home: Path, arch: str, args, run_dir: Path) -> None
     etc = run_dir / "etc"
     etc.mkdir(parents=True, exist_ok=True)
     candidates = []
-    env_cfg = os.environ.get("CAMODEL_CONFIG_TOML")
+    env_cfg = os.environ.get("CAMODEL_CONFIG_FILE") or os.environ.get("CAMODEL_CONFIG_TOML")
     if env_cfg:
         candidates.append(Path(env_cfg))
     full_simulator_home = os.environ.get("FULL_SIMULATOR_HOME", "").strip()
     if full_simulator_home:
         full_simulator = Path(full_simulator_home).expanduser().resolve()
+        for name in ("1982_cloud_config.toml", "1982_cloud_config.json"):
+            candidates += [
+                full_simulator / args.core_sim_dir / "lib" / name,
+                full_simulator / args.core_sim_dir / "camodel" / name,
+                full_simulator / args.soc_version / "lib" / name,
+                full_simulator / args.soc_version / "camodel" / name,
+            ]
+    for name in ("1982_cloud_config.toml", "1982_cloud_config.json"):
         candidates += [
-            full_simulator / "dav_3510" / "lib" / "1982_cloud_config.toml",
-            full_simulator / args.soc_version / "lib" / "1982_cloud_config.toml",
-            full_simulator / args.soc_version / "camodel" / "1982_cloud_config.toml",
+            cann_home / arch / "simulator" / args.core_sim_dir / "lib" / name,
+            cann_home / arch / "simulator" / args.core_sim_dir / "camodel" / name,
+            cann_home / arch / "simulator" / args.soc_version / "lib" / name,
+            cann_home / arch / "simulator" / args.soc_version / "camodel" / name,
+            cann_home / "tools" / "simulator" / args.soc_version / "lib" / name,
+            cann_home / "tools" / "simulator" / args.soc_version / "camodel" / name,
         ]
-    candidates += [
-        cann_home / arch / "simulator" / "dav_3510" / "lib" / "1982_cloud_config.toml",
-        cann_home / arch / "simulator" / args.soc_version / "lib" / "1982_cloud_config.toml",
-        cann_home / "tools" / "simulator" / args.soc_version / "lib" / "1982_cloud_config.toml",
-    ]
     for candidate in candidates:
         if candidate.exists():
-            shutil.copy2(candidate, etc / "1982_cloud_config.toml")
+            shutil.copy2(candidate, etc / candidate.name)
             print(f"[INFO] copied camodel config: {candidate}")
             return
-    print("[WARN] 1982_cloud_config.toml not found; set CAMODEL_CONFIG_TOML if core_wrapper needs it")
+    print("[WARN] 1982_cloud_config not found; set CAMODEL_CONFIG_FILE if core_wrapper needs it")
 
 
 def run_kernel(args, cann_home: Path, arch: str, out_dir: Path, kernel_bin: Path, runner_bin: Path,
@@ -542,6 +559,8 @@ def main() -> int:
     parser.add_argument("--arch", default=default_arch())
     parser.add_argument("--soc-version", default=os.environ.get("SOC_VERSION", "Ascend950PR_9599"))
     parser.add_argument("--core-arch", default=os.environ.get("CORE_ARCH", "dav-c310-vec"))
+    parser.add_argument("--core-sim-dir", default=None,
+                        help="Core simulator directory name, e.g. dav_3510 for A5 or dav_9201 for A6.")
     parser.add_argument("--kernel", type=Path, default=REPO_ROOT / "op_kernel" / "kernel.cce")
     parser.add_argument("--kernel-name", default="foo_add")
     parser.add_argument("--dtype", choices=("int32", "fp32", "float32"), default="int32")
@@ -566,6 +585,7 @@ def main() -> int:
         raise RuntimeError("--block-dim must be positive")
     if args.local_memory_size < 0:
         raise RuntimeError("--local-memory-size must be non-negative")
+    args.core_sim_dir = args.core_sim_dir or default_core_sim_dir(args.soc_version, args.core_arch)
 
     out_dir = (args.output or (REPO_ROOT / "result" / timestamp())).resolve()
     build_dir = out_dir / "build"
@@ -575,6 +595,7 @@ def main() -> int:
 
     print(f"CANN_HOME={cann_home}")
     print(f"ARCH={args.arch}")
+    print(f"CORE_SIM_DIR={args.core_sim_dir}")
     print(f"OUTPUT={out_dir}")
 
     kernel_path = args.kernel.expanduser().resolve()

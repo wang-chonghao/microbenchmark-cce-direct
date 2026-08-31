@@ -14,6 +14,7 @@ export CANN_HOME=/absolute/path/to/cann-9.0.0
 export ARCH=x86_64-linux        # use aarch64-linux on an aarch64 host/package
 export SOC_VERSION=Ascend950PR_9599
 export CORE_ARCH=dav-c310-vec
+export CORE_SIM_DIR=dav_3510
 source ./set_env.sh
 ```
 
@@ -24,6 +25,24 @@ CANN_HOME=/home/lenovo/.codex/memories/cann-9.0.0/cann-9.0.0
 ARCH=x86_64-linux
 SOC_VERSION=Ascend950PR_9599
 CORE_ARCH=dav-c310-vec
+CORE_SIM_DIR=dav_3510
+```
+
+For A6/Ascend910_9691, use the A6 simulator directory:
+
+```bash
+export SOC_VERSION=Ascend910_9691
+export CORE_ARCH=dav-310r6
+export CORE_SIM_DIR=dav_9201
+source ./set_env.sh
+python3 run_test.py
+```
+
+If `CORE_SIM_DIR` is not set, `set_env.sh` and `run_test.py` infer it from `SOC_VERSION`/`CORE_ARCH`:
+
+```text
+Ascend910_9691 or dav-310r6 -> dav_9201
+otherwise                   -> dav_3510
 ```
 
 If the compiler/runtime package and the full-dump simulator package are separate, keep `CANN_HOME` pointing to the compiler/runtime package and set `FULL_SIMULATOR_HOME` to the standalone `tools/simulator` directory:
@@ -40,8 +59,8 @@ When `FULL_SIMULATOR_HOME` is set, its simulator libraries are placed before the
 ```text
 $FULL_SIMULATOR_HOME/$SOC_VERSION/camodel
 $FULL_SIMULATOR_HOME/$SOC_VERSION/lib
-$FULL_SIMULATOR_HOME/dav_3510/camodel
-$FULL_SIMULATOR_HOME/dav_3510/lib
+$FULL_SIMULATOR_HOME/$CORE_SIM_DIR/camodel
+$FULL_SIMULATOR_HOME/$CORE_SIM_DIR/lib
 ```
 
 `run_test.py` also searches `FULL_SIMULATOR_HOME` first when copying `1982_cloud_config.toml` into the runner working directory.

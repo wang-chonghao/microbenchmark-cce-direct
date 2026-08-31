@@ -8,6 +8,18 @@ export ARCH="${ARCH:-x86_64-linux}"
 export SOC_VERSION="${SOC_VERSION:-Ascend950PR_9599}"
 export NPU_TYPE="${NPU_TYPE:-$SOC_VERSION}"
 export CORE_ARCH="${CORE_ARCH:-dav-c310-vec}"
+if [ -z "${CORE_SIM_DIR:-}" ]; then
+  case "$SOC_VERSION:$CORE_ARCH" in
+    *Ascend910_9691*|*dav_9201*|*dav-310r6*)
+      export CORE_SIM_DIR="dav_9201"
+      ;;
+    *)
+      export CORE_SIM_DIR="dav_3510"
+      ;;
+  esac
+else
+  export CORE_SIM_DIR
+fi
 
 # Optional: point this to another tools/simulator directory when the compiler
 # package and the full-dump simulator package are split.
@@ -47,8 +59,8 @@ prepend_path "$CANN_HOME/compiler/bin"
 
 prepend_ld_path "$CANN_HOME/tools/simulator/$SOC_VERSION/camodel"
 prepend_ld_path "$CANN_HOME/tools/simulator/$SOC_VERSION/lib"
-prepend_ld_path "$CANN_HOME/$ARCH/simulator/dav_3510/camodel"
-prepend_ld_path "$CANN_HOME/$ARCH/simulator/dav_3510/lib"
+prepend_ld_path "$CANN_HOME/$ARCH/simulator/$CORE_SIM_DIR/camodel"
+prepend_ld_path "$CANN_HOME/$ARCH/simulator/$CORE_SIM_DIR/lib"
 prepend_ld_path "$CANN_HOME/$ARCH/simulator/$SOC_VERSION/lib"
 prepend_ld_path "$CANN_HOME/$ARCH/devlib/linux/aarch64"
 prepend_ld_path "$CANN_HOME/$ARCH/devlib/linux/x86_64"
@@ -61,8 +73,8 @@ prepend_ld_path "$CANN_HOME/fwkacllib/lib64"
 prepend_ld_path "$CANN_HOME/lib64"
 
 if [ -n "$FULL_SIMULATOR_HOME" ]; then
-  prepend_ld_path "$FULL_SIMULATOR_HOME/dav_3510/lib"
-  prepend_ld_path "$FULL_SIMULATOR_HOME/dav_3510/camodel"
+  prepend_ld_path "$FULL_SIMULATOR_HOME/$CORE_SIM_DIR/lib"
+  prepend_ld_path "$FULL_SIMULATOR_HOME/$CORE_SIM_DIR/camodel"
   prepend_ld_path "$FULL_SIMULATOR_HOME/$SOC_VERSION/lib"
   prepend_ld_path "$FULL_SIMULATOR_HOME/$SOC_VERSION/camodel"
 fi
@@ -73,6 +85,7 @@ echo "[INFO] CANN_HOME=$CANN_HOME"
 echo "[INFO] ARCH=$ARCH"
 echo "[INFO] SOC_VERSION=$SOC_VERSION"
 echo "[INFO] CORE_ARCH=$CORE_ARCH"
+echo "[INFO] CORE_SIM_DIR=$CORE_SIM_DIR"
 if [ -n "$FULL_SIMULATOR_HOME" ]; then
   echo "[INFO] FULL_SIMULATOR_HOME=$FULL_SIMULATOR_HOME"
 fi
