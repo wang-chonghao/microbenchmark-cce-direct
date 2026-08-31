@@ -453,7 +453,14 @@ def run_kernel(args, cann_home: Path, arch: str, out_dir: Path, kernel_bin: Path
     run_dir = out_dir / "run"
     run_dir.mkdir(parents=True, exist_ok=True)
     (run_dir / "log_ca").mkdir(parents=True, exist_ok=True)
+    (run_dir / "log" / "ub_log").mkdir(parents=True, exist_ok=True)
+    (run_dir / "log" / "gm_log").mkdir(parents=True, exist_ok=True)
     for item in (out_dir, run_dir):
+        try:
+            item.chmod(0o700)
+        except PermissionError:
+            pass
+    for item in (run_dir / "log", run_dir / "log" / "ub_log", run_dir / "log" / "gm_log"):
         try:
             item.chmod(0o700)
         except PermissionError:
