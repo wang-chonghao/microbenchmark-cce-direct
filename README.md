@@ -44,6 +44,18 @@ $FULL_SIMULATOR_HOME/dav_3510/camodel
 $FULL_SIMULATOR_HOME/dav_3510/lib
 ```
 
+`run_test.py` also searches `FULL_SIMULATOR_HOME` first when copying `1982_cloud_config.toml` into the runner working directory.
+
+To confirm which simulator is actually loaded, inspect `result/<timestamp>/run.log`. Each run prints:
+
+```text
+[INFO] runtime FULL_SIMULATOR_HOME=...
+[INFO] runtime LD_LIBRARY_PATH first entries:
+[INFO] native runner linked simulator libs:
+```
+
+The `ldd` output should resolve simulator-related libraries to `FULL_SIMULATOR_HOME` when an external simulator is intended.
+
 ## 2. Run
 
 ```bash

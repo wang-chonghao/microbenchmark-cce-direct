@@ -447,6 +447,14 @@ def copy_camodel_config(cann_home: Path, arch: str, args, run_dir: Path) -> None
     env_cfg = os.environ.get("CAMODEL_CONFIG_TOML")
     if env_cfg:
         candidates.append(Path(env_cfg))
+    full_simulator_home = os.environ.get("FULL_SIMULATOR_HOME", "").strip()
+    if full_simulator_home:
+        full_simulator = Path(full_simulator_home).expanduser().resolve()
+        candidates += [
+            full_simulator / "dav_3510" / "lib" / "1982_cloud_config.toml",
+            full_simulator / args.soc_version / "lib" / "1982_cloud_config.toml",
+            full_simulator / args.soc_version / "camodel" / "1982_cloud_config.toml",
+        ]
     candidates += [
         cann_home / arch / "simulator" / "dav_3510" / "lib" / "1982_cloud_config.toml",
         cann_home / arch / "simulator" / args.soc_version / "lib" / "1982_cloud_config.toml",
@@ -499,6 +507,11 @@ def run_kernel(args, cann_home: Path, arch: str, out_dir: Path, kernel_bin: Path
 set -e
 {env_script}
 cd {quote(run_dir)}
+echo "[INFO] runtime FULL_SIMULATOR_HOME=${{FULL_SIMULATOR_HOME:-}}"
+echo "[INFO] runtime LD_LIBRARY_PATH first entries:"
+printf '%s\n' "$LD_LIBRARY_PATH" | tr ':' '\n' | sed -n '1,24p'
+echo "[INFO] native runner linked simulator libs:"
+ldd ./{runner_bin.name} | grep -E 'runtime_camodel|core_wrapper|ascend_hal|simulator|dav_3510' || true
 {app}
 """
     run_bash(command, cwd=REPO_ROOT, log_path=log_path)
