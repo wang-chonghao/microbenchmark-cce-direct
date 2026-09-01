@@ -165,13 +165,42 @@ class SafeExpr:
         return eval(compile(self.tree, "<MB_GOLDEN>", "eval"), safe_globals, safe_locals)
 
 
-def check_generic_goldens(manifest: KernelManifest, run_dir: Path, atol: float, rtol: float) -> None:
+def append_log(path: Path, message: str) -> None:
+    with path.open("a", encoding="utf-8") as f:
+        f.write(message.rstrip("\n") + "\n")
+
+
+def tail_file(path: Path, line_count: int = 30) -> str:
+    if not path.exists():
+        return ""
+    max_bytes = 1024 * 1024
+    with path.open("rb") as f:
+        f.seek(0, os.SEEK_END)
+        position = f.tell()
+        data = b""
+        while position > 0 and data.count(b"\n") <= line_count and len(data) < max_bytes:
+            size = min(8192, position, max_bytes - len(data))
+            position -= size
+            f.seek(position)
+            data = f.read(size) + data
+    lines = data.splitlines(keepends=True)[-line_count:]
+    return b"".join(lines).decode("utf-8", errors="replace")
+
+
+def check_generic_goldens(
+    manifest: KernelManifest,
+    run_dir: Path,
+    atol: float,
+    rtol: float,
+    debug_log: Path,
+) -> None:
     check_log = run_dir / "golden_check.log"
 
     def log_check(message: str) -> None:
         print(message)
         with check_log.open("a", encoding="utf-8") as f:
             f.write(message + "\n")
+        append_log(debug_log, message)
 
     check_log.write_text("", encoding="utf-8")
     if not manifest.goldens:
@@ -279,11 +308,24 @@ def run_bash(script: str, cwd: Path, log_path: Path | None = None, check: bool =
     if log_path:
         with log_path.open("a", encoding="utf-8") as f:
             f.write(proc.stdout)
-    if proc.stdout:
-        print(proc.stdout, end="")
     if check and proc.returncode != 0:
+        if proc.stdout:
+            print(f"[ERROR] command output tail (full output: {log_path}):", file=sys.stderr)
+            print("".join(proc.stdout.splitlines(keepends=True)[-30:]), end="", file=sys.stderr)
         raise RuntimeError(f"command failed with code {proc.returncode}")
     return proc
+
+
+def run_bash_to_file(script: str, cwd: Path, output_path: Path) -> subprocess.CompletedProcess:
+    with output_path.open("w", encoding="utf-8") as output:
+        return subprocess.run(
+            ["bash", "-lc", script],
+            cwd=str(cwd),
+            text=True,
+            stdout=output,
+            stderr=subprocess.STDOUT,
+            env=os.environ.copy(),
+        )
 
 
 def require_file(path: Path, what: str) -> Path:
@@ -343,6 +385,11 @@ def compile_kernel(args, cann_home: Path, arch: str, build_dir: Path, log_path: 
     kernel_bin = build_dir / f"{args.kernel_name}_mix.o"
     includes = " ".join(quote(flag) for flag in cce_include_flags(cann_home, arch))
     extra_flags = os.environ.get("CCEC_EXTRA_FLAGS", "")
+    append_log(log_path, "\n[STAGE] compile kernel")
+    append_log(log_path, f"[INFO] ccec={ccec}")
+    append_log(log_path, f"[INFO] ld.lld={ld_lld}")
+    append_log(log_path, f"[INFO] kernel={kernel_src}")
+    append_log(log_path, f"[INFO] cce_aicore_arch={args.core_arch}")
     script = f"""
 set -e
 source {quote(cann_home / 'set_env.sh')}
@@ -379,6 +426,8 @@ def compile_runner(args, cann_home: Path, arch: str, build_dir: Path, log_path: 
     devlib = cann_home / arch / "devlib"
     devlib_device = cann_home / arch / "devlib" / "device"
     device_lib = cann_home / arch / "lib64" / "device" / "lib64"
+    append_log(log_path, "\n[STAGE] compile native runner")
+    append_log(log_path, f"[INFO] runner_source={runner_src}")
     script = f"""
 set -e
 source {quote(cann_home / 'set_env.sh')}
@@ -451,7 +500,7 @@ unset LD_PRELOAD
     return script
 
 
-def copy_camodel_config(cann_home: Path, arch: str, args, run_dir: Path) -> None:
+def copy_camodel_config(cann_home: Path, arch: str, args, run_dir: Path, debug_log: Path) -> None:
     etc = run_dir / "etc"
     etc.mkdir(parents=True, exist_ok=True)
     candidates = []
@@ -480,13 +529,14 @@ def copy_camodel_config(cann_home: Path, arch: str, args, run_dir: Path) -> None
     for candidate in candidates:
         if candidate.exists():
             shutil.copy2(candidate, etc / candidate.name)
-            print(f"[INFO] copied camodel config: {candidate}")
+            append_log(debug_log, f"[INFO] copied camodel config: {candidate}")
             return
-    print("[WARN] 1982_cloud_config not found; set CAMODEL_CONFIG_FILE if core_wrapper needs it")
+    append_log(debug_log, "[WARN] 1982_cloud_config not found; set CAMODEL_CONFIG_FILE if core_wrapper needs it")
 
 
 def run_kernel(args, cann_home: Path, arch: str, out_dir: Path, kernel_bin: Path, runner_bin: Path,
-               log_path: Path, tensor_spec: Path | None, manifest: KernelManifest | None) -> None:
+               debug_log: Path, model_log: Path, tensor_spec: Path | None,
+               manifest: KernelManifest | None) -> None:
     run_dir = out_dir / "run"
     run_dir.mkdir(parents=True, exist_ok=True)
     (run_dir / "log_ca").mkdir(parents=True, exist_ok=True)
@@ -507,7 +557,7 @@ def run_kernel(args, cann_home: Path, arch: str, out_dir: Path, kernel_bin: Path
     if tensor_spec is not None:
         shutil.copy2(tensor_spec, run_dir / tensor_spec.name)
     os.chmod(run_dir / runner_bin.name, 0o755)
-    copy_camodel_config(cann_home, arch, args, run_dir)
+    copy_camodel_config(cann_home, arch, args, run_dir, debug_log)
 
     env_script = runtime_env_script(cann_home, arch, args, run_dir)
     if tensor_spec is not None:
@@ -520,7 +570,7 @@ def run_kernel(args, cann_home: Path, arch: str, out_dir: Path, kernel_bin: Path
             f"./{runner_bin.name} ./{kernel_bin.name} {args.kernel_name} {args.dtype} "
             f"{args.total_count} {args.block_dim} {args.local_memory_size} {args.golden} {args.atol} {args.rtol}"
         )
-    command = f"""
+    diagnostics = f"""
 set -e
 {env_script}
 cd {quote(run_dir)}
@@ -528,29 +578,40 @@ echo "[INFO] runtime FULL_SIMULATOR_HOME=${{FULL_SIMULATOR_HOME:-}}"
 echo "[INFO] runtime LD_LIBRARY_PATH first entries:"
 printf '%s\n' "$LD_LIBRARY_PATH" | tr ':' '\n' | sed -n '1,24p'
 echo "[INFO] native runner linked simulator libs:"
-ldd ./{runner_bin.name} | grep -E 'runtime_camodel|core_wrapper|ascend_hal|simulator|dav_3510' || true
-{app}
+ldd ./{runner_bin.name} | grep -E 'runtime_camodel|core_wrapper|ascend_hal|simulator|dav_3510|dav_9201' || true
 """
-    run_bash(command, cwd=REPO_ROOT, log_path=log_path)
+    append_log(debug_log, "\n[STAGE] runtime diagnostics")
+    run_bash(diagnostics, cwd=REPO_ROOT, log_path=debug_log)
+
+    model_command = f"""
+set -e
+{env_script}
+cd {quote(run_dir)}
+exec {app}
+"""
+    append_log(debug_log, "\n[STAGE] model execution")
+    append_log(debug_log, f"[INFO] model_output={model_log}")
+    append_log(debug_log, f"[INFO] model_command={app}")
+    proc = run_bash_to_file(model_command, cwd=REPO_ROOT, output_path=model_log)
+    if proc.returncode != 0:
+        append_log(debug_log, f"[ERROR] model command failed with code {proc.returncode}; output={model_log}")
+        model_tail = tail_file(model_log)
+        if model_tail:
+            print(f"[ERROR] model output tail (full output: {model_log}):", file=sys.stderr)
+            print(model_tail, end="", file=sys.stderr)
+        raise RuntimeError(f"model command failed with code {proc.returncode}")
+    append_log(debug_log, "[INFO] model command completed with code 0")
     if manifest is not None and args.golden != "none":
-        check_generic_goldens(manifest, run_dir, args.atol, args.rtol)
+        check_generic_goldens(manifest, run_dir, args.atol, args.rtol, debug_log)
 
 
-def summarize(out_dir: Path) -> None:
+def summarize(out_dir: Path, debug_log: Path, model_log: Path) -> None:
     print(f"[INFO] OUTPUT={out_dir}")
-    for path in [
-        out_dir / "build",
-        out_dir / "run",
-    ]:
-        if path.exists():
-            print(f"[INFO] {path.name}={path}")
+    print(f"[INFO] DEBUG_LOG={debug_log}")
+    print(f"[INFO] MODEL_LOG={model_log}")
     dump_files = sorted((out_dir / "run" / "log_ca").glob("*.dump")) if (out_dir / "run" / "log_ca").exists() else []
     if dump_files:
-        print("[INFO] log_ca dump samples:")
-        for item in dump_files[:20]:
-            print(f"  log_ca/{item.name} {item.stat().st_size} bytes")
-    for item in sorted((out_dir / "run").glob("output_*.bin"))[:20]:
-        print(f"[INFO] output={item} {item.stat().st_size} bytes")
+        print(f"[INFO] DUMP_DIR={out_dir / 'run' / 'log_ca'} ({len(dump_files)} files)")
 
 
 def main() -> int:
@@ -591,12 +652,24 @@ def main() -> int:
     build_dir = out_dir / "build"
     out_dir.mkdir(parents=True, exist_ok=True)
     build_dir.mkdir(parents=True, exist_ok=True)
-    log_path = out_dir / "run.log"
+    debug_log = out_dir / "debug.log"
+    model_log = out_dir / "model.log"
+    debug_log.write_text("", encoding="utf-8")
+    model_log.write_text("", encoding="utf-8")
 
-    print(f"CANN_HOME={cann_home}")
-    print(f"ARCH={args.arch}")
-    print(f"CORE_SIM_DIR={args.core_sim_dir}")
-    print(f"OUTPUT={out_dir}")
+    environment_lines = [
+        f"CANN_HOME={cann_home}",
+        f"ARCH={args.arch}",
+        f"SOC_VERSION={args.soc_version}",
+        f"CORE_ARCH={args.core_arch}",
+        f"CORE_SIM_DIR={args.core_sim_dir}",
+        f"FULL_SIMULATOR_HOME={os.environ.get('FULL_SIMULATOR_HOME', '')}",
+        f"OUTPUT={out_dir}",
+    ]
+    for line in environment_lines:
+        append_log(debug_log, line)
+    print(f"[INFO] OUTPUT={out_dir}")
+    print(f"[INFO] compiling kernel and runner (details: {debug_log})")
 
     kernel_path = args.kernel.expanduser().resolve()
     require_file(kernel_path, "CCE kernel")
@@ -606,23 +679,27 @@ def main() -> int:
         args.kernel_name = manifest.kernel_name
         tensor_spec = build_dir / "kernel_tensors.tsv"
         write_tensor_spec(manifest, tensor_spec)
-        print(f"[INFO] generic tensor mode: kernel={manifest.kernel_name}, args={len(manifest.tensors)}")
+        append_log(debug_log, f"[INFO] generic tensor mode: kernel={manifest.kernel_name}, args={len(manifest.tensors)}")
         for index, item in enumerate(manifest.tensors):
-            print(f"  arg[{index}] {item.direction} {item.name}: {item.dtype}[{item.elements}]")
+            append_log(debug_log, f"  arg[{index}] {item.direction} {item.name}: {item.dtype}[{item.elements}]")
         if args.golden != "none" and not manifest.goldens:
-            print("[INFO] generic tensor mode has no MB_GOLDEN declarations")
+            append_log(debug_log, "[INFO] generic tensor mode has no MB_GOLDEN declarations")
     else:
-        print("[INFO] legacy three-tensor mode (no MB_KERNEL/MB_TENSOR declarations found)")
+        append_log(debug_log, "[INFO] legacy three-tensor mode (no MB_KERNEL/MB_TENSOR declarations found)")
 
-    kernel_bin = compile_kernel(args, cann_home, args.arch, build_dir, log_path)
-    runner_bin = compile_runner(args, cann_home, args.arch, build_dir, log_path, manifest is not None)
+    kernel_bin = compile_kernel(args, cann_home, args.arch, build_dir, debug_log)
+    runner_bin = compile_runner(args, cann_home, args.arch, build_dir, debug_log, manifest is not None)
     if args.compile_only:
-        print(f"[INFO] kernel_bin={kernel_bin}")
-        print(f"[INFO] runner_bin={runner_bin}")
-        summarize(out_dir)
+        append_log(debug_log, f"[INFO] kernel_bin={kernel_bin}")
+        append_log(debug_log, f"[INFO] runner_bin={runner_bin}")
+        summarize(out_dir, debug_log, model_log)
         return 0
-    run_kernel(args, cann_home, args.arch, out_dir, kernel_bin, runner_bin, log_path, tensor_spec, manifest)
-    summarize(out_dir)
+    print(f"[INFO] running model (raw output: {model_log})")
+    run_kernel(
+        args, cann_home, args.arch, out_dir, kernel_bin, runner_bin,
+        debug_log, model_log, tensor_spec, manifest,
+    )
+    summarize(out_dir, debug_log, model_log)
     return 0
 
 

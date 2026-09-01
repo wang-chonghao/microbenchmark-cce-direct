@@ -65,7 +65,7 @@ $FULL_SIMULATOR_HOME/$CORE_SIM_DIR/lib
 
 `run_test.py` also searches `FULL_SIMULATOR_HOME` first when copying `1982_cloud_config.toml` into the runner working directory.
 
-To confirm which simulator is actually loaded, inspect `result/<timestamp>/run.log`. Each run prints:
+To confirm which simulator is actually loaded, inspect `result/<timestamp>/debug.log`. Each run records:
 
 ```text
 [INFO] runtime FULL_SIMULATOR_HOME=...
@@ -132,8 +132,15 @@ result/<timestamp>/run/input_*.bin
 result/<timestamp>/run/output_*.bin
 result/<timestamp>/run/golden_check.log
 result/<timestamp>/run/log_ca/*.dump
-result/<timestamp>/run.log
+result/<timestamp>/debug.log
+result/<timestamp>/model.log
 ```
+
+`debug.log` contains framework diagnostics such as the selected CANN paths,
+compiler output, runtime environment, and resolved simulator libraries.
+`model.log` contains the unmodified stdout/stderr produced while running the
+native runner and CAmodel. Model output is not streamed to the terminal; if a
+run fails, only its last 30 lines are printed there.
 
 Important dump files are under:
 
