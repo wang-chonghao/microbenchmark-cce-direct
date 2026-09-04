@@ -5,8 +5,8 @@
 #endif
 
 // A = B + C, fp32[256]. Data is moved GM -> UB -> SIMD VF -> GM.
-// A6 (NPU_ARCH=9201) uses NDDMA for CopyIn and scatter with one zero
-// offset for contiguous CopyOut. Older targets retain the MTE v2 path.
+// A6 (NPU_ARCH=9201) uses NDDMA for CopyIn and the V920 dynamic
+// MOV_UB_TO_OUT_ALIGN_V2 form for CopyOut. Older targets retain the MTE v2 path.
 // MB_KERNEL add_simd
 // MB_TENSOR output A fp32 256
 // MB_TENSOR input B fp32 256
@@ -53,11 +53,13 @@ void add_simd(__gm__ float* A, __gm__ float* B, __gm__ float* C)
 
     pipe_barrier(PIPE_ALL);
 #if (__NPU_ARCH__ == 9201)
-    __ubuf__ uint32_t* outputOffset = (__ubuf__ uint32_t*)get_imm(0x3000);
-    outputOffset[0] = 0;
-    scatter_ubuf_to_gm(reinterpret_cast<__gm__ uint32_t*>(A),
-                       reinterpret_cast<__ubuf__ uint32_t*>(ubA),
-                       0, 0, outputOffset, 0, dataBytes, dataBytes, 1);
+    constexpr uint64_t copyOutConfig0 =
+        (uint64_t(1) << 4) | (uint64_t(dataBytes) << 25);
+    constexpr uint64_t copyOutConfig1 =
+        uint64_t(dataBytes) | (uint64_t(dataBytes) << 40);
+    __cce_scalar::set_loop_size_ubtoout(uint64_t(0x200001));
+    __cce_scalar::copy_ubuf_to_gm_align_v2(
+        A, ubA, copyOutConfig0, copyOutConfig1);
 #else
     copy_ubuf_to_gm_align_v2(A, ubA, 0, 1, dataBytes, 0, 0, 0);
 #endif
