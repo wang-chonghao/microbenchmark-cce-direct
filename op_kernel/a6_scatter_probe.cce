@@ -1,0 +1,84 @@
+#ifdef __CCE_KT_TEST__
+#define __aicore__
+#else
+#define __aicore__ [aicore]
+#endif
+
+// A6 CopyOut probe for A = B + C, fp32[256].
+// A6_SCATTER_MODE=0: one 1024-byte burst at GM offset 0.
+// A6_SCATTER_MODE=1: 32 contiguous 32-byte bursts.
+// A6_OFFSET_TYPE selects the scatter offset representation.
+#ifndef A6_SCATTER_MODE
+#define A6_SCATTER_MODE 0
+#endif
+#ifndef A6_OFFSET_TYPE
+#define A6_OFFSET_TYPE 0
+#endif
+
+// MB_KERNEL add_simd_a6_scatter_probe
+// MB_TENSOR output A fp32 256
+// MB_TENSOR input B fp32 256
+// MB_TENSOR input C fp32 256
+// MB_GOLDEN A B + C
+
+extern "C" __global__ __aicore__
+void add_simd_a6_scatter_probe(__gm__ float* A, __gm__ float* B, __gm__ float* C)
+{
+    constexpr uint32_t elementCount = 256;
+    constexpr uint32_t dataBytes = elementCount * sizeof(float);
+    constexpr uint16_t vectorBlocks = elementCount / 64;
+
+    __ubuf__ float* ubB = (__ubuf__ float*)get_imm(0x0000);
+    __ubuf__ float* ubC = (__ubuf__ float*)get_imm(0x1000);
+    __ubuf__ float* ubA = (__ubuf__ float*)get_imm(0x2000);
+    __ubuf__ uint32_t* offsets = (__ubuf__ uint32_t*)get_imm(0x3000);
+
+    nddma_desc copyInDesc(nddma_desc::loop_desc(elementCount, 1, 1));
+    nddma_out_to_ub(ubB, B, 0, copyInDesc, 0, NEAREST_PADDING, 0);
+    nddma_out_to_ub(ubC, C, 0, copyInDesc, 0, NEAREST_PADDING, 0);
+    set_flag(PIPE_MTE2, PIPE_V, EVENT_ID0);
+    wait_flag(PIPE_MTE2, PIPE_V, EVENT_ID0);
+
+    __VEC_SCOPE__ {
+        vector_bool mask = pset_b32(PAT_ALL);
+        vector_f32 vecB;
+        vector_f32 vecC;
+        vector_f32 vecA;
+
+        #pragma unroll(1)
+        for (uint16_t block = 0; block < vectorBlocks; ++block) {
+            const uint16_t offset = block * 64;
+            vlds(vecB, ubB, offset, NORM);
+            vlds(vecC, ubC, offset, NORM);
+            vadd(vecA, vecB, vecC, mask);
+            vsts(vecA, ubA, offset, NORM_B32, mask);
+        }
+    }
+
+#if A6_SCATTER_MODE == 0
+    offsets[0] = 0;
+    constexpr uint32_t burstLen = dataBytes;
+    constexpr uint32_t offsetNum = 1;
+#elif A6_SCATTER_MODE == 1
+    #pragma unroll
+    for (uint32_t i = 0; i < 32; ++i) {
+        offsets[i] = i * 32;
+    }
+    constexpr uint32_t burstLen = 32;
+    constexpr uint32_t offsetNum = 32;
+#else
+#error "A6_SCATTER_MODE must be 0 or 1"
+#endif
+
+    pipe_barrier(PIPE_ALL);
+    set_flag(PIPE_V, PIPE_MTE3, EVENT_ID0);
+    wait_flag(PIPE_V, PIPE_MTE3, EVENT_ID0);
+    set_flag(PIPE_S, PIPE_MTE3, EVENT_ID1);
+    wait_flag(PIPE_S, PIPE_MTE3, EVENT_ID1);
+    scatter_ubuf_to_gm(reinterpret_cast<__gm__ uint32_t*>(A),
+                       reinterpret_cast<__ubuf__ uint32_t*>(ubA),
+                       0, A6_OFFSET_TYPE, offsets, 0,
+                       burstLen, 0, offsetNum);
+    set_flag(PIPE_MTE3, PIPE_S, EVENT_ID0);
+    wait_flag(PIPE_MTE3, PIPE_S, EVENT_ID0);
+}
