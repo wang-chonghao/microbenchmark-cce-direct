@@ -206,12 +206,13 @@ class SuiteTests(unittest.TestCase):
         self.assertIsNone(result["memory_interval_min"])
         self.assertEqual(result["latency_min"], 6)
 
-    def test_archive_preserves_rotated_logs_and_core_ids(self):
+    def test_archive_preserves_rotations_but_excludes_other_cores(self):
         self.dump(".instr_log.dump.1", "rotated")
         self.dump(".rvec.EXU.1.dump", "rotated")
         (self.logs / "core1.veccore0.instr_log.dump").write_text("core1")
         result = archive_dumps(self.root, self.root / "results", self.record()["case"])
-        self.assertEqual(len(result["files"]), 3)
+        self.assertEqual(len(result["files"]), 2)
+        self.assertFalse((self.logs / "core1.veccore0.instr_log.dump").exists())
 
     def test_archive_collision_prevents_pruning(self):
         original = self.dump(".instr_log.dump", "first")
@@ -256,13 +257,21 @@ class SuiteTests(unittest.TestCase):
             run = Path(command[command.index("--output") + 1])
             logs = run / "run/log_ca"
             logs.mkdir(parents=True)
-            (logs / "core0.veccore0.instr_popped_log.dump").write_text(line(10, 3, 0x100))
-            (logs / "core0.veccore0.instr_log.dump").write_text(line(16, 3, 0x100))
+            regs = ["Vd[2], Vn[0], Vm[1]", "Vd[5], Vn[3], Vm[4]",
+                    "Vd[6], Vn[2], Vm[7]", "Vd[8], Vn[5], Vm[9]"]
+            starts, dones = [], []
+            for group in range(2):
+                for i in range(4):
+                    cycle = 10 + group * 30 + (i // 2) * 5
+                    starts.append(line(cycle, group * 4 + i, 0x100 + i * 4, regs=regs[i]))
+                    dones.append(line(cycle + 6, group * 4 + i, 0x100 + i * 4, regs=regs[i]))
+            (logs / "core0.veccore0.instr_popped_log.dump").write_text("".join(starts))
+            (logs / "core0.veccore0.instr_log.dump").write_text("".join(dones))
             for kind in ("EXU", "IDU", "ISU", "OOO", "LSU"):
                 (logs / f"core0.veccore0.rvec.{kind}.dump").write_text("test\n")
             return 0
 
-        argv = ["run_a6_bench.py", "--ops", "VADD", "--forms", "fp32", "--modes", "latency",
+        argv = ["run_a6_bench.py", "--ops", "VADD", "--forms", "fp32", "--modes", "forwarding",
                 "--repeats", "1", "--cann-home", str(cann), "--full-simulator-home", str(simulator),
                 "--output", str(output)]
         with patch.object(sys, "argv", argv), patch("run_a6_bench.run_command", side_effect=fake_model), \
@@ -275,6 +284,35 @@ class SuiteTests(unittest.TestCase):
             self.assertEqual(main(), 0)
         rows = json.loads((output / "summary.json").read_text())
         self.assertEqual(rows[0]["latency_min"], 6)
+        self.assertEqual(rows[0]["forwarding_min"], 5)
+
+    def test_compact_manifest_has_only_two_test_kinds(self):
+        manifest = json.loads((DEFAULT_CASES / "manifest.json").read_text())
+        for c in manifest["cases"]:
+            self.assertIn(c["mode"], {"ii", "forwarding"})
+            self.assertEqual(c["expected_target_count"], c["width"] * c["loop_iterations"])
+            if c["mode"] == "ii":
+                self.assertEqual(c["width"], 8)
+            else:
+                self.assertEqual(c["forwarding_edges"], [[0, 2], [1, 3]])
+        self.assertFalse(list(DEFAULT_CASES.glob("*_latency.cce")))
+        self.assertFalse(list(DEFAULT_CASES.glob("*_ii_w*.cce")))
+
+    def test_unroll2_golden_tracks_two_chains_and_resets_each_group(self):
+        meta, _ = render("VADD", "fp32", "forwarding", 2, iterations=2)
+        n = meta["dst_lanes"]
+        data = [3.] * (2*n) + [5.] * (2*n)
+        for name, values in (("input_B.bin", [1.] * (8*n)), ("input_C.bin", [2.] * (8*n)),
+                             ("output_A.bin", data * 2)):
+            (self.root / "run" / name).write_bytes(struct.pack("<" + "f" * len(values), *values))
+        self.assertEqual(numeric_check(self.root, meta)[0], "pass")
+
+    def test_zero_timeout_waits_for_process_completion(self):
+        from run_a6_bench import run_command
+        code = run_command([sys.executable, "-c", "print('completed')"],
+                           self.root / "console.log", 0, os.environ.copy())
+        self.assertEqual(code, 0)
+        self.assertIn("completed", (self.root / "console.log").read_text())
 
 
 if __name__ == "__main__":

@@ -1,11 +1,11 @@
-"""Archive only the requested veccore0 dumps from a newly created experiment."""
+"""Archive only the requested core0.veccore0 dumps from a new experiment."""
 
 import os
 from pathlib import Path
 import re
 
 KINDS = ("instr_popped_log", "instr_log", "EXU", "IDU", "ISU", "OOO")
-DUMP = re.compile(r"^core\d+\.veccore0\.(?:(instr_popped_log|instr_log)|rvec\.(EXU|IDU|ISU|OOO))"
+DUMP = re.compile(r"^core0\.veccore0\.(?:(instr_popped_log|instr_log)|rvec\.(EXU|IDU|ISU|OOO))"
                   r"(?:\.\d+)?\.dump(?:\.\d+)?$")
 ANY_DUMP = re.compile(r"\.dump(?:\.\d+)?$")
 

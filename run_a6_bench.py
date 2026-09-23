@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Run A6 probes sequentially and archive selected veccore0 instruction logs."""
+"""Run A6 probes sequentially and archive selected core0.veccore0 logs."""
 
 import argparse
 import csv
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import platform
@@ -23,7 +24,7 @@ def run_command(command, output, timeout, env):
         proc = subprocess.Popen(command, cwd=ROOT, env=env, stdout=log,
                                 stderr=subprocess.STDOUT, start_new_session=True)
         try:
-            return proc.wait(timeout=timeout)
+            return proc.wait(timeout=None if timeout == 0 else timeout)
         except (subprocess.TimeoutExpired, KeyboardInterrupt) as exc:
             os.killpg(proc.pid, signal.SIGTERM)
             try:
@@ -33,6 +34,7 @@ def run_command(command, output, timeout, env):
                 proc.wait()
             if isinstance(exc, KeyboardInterrupt):
                 raise
+            log.write(f"\n[BENCH TIMEOUT] Exceeded {timeout} seconds (compilation + simulation); process group terminated.\n")
             return 124
 
 
@@ -41,9 +43,10 @@ def main():
     p.add_argument("--cases", type=Path, default=DEFAULT_CASES)
     p.add_argument("--ops", nargs="+", help="ISA names, e.g. VADD VEXP (default: all)")
     p.add_argument("--forms", nargs="+", help="e.g. fp32 fp16")
-    p.add_argument("--modes", nargs="+", choices=["latency", "ii", "forwarding"])
-    p.add_argument("--repeats", type=int, default=2)
-    p.add_argument("--timeout", type=float, default=300)
+    p.add_argument("--modes", nargs="+", choices=["ii", "forwarding"])
+    p.add_argument("--repeats", type=int, default=1)
+    p.add_argument("--timeout", type=float, default=float(os.environ.get("A6_BENCH_TIMEOUT_SECONDS", "0")),
+                   help="Wall seconds per case, including compile; 0 disables timeout (default). Env: A6_BENCH_TIMEOUT_SECONDS")
     p.add_argument("--compile-only", action="store_true", help="Kernel-only preflight; no model or runner")
     p.add_argument("--list", action="store_true")
     p.add_argument("--resume", action="store_true", help="Skip completed, identical run fingerprints")
@@ -52,14 +55,14 @@ def main():
     p.add_argument("--cann-home", default=os.environ.get("CANN_HOME"))
     p.add_argument("--full-simulator-home", default=os.environ.get("FULL_SIMULATOR_HOME", ""),
                    help="External full-dump simulator root containing dav_9201 or Ascend910_9691")
-    p.add_argument("--keep-all-dumps", action="store_true", help="Keep extra model dumps in _work (default: only six veccore0 kinds)")
+    p.add_argument("--keep-all-dumps", action="store_true", help="Keep extra model dumps in _work (default: only six core0.veccore0 kinds)")
     args = p.parse_args()
     if args.analyze_only:
         if not args.output:
             p.error("--analyze-only requires --output")
         return summarize(args.output, use_cache=False)
-    if args.repeats < 1 or args.timeout <= 0:
-        p.error("repeats and timeout must be positive")
+    if args.repeats < 1 or args.timeout < 0 or not math.isfinite(args.timeout):
+        p.error("repeats must be positive; timeout must be finite and >= 0 (0 = unlimited)")
     manifest = json.loads((args.cases / "manifest.json").read_text())
     selected = [c for c in manifest["cases"]
                 if (not args.ops or c["op"] in [o.upper() for o in args.ops])
@@ -136,7 +139,7 @@ def main():
                        "--golden", "none"]
             record = dict(case=case, fingerprint=fingerprint, environment=env_record,
                           framework_hash=framework_hash, command=cmd,
-                          compile_only=args.compile_only, returncode=None)
+                          compile_only=args.compile_only, timeout_seconds=args.timeout, returncode=None)
             record_path.write_text(json.dumps(record, indent=2) + "\n")
             print(f"[RUN] {case['name']} r{repeat}", flush=True)
             t = time.monotonic()
@@ -150,6 +153,8 @@ def main():
             record_path.write_text(json.dumps(record, indent=2) + "\n")
             if record["returncode"] != 0:
                 print(f"[FAIL] code={record['returncode']}: {run / 'debug.log'}", flush=True)
+                if record["returncode"] == 124:
+                    print(f"[TIMEOUT] {args.timeout}s limit reached; use --timeout 0 or a larger value", flush=True)
             summarize(out, quiet=True)
     return summarize(out)
 

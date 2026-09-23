@@ -76,11 +76,17 @@ def numeric_check(run, case):
         if op == "VLN":
             b = c
         n, width = case["dst_lanes"], case["width"]
-        if len(a) != n * width or len(b) != n * width or len(c) != n * width:
+        total = width * case.get("loop_iterations", 1)
+        if len(a) != n * total or len(b) != n * total or len(c) != n * total:
             return "fail", "Binary output/input size mismatch"
         expected = []
-        for i in range(width):
+        for i in range(total):
             source = expected[(i-1)*n:i*n] if case["mode"] == "forwarding" and i else b[i*n:(i+1)*n]
+            if "forwarding_edges" in case:
+                edges = {consumer: producer for producer, consumer in case["forwarding_edges"]}
+                lane = i % width
+                producer = i - lane + edges[lane] if lane in edges else None
+                source = b[i*n:(i+1)*n] if producer is None else expected[producer*n:(producer+1)*n]
             expected += [struct.unpack("<" + fmt, struct.pack("<" + fmt, funcs[op](x, y)))[0]
                          for x, y in zip(source, c[i*n:(i+1)*n])]
         tolerance = 5e-3 if dtype == "fp16" else 1e-4
@@ -148,10 +154,11 @@ def analyze(run: Path, record):
         else:
             stream["issues"].append("Missing completion log")
         if case["mode"] == "forwarding":
-            # Use static PC order to reconstruct reaching register definitions, not issue order.
+            # Loop iterations reuse PCs. Dynamic decode IDs order the emitted stream;
+            # legacy straight-line probes can also be ordered by static PC.
             last_writer = {}
             target_ids = {e["id"] for e in targets}
-            for consumer in sorted(starts, key=lambda e: int(e["pc"], 16)):
+            for consumer in sorted(starts, key=lambda e: e["id"] if "loop_iterations" in case else int(e["pc"], 16)):
                 if consumer["id"] in target_ids:
                     producers = {last_writer[r]["id"]: last_writer[r] for r in consumer["src"]
                                  if r in last_writer and last_writer[r]["id"] in target_ids}

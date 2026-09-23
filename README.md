@@ -20,9 +20,14 @@ python3 run_a6_bench.py --ops VADD --forms fp32 --output results/a6_vadd
 
 Start with VADD, verify its numerical check and dump coverage, then run the full suite.
 The batch suite defaults to `results/`: instruction-named folders contain only the six
-selected veccore0 dump kinds (popped, instr, EXU, IDU, ISU, OOO). Build/diagnostic
+selected core0.veccore0 dump kinds (popped, instr, EXU, IDU, ISU, OOO). Build/diagnostic
 artifacts live in `_work`. Other dumps from each new run are pruned after execution;
 use `--keep-all-dumps` when additional model logs such as LSU are needed.
+Each form uses an eight-independent-instruction II loop and, where applicable,
+a two-chain AABBCC forwarding probe. Latency is extracted from the same logs.
+The default is one run per case with no timeout. Set `--timeout 3600` or
+`A6_BENCH_TIMEOUT_SECONDS=3600` to limit each compilation + simulation to one hour;
+`--timeout 0` waits for normal completion.
 
 ## 1. Environment
 
