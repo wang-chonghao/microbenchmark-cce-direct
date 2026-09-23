@@ -4,6 +4,26 @@ This repository compiles one CCE kernel and runs it directly through the CANN ca
 
 The default kernel is `op_kernel/kernel.cce`, a SIMD VF `A = B + C` fp32 example with GM -> UB -> vector compute -> GM.
 
+## A6 Instruction Benchmarks
+
+Batch probes for latency, self-II, and self-forwarding are available in
+[`docs/A6_INSTRUCTION_BENCHMARK.md`](docs/A6_INSTRUCTION_BENCHMARK.md).
+The suite includes generated CCE sources, A6 environment setup, sequential model runs,
+dump evidence extraction, and explicit missing/unsupported measurement states.
+
+```bash
+export CANN_HOME=/absolute/path/to/your/toolkit
+export FULL_SIMULATOR_HOME=/absolute/path/to/debug-package/tools/simulator
+source benchmarks/a6/set_env.sh
+python3 run_a6_bench.py --ops VADD --forms fp32 --output results/a6_vadd
+```
+
+Start with VADD, verify its numerical check and dump coverage, then run the full suite.
+The batch suite defaults to `results/`: instruction-named folders contain only the six
+selected veccore0 dump kinds (popped, instr, EXU, IDU, ISU, OOO). Build/diagnostic
+artifacts live in `_work`. Other dumps from each new run are pruned after execution;
+use `--keep-all-dumps` when additional model logs such as LSU are needed.
+
 ## 1. Environment
 
 On a new machine, set `CANN_HOME` to the root directory that contains `set_env.sh`.
