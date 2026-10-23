@@ -131,6 +131,16 @@ def analyze(run: Path, record):
             stream["issues"].append("Compound API: use the native A6 stage probes; inspect histogram")
             continue
         targets = [e for e in starts if e["op"] in case["target_aliases"]]
+        if case.get("implicit_dst_read"):
+            # Merging/accumulating instructions also consume the old destination.
+            # Include it even when the dump only prints Vd once.
+            for event in targets:
+                event["src"] = sorted(set(event["src"] + event["dst"]))
+        target_ids_for_routing = {e["id"] for e in targets}
+        stream["observed_target_exus"] = sorted({event["exu"]
+            for path in popped.parent.glob(prefix + ".rvec.*EXU*.dump")
+            for event in parse_exu(path)
+            if event["id"] in target_ids_for_routing and event["op"] in case["target_aliases"]})
         if len(targets) != case["expected_target_count"]:
             stream["issues"].append(f"Target count {len(targets)} != {case['expected_target_count']}; optimization/lowering/log format mismatch")
             continue

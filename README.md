@@ -6,6 +6,11 @@ The default kernel is `op_kernel/kernel.cce`, a SIMD VF `A = B + C` fp32 example
 
 ## A6 Instruction Benchmarks
 
+DV121 EXU2 coverage supplements are documented in
+[`docs/A6_EXU2_BENCHMARK.md`](docs/A6_EXU2_BENCHMARK.md).
+Run them separately with `python3 run_a6_bench.py --cases op_kernel/a6_exu2 --output results/a6_exu2`.
+This preserves the original suite and avoids repeating its existing probes.
+
 Batch probes for latency, self-II, and self-forwarding are available in
 [`docs/A6_INSTRUCTION_BENCHMARK.md`](docs/A6_INSTRUCTION_BENCHMARK.md).
 The suite includes generated CCE sources, A6 environment setup, sequential model runs,

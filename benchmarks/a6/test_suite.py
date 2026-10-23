@@ -75,6 +75,19 @@ class SuiteTests(unittest.TestCase):
         self.ii_setup(0, 0)
         self.assertEqual(self.measure(self.record("ii", 2))["ii_min"], 2)
 
+    def test_records_exu2_without_assuming_it(self):
+        self.ii_setup(2, 2)
+        result = self.measure(self.record("ii", 2))
+        self.assertEqual(result["streams"][0]["observed_target_exus"], [2])
+        self.assertEqual(result["ii_min"], 2)
+
+    def test_implicit_destination_read_has_raw_dependency(self):
+        record = self.record("forwarding")
+        record["case"]["implicit_dst_read"] = True
+        self.dump(".instr_popped_log.dump", line(10, 1, 0x100, regs="Vd[2], Vn[0]") +
+                  line(15, 2, 0x104, regs="Vd[2], Vn[7]"))
+        self.assertEqual(self.measure(record)["forwarding_min"], 5)
+
     def test_distinct_exu_not_ii(self):
         self.ii_setup(0, 1)
         self.assertIsNone(self.measure(self.record("ii", 2))["ii_min"])
