@@ -75,6 +75,10 @@ python3 run_a6_bench.py --cases op_kernel/a6_a5_coverage \
 可用 `--timeout 7200` 设置每例“编译 + 仿真”的两小时上限。
 目标为 `Ascend910_9691` / `dav-920r1-vec` / `dav_9201`；不要改成 A5 目标来编译。
 
+默认已启用常用指令/EXU2 候选优先排序，常见类型的基础 II 先跑，再覆盖 forwarding
+和少见形式。`--list` 即实际候选执行顺序，输出中另存 `execution_order.json`。
+不改变源码、用例名称或 `--resume` 指纹；需要旧顺序时加 `--order manifest`。
+
 ## 3. 输出与日志
 
 ```text

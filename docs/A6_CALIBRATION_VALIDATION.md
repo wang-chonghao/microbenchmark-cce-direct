@@ -28,6 +28,23 @@ run_record 中启用 `semantic_validation`，运行后 measurement 的 `golden` 
 
 ## 先跑十个小规模实验
 
+运行器默认按优先级排序，而不是源码目录或 manifest 的排列顺序：
+
+1. 常用计算指令和 EXU2 候选的常见形式先跑，优先 FP32/FP16/BF16、32 位整数。
+2. 同一优先级中先覆盖各指令的基础 II，再运行 forwarding，最后运行 16 流变体。
+   因此中断前可以覆盖更多指令，并从同一批日志提取 latency。
+3. 其余常见形式、较少使用的整数/谓词形式、FP8/打包形式依次排后。
+   已知缺少语义输入编码的用例放在最后。
+
+常用顺序是工程上的测试优先级，并非统计得到的指令频率。EXU2 候选来自仓内
+`exu2_inventory.json` 和补充清单的 native-stage 项；实际路由仍以模型 dump 为准。
+优先级规则在 `benchmarks/a6/priority.py`，常用指令顺序可调整 `COMMON_OPS`。
+
+`--list` 与实际执行使用相同排序，`--order manifest` 可恢复原顺序。
+结果根目录的 `execution_order.json` 保存本次选择的候选顺序；`--resume` 在其中跳过
+已完成的匹配记录，不因排序变化重新跑已完成用例。排序只作用于 `--cases` 选择的套件，
+不会自动把其他目录的指令加入任务。
+
 先配置已验证的双包环境：
 
 ```bash

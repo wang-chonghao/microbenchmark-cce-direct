@@ -6,6 +6,12 @@ The default kernel is `op_kernel/kernel.cce`, a SIMD VF `A = B + C` fp32 example
 
 ## A6 Instruction Benchmarks
 
+Batch execution defaults to common operations and EXU2 candidates first, with
+basic II probes before forwarding/wider variants and uncommon types later.
+`--list` shows the actual order; `--order manifest` restores the original order.
+The selected plan is saved as `execution_order.json`. Existing `--resume` records
+remain reusable because ordering does not change case names or source hashes.
+
 Semantic input validation, GM guards and opt-in operand/saturation probes are documented in
 [`docs/A6_CALIBRATION_VALIDATION.md`](docs/A6_CALIBRATION_VALIDATION.md).
 Start with `python3 run_a6_bench.py --cases op_kernel/a6_calibration --repeats 3 --keep-lsu-dumps --output results/a6_calibration`.

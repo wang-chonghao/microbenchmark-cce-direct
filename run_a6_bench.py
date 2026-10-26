@@ -18,6 +18,7 @@ from benchmarks.a6.generate import DEFAULT_CASES, ROOT
 from benchmarks.a6.analyze import analyze
 from benchmarks.a6.archive import archive_dumps
 from benchmarks.a6.semantic import prepare_inputs
+from benchmarks.a6.priority import order_cases
 from run_test import parse_kernel_manifest
 
 
@@ -51,6 +52,8 @@ def main():
                    help="Wall seconds per case, including compile; 0 disables timeout (default). Env: A6_BENCH_TIMEOUT_SECONDS")
     p.add_argument("--compile-only", action="store_true", help="Kernel-only preflight; no model or runner")
     p.add_argument("--list", action="store_true")
+    p.add_argument("--order", choices=("priority", "manifest"), default="priority",
+                   help="Default: common operations and EXU2 candidates first; manifest preserves original order")
     p.add_argument("--resume", action="store_true", help="Skip completed, identical run fingerprints")
     p.add_argument("--analyze-only", action="store_true", help="Reparse an existing --output")
     p.add_argument("--output", type=Path)
@@ -74,6 +77,7 @@ def main():
                 and (not args.modes or c["mode"] in args.modes)]
     if not selected:
         p.error("No matching cases")
+    selected = order_cases(selected, args.order)
     if args.list:
         for c in selected:
             print(c["name"])
@@ -90,6 +94,8 @@ def main():
             p.error("FULL_SIMULATOR_HOME must contain dav_9201/{lib,camodel} or Ascend910_9691/{lib,camodel}")
     out = (args.output or ROOT / "results" / time.strftime("a6_%Y%m%d_%H%M%S")).resolve()
     out.mkdir(parents=True, exist_ok=True)
+    (out / "execution_order.json").write_text(json.dumps(dict(order=args.order,
+        cases=[c["name"] for c in selected]), indent=2) + "\n")
     work = out / "_work"
     env = os.environ.copy()
     env.update(SOC_VERSION="Ascend910_9691", CORE_ARCH="dav-920r1-vec",
