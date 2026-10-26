@@ -1,5 +1,9 @@
 # A6 指令覆盖补充：对照 A5 清单
 
+后续输入与校准检查见 [A6_CALIBRATION_VALIDATION.md](A6_CALIBRATION_VALIDATION.md)：
+批量运行已增加语义 dtype 输入、部分数值参考和 GM 保护检查。原始源码清单不变，
+运行结果明确标为尚未校准的观测值；不能仅凭编译成功直接采纳时序参数。
+
 ## 1. 范围与目录
 
 本套件对照本地 Git 跟踪分支 `tilesim/wch/VfSimulator-refactor` 的
@@ -89,8 +93,8 @@ results/a6_a5_coverage/_work/<case>/r0/measurement.json
 **访存 II 不能从 EXU 发射间隔推断。** 本套给访存用例设置 `memory_probe`，
 默认六类日志不含 LSU，此时仍可提取匹配指令的起止间隔，但访存发射间隔标为
 `not_collected` 或缺少证据。确实需要访存间隔时，为单独的小批任务加
-`--keep-all-dumps`，分析器从支持的 LSU request/issue 事件提取间隔。
-这会保留额外 dump；若新模型 LSU 格式不同，则仍需适配解析器。
+`--keep-lsu-dumps`，分析器从支持的 LSU request/issue 事件提取间隔。
+这只额外保留 LSU；若新模型 LSU 格式不同，则仍需适配解析器。
 
 ## 4. 测试结构与解释边界
 
@@ -106,8 +110,9 @@ results/a6_a5_coverage/_work/<case>/r0/measurement.json
 - 新模板通过 uint32 传输原始位，再按目标向量类型解释，避免输入阶段隐式插入 VCVT。
   类型转换用例中的 VCVT 才是待测目标。各测试块留有输出间隔，部分无效 lane 和
   填充区域未定义，不能直接把整个输出张量视为数值结果。
-- 这些新增 raw-bit 用例的 `golden=not_implemented`，**不声称通过精度校验**。
-  它们用于收集时序证据，正式校准前应检查实际目标指令、依赖链和执行单元。
+- 原始 manifest 的 raw-bit 用例标记为 `golden=not_implemented`。当前批量运行器
+  已增加 245 个用例的数值参考，实际是否通过以 measurement 为准；其他形式仍明确
+  不提供数值校验。正式校准前还应检查实际目标指令、依赖链和执行单元。
 - A5 API 名称不一定等于 A6 指令名。例如 A6 VMOV_MERGE 的头文件实现为 VSEL；
   `target_aliases` 记录已知映射。编译器删指令、重排、复合展开或新日志格式导致
   目标计数不符时，分析器报告无效/待核查，不当作零延迟或已测得 II。

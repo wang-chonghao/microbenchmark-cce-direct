@@ -22,6 +22,7 @@ struct Tensor {
     size_t elementSize = 0;
     std::vector<unsigned char> host;
     void* device = nullptr;
+    void* allocation = nullptr;
 };
 
 bool IsInput(const Tensor& tensor)
@@ -203,6 +204,7 @@ int Run(const std::string& kernelBinPath, const std::string& kernelName, const s
     std::vector<unsigned char> kernelBuffer;
     std::vector<Tensor> tensors;
     std::vector<void*> launchArgs;
+    const size_t guardBytes = std::getenv("MB_GUARD_ENABLE") ? 256 : 0;
 
     if (!ReadTensorSpec(specPath, tensors)) {
         std::fprintf(stderr, "[ERROR] failed to read tensor spec: %s\n", specPath.c_str());
@@ -215,6 +217,15 @@ int Run(const std::string& kernelBinPath, const std::string& kernelName, const s
     for (size_t i = 0; i < tensors.size(); ++i) {
         InitTensor(tensors[i], i);
         if (IsInput(tensors[i])) {
+            if (const char* inputDir = std::getenv("MB_INPUT_DIR")) {
+                std::vector<unsigned char> input;
+                const std::string path = std::string(inputDir) + "/input_" + tensors[i].name + ".bin";
+                if (!ReadBinaryFile(path, input) || input.size() != tensors[i].host.size()) {
+                    std::fprintf(stderr, "[ERROR] missing/wrong-sized input: %s\n", path.c_str());
+                    return 67;
+                }
+                tensors[i].host.swap(input);
+            }
             (void)WriteFile("input_" + tensors[i].name + ".bin", tensors[i].host.data(), tensors[i].host.size());
         }
     }
@@ -227,7 +238,14 @@ int Run(const std::string& kernelBinPath, const std::string& kernelName, const s
     deviceSet = true;
     RT_CHECK(rtStreamCreate(&stream, 0));
     for (size_t i = 0; i < tensors.size(); ++i) {
-        RT_CHECK(rtMalloc(&tensors[i].device, tensors[i].host.size(), RT_MEMORY_HBM, 0));
+        const size_t allocationSize = tensors[i].host.size() + 2 * guardBytes;
+        RT_CHECK(rtMalloc(&tensors[i].allocation, allocationSize, RT_MEMORY_HBM, 0));
+        tensors[i].device = static_cast<unsigned char*>(tensors[i].allocation) + guardBytes;
+        if (guardBytes) {
+            std::vector<unsigned char> sentinel(allocationSize, 0xa5);
+            RT_CHECK(rtMemcpy(tensors[i].allocation, allocationSize, sentinel.data(),
+                              allocationSize, RT_MEMCPY_HOST_TO_DEVICE));
+        }
         RT_CHECK(rtMemcpy(tensors[i].device, tensors[i].host.size(), tensors[i].host.data(),
                           tensors[i].host.size(), RT_MEMCPY_HOST_TO_DEVICE));
         launchArgs[i] = tensors[i].device;
@@ -257,6 +275,32 @@ int Run(const std::string& kernelBinPath, const std::string& kernelName, const s
     }
     RT_CHECK(rtStreamSynchronize(stream));
 
+    if (guardBytes) {
+        for (Tensor& tensor : tensors) {
+            const size_t bytes = tensor.host.size() + 2 * guardBytes;
+            std::vector<unsigned char> actual(bytes);
+            RT_CHECK(rtMemcpy(actual.data(), bytes, tensor.allocation, bytes, RT_MEMCPY_DEVICE_TO_HOST));
+            for (size_t i = 0; i < guardBytes; ++i) {
+                if (actual[i] != 0xa5 || actual[guardBytes + tensor.host.size() + i] != 0xa5) {
+                    std::fprintf(stderr, "[ERROR] GM guard corrupted: %s byte=%zu\n", tensor.name.c_str(), i);
+                    rc = 3;
+                    goto cleanup;
+                }
+            }
+            if (tensor.direction == "input" &&
+                !std::equal(tensor.host.begin(), tensor.host.end(), actual.begin() + guardBytes)) {
+                std::fprintf(stderr, "[ERROR] read-only input changed: %s\n", tensor.name.c_str());
+                rc = 3;
+                goto cleanup;
+            }
+        }
+        const char passed[] = "pass: GM 256-byte prefix/suffix guards and read-only inputs\n";
+        if (!WriteFile("guard_check.txt", passed, sizeof(passed) - 1)) {
+            rc = 3;
+            goto cleanup;
+        }
+    }
+
     std::printf("[INFO] kernel=%s block_dim=%u local_memory_size=%u tensor_args=%zu\n",
                 kernelName.c_str(), blockDim, localMemorySize, tensors.size());
     for (Tensor& tensor : tensors) {
@@ -275,7 +319,7 @@ int Run(const std::string& kernelBinPath, const std::string& kernelName, const s
 
 cleanup:
     for (Tensor& tensor : tensors) {
-        if (tensor.device != nullptr) (void)rtFree(tensor.device);
+        if (tensor.allocation != nullptr) (void)rtFree(tensor.allocation);
     }
     if (stream != nullptr) (void)rtStreamDestroy(stream);
     if (deviceSet) (void)rtDeviceReset(deviceId);

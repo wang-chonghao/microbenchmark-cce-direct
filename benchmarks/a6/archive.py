@@ -8,9 +8,10 @@ KINDS = ("instr_popped_log", "instr_log", "EXU", "IDU", "ISU", "OOO")
 DUMP = re.compile(r"^core0\.veccore0\.(?:(instr_popped_log|instr_log)|rvec\.(EXU|IDU|ISU|OOO))"
                   r"(?:\.\d+)?\.dump(?:\.\d+)?$")
 ANY_DUMP = re.compile(r"\.dump(?:\.\d+)?$")
+LSU_DUMP = re.compile(r"^core0\.veccore0\.rvec\.LSU(?:\.\d+)?\.dump(?:\.\d+)?$")
 
 
-def archive_dumps(run: Path, out: Path, case: dict, keep_all=False):
+def archive_dumps(run: Path, out: Path, case: dict, keep_all=False, keep_lsu=False):
     """Move requested files; prune other dumps only inside this run, after model exit.
 
     No symlink is followed, and destination collisions fail before any deletion.
@@ -26,9 +27,10 @@ def archive_dumps(run: Path, out: Path, case: dict, keep_all=False):
             if source.is_symlink() or not ANY_DUMP.search(name):
                 continue
             match = DUMP.fullmatch(name)
-            if match:
+            lsu = keep_lsu and LSU_DUMP.fullmatch(name)
+            if match or lsu:
                 target = destination / f"{case['name']}__{run.name}__{name}"
-                candidates.append((source, target, match[1] or match[2]))
+                candidates.append((source, target, (match[1] or match[2]) if match else "LSU"))
             else:
                 discarded.append(source)
     targets = [target for _, target, _ in candidates]
@@ -48,6 +50,6 @@ def archive_dumps(run: Path, out: Path, case: dict, keep_all=False):
             path.unlink()
     present = {item["kind"] for item in retained if item["bytes"] > 0}
     return dict(directory=os.path.relpath(destination, run), files=retained,
-                missing_or_empty=[k for k in KINDS if k not in present],
+                missing_or_empty=[k for k in KINDS + (("LSU",) if keep_lsu else ()) if k not in present],
                 removed_files=0 if keep_all else len(discarded), removed_bytes=removed_bytes,
-                keep_all_dumps=keep_all)
+                keep_all_dumps=keep_all, keep_lsu_dumps=keep_lsu)

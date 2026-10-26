@@ -90,21 +90,35 @@ def spec(op, form):
     raise ValueError("A5 opcode/alias needs explicit A6 signature, lowering and side-effect review")
 
 
-def emit(op, form, mode):
+def emit(op, form, mode, *, ii_width=8, dependency_role="vn"):
+    if ii_width not in {8, 16}:
+        raise ValueError("Reviewed II widths are 8 and 16")
+    if dependency_role not in {"vn", "vm", "old_vd"}:
+        raise ValueError("Unsupported dependency role")
+    if dependency_role == "vm" and op not in BINARY | (PLOGIC - {"PNOT"}):
+        raise ValueError("No reviewed second-source chain for this opcode")
+    if dependency_role == "old_vd" and op not in ACC | {"VMOV_MERGE"}:
+        raise ValueError("No reviewed old-destination chain for this opcode")
     if op == "VCGADD":
+        if ii_width != 8 or dependency_role != "vn":
+            raise ValueError("VCGADD variants require a separate template")
         return emit_exu2(op, form, mode)
     src, dst, raw = spec(op, form)
     if mode not in {"ii", "forwarding"} or (mode == "forwarding" and not raw):
         raise ValueError("Unsupported measurement mode")
     sv, bits = TYPES[src]
     dv, dbits = TYPES[dst]
-    n = 8 if mode == "ii" else 6
+    n = ii_width if mode == "ii" else 6
     iterations = 1 if op in {"VCI", "VBR", "VDUPS"} else 2
     predicate = op in PLOGIC | PLOAD | PSTORE | {"MOVVP"} or op.startswith(("VCMP_", "VCMPS_"))
     compare = op.startswith(("VCMP_", "VCMPS_"))
     implicit = op in ACC | {"VMOV_MERGE", "VDUPS_MERGE"}
     memory = op in MEMORY
     name = f"{op.lower()}_{form}_{mode}"
+    if mode == "ii" and ii_width != 8:
+        name += f"_w{ii_width}"
+    if mode == "forwarding" and dependency_role != "vn":
+        name += "_" + dependency_role
     aliases = ["RV_" + op]
     if op == "VMOV_MERGE":
         aliases = ["RV_VSEL"]  # A6 header explicitly implements vmov merging with vsel.
@@ -154,13 +168,19 @@ def emit(op, form, mode):
         if op in CARRY:
             code += [f"vector_bool carry{i};"]
     for i in range(n):
-        a = f"d{i-2}" if mode == "forwarding" and i >= 2 else f"a{i}"
-        p = f"r{i-2}" if mode == "forwarding" and i >= 2 else f"p{i}"
+        a = f"d{i-2}" if mode == "forwarding" and i >= 2 and dependency_role == "vn" else f"a{i}"
+        p = f"r{i-2}" if mode == "forwarding" and i >= 2 and dependency_role == "vn" else f"p{i}"
         d, b = f"d{i}", f"b{i}"
+        q = f"q{i}"
+        if mode == "forwarding" and i >= 2:
+            if dependency_role == "vm":
+                b, q = f"d{i-2}", f"r{i-2}"
+            elif dependency_role == "old_vd":
+                code += [f"{d} = d{i-2};"]
         code += [f"// TARGET {i}: {op}/{form}"]
         if op in PLOGIC:
             code += [f"vector_bool r{i};"]
-            args = f"r{i}, {p}, m" if op == "PNOT" else f"r{i}, {p}, q{i}, m"
+            args = f"r{i}, {p}, m" if op == "PNOT" else f"r{i}, {p}, {q}, m"
             code += [f"{op.lower()}({args});"]
         elif compare:
             second = f"({C[src]})1" if op.startswith("VCMPS_") else b
@@ -269,6 +289,10 @@ def emit(op, form, mode):
                 layout="A0_A1_B0_B1_C0_C1" if mode == "forwarding" else "eight_independent_ops",
                 implicit_dst_read=implicit, source=name + ".cce",
                 source_sha256=hashlib.sha256(cce.encode()).hexdigest())
+    if dependency_role != "vn":
+        meta["dependency_role"] = dependency_role
+    if mode == "ii" and ii_width != 8:
+        meta.update(ii_width=ii_width, layout=f"{ii_width}_independent_ops")
     return meta, cce
 
 

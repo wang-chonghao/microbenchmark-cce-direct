@@ -270,6 +270,8 @@ class SuiteTests(unittest.TestCase):
             run = Path(command[command.index("--output") + 1])
             logs = run / "run/log_ca"
             logs.mkdir(parents=True)
+            self.assertEqual(env["MB_GUARD_ENABLE"], "1")
+            (run / "run/guard_check.txt").write_text("pass: synthetic test guards\n")
             regs = ["Vd[2], Vn[0], Vm[1]", "Vd[5], Vn[3], Vm[4]",
                     "Vd[6], Vn[2], Vm[7]", "Vd[8], Vn[5], Vm[9]"]
             starts, dones = [], []

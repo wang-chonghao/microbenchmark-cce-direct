@@ -1,8 +1,10 @@
 """Conservative dump measurements; missing evidence never becomes a zero timing."""
 
 from collections import Counter, defaultdict
+import hashlib
 import math
 from pathlib import Path
+from . import semantic
 import re
 import struct
 
@@ -22,11 +24,16 @@ def parse_events(path):
             cycle, ident, pc, op = CYCLE.search(line), ID.search(line), PC.search(line), OP.search(line)
             if not all((cycle, ident, pc, op)):
                 continue
-            src, dst = [], []
+            src, dst, operands = [], [], []
             for bank, role, reg in REG.findall(line):
                 (dst if role.lower() == "d" else src).append(bank.upper() + reg)
+                if role.lower() != "d":
+                    operands.append(dict(role=bank.upper() + role.lower(), reg=bank.upper() + reg))
+            if op[1].upper().startswith(("RV_VST", "RV_VSST", "RV_PST")):
+                operands += [dict(role="store_data", reg=r) for r in dst]
+                src, dst = sorted(set(src + dst)), []
             events.append(dict(cycle=int(cycle[1]), id=int(ident[1]), pc=pc[1].lower(),
-                               op=op[1].upper(), src=src, dst=dst, line=lineno, file=str(path)))
+                               op=op[1].upper(), src=src, dst=dst, src_operands=operands, line=lineno, file=str(path)))
     return events
 
 
@@ -54,6 +61,8 @@ def parse_memory(path):
 
 def numeric_check(run, case):
     """Check ordinary arithmetic from actual saved inputs, including fp16 rounding."""
+    if case.get("semantic_validation"):
+        return semantic.numeric_check(run, case)
     op, dtype = case["op"], case["output_dtype"]
     funcs = {"VADD": lambda a, b: a + b, "VSUB": lambda a, b: a - b,
              "VMUL": lambda a, b: a * b, "VDIV": lambda a, b: a / b,
@@ -103,13 +112,30 @@ def analyze(run: Path, record):
     memory_probe = case.get("memory_probe", False) or case["op"] in {"VLDS", "VSTS", "VSTUS", "VSTAS", "VSSTB"}
     result = dict(status="failed", golden="not_run", latency_min=None, ii_min=None,
                   forwarding_min=None, memory_interval_min=None, reason="", streams=[])
+    result.update(timing_quality="not_measured", hardware_calibrated=False,
+                  guard_status="not_requested", forwarding_by_operand={},
+                  measurement_semantics=dict(latency="done_minus_popped", ii="same_exu_issue_gap",
+                      forwarding="dependent_popped_gap_not_proven_bypass", memory="named_lsu_request_gap"),
+                  missing_calibration_evidence=["source_ready", "frontend_supply", "resource_stalls", "saturation"])
     if record["returncode"] != 0:
-        result["reason"] = f"Build/model exit={record['returncode']}; see console/debug/model.log"
+        result["reason"] = record.get("input_error") or f"Build/model exit={record['returncode']}; see console/debug/model.log"
         return result
     if record["compile_only"]:
         result.update(status="compiled", reason="No model executed; no timings measured")
         return result
+    if record.get("guard_required"):
+        path = run / "run/guard_check.txt"
+        result["guard_status"] = "pass" if path.exists() and path.read_text().startswith("pass:") else "missing"
+        if result["guard_status"] != "pass":
+            result["reason"] = "Missing successful GM guard/input immutability check"
+            return result
+    for name, expected in (record.get("input_profile") or {}).get("tensors", {}).items():
+        path = run / "run" / f"input_{name}.bin"
+        if not path.exists() or hashlib.sha256(path.read_bytes()).hexdigest() != expected["sha256"]:
+            result["reason"] = f"Runner input {name} does not match the semantic input profile"
+            return result
     result["golden"], reason = numeric_check(run, case)
+    result["golden_detail"] = reason
     if result["golden"] == "fail":
         result["reason"] = reason
         return result
@@ -137,6 +163,7 @@ def analyze(run: Path, record):
             # Include it even when the dump only prints Vd once.
             for event in targets:
                 event["src"] = sorted(set(event["src"] + event["dst"]))
+                event["src_operands"] += [dict(role="old_" + r[0] + "d", reg=r) for r in event["dst"]]
         target_ids_for_routing = {e["id"] for e in targets}
         stream["observed_target_exus"] = sorted({event["exu"]
             for path in popped.parent.glob(prefix + ".rvec.*EXU*.dump")
@@ -174,10 +201,15 @@ def analyze(run: Path, record):
                     producers = {last_writer[r]["id"]: last_writer[r] for r in consumer["src"]
                                  if r in last_writer and last_writer[r]["id"] in target_ids}
                     for producer in producers.values():
+                        if case.get("cross_forwarding") and (producer["op"] not in case["producer_aliases"]
+                                or consumer["op"] not in case["consumer_aliases"]):
+                            continue
                         delta = consumer["cycle"] - producer["cycle"]
                         if delta >= 0:
                             stream["forwarding"].append(dict(cycles=delta, producer=producer,
-                                                             consumer=consumer))
+                                consumer=consumer, dependency_roles=sorted({o["role"] for o in consumer["src_operands"]
+                                    if o["reg"] in producer["dst"]}),
+                                other_source_readiness="unverified", event_boundary="popped"))
                 if not consumer["op"].startswith(("RV_VST", "RV_VSST")):
                     for reg in consumer["dst"]:
                         last_writer[reg] = consumer
@@ -190,15 +222,19 @@ def analyze(run: Path, record):
                 if archive and archive.get("keep_all_dumps"):
                     original_prefix = prefix.split("__")[-1]
                     memory_logs += list((run / "run").rglob(original_prefix + ".rvec.LSU.dump"))
-                for path in memory_logs:
+                all_memory_events = []
+                for path in set(memory_logs):
                     for event in parse_memory(path):
                         resources[event["resource"]].append(event)
+                        all_memory_events.append(event)
+                global_counts = Counter(e["id"] for e in all_memory_events)
+                if any(n > 1 for n in global_counts.values()):
+                    stream["issues"].append("Multi-request/port instructions excluded; no instruction-level memory II claimed")
                 target_ids = {e["id"] for e in targets}
                 for events in resources.values():
-                    counts = Counter(e["id"] for e in events)
                     events.sort(key=lambda e: e["cycle"])
                     for a, b in zip(events, events[1:]):
-                        if a["id"] in target_ids and b["id"] in target_ids and counts[a["id"]] == counts[b["id"]] == 1:
+                        if a["id"] in target_ids and b["id"] in target_ids and global_counts[a["id"]] == global_counts[b["id"]] == 1:
                             delta = b["cycle"] - a["cycle"]
                             if delta > 0:
                                 stream["memory_interval"].append(dict(cycles=delta, previous=a, current=b))
@@ -239,11 +275,18 @@ def analyze(run: Path, record):
         samples = [s["cycles"] for stream in result["streams"] for s in stream[key]]
         if samples:
             result[key + "_min"] = min(samples)
+            result["timing_quality"] = "observed_uncalibrated"
+    for stream in result["streams"]:
+        for sample in stream["forwarding"]:
+            # Keep simultaneous multi-operand dependence distinct from isolated paths.
+            role = "+".join(sample["dependency_roles"]) or "unknown"
+            old = result["forwarding_by_operand"].get(role)
+            result["forwarding_by_operand"][role] = min(old, sample["cycles"]) if old is not None else sample["cycles"]
     needed = {"latency": "latency_min", "ii": "ii_min", "forwarding": "forwarding_min"}[case["mode"]]
     if case["mode"] == "ii" and memory_probe:
         needed = "memory_interval_min"
     result["status"] = "observed" if result[needed] is not None else "invalid_logs"
-    if (needed == "memory_interval_min" and archive and not archive.get("keep_all_dumps")
+    if (needed == "memory_interval_min" and archive and not archive.get("keep_all_dumps") and not archive.get("keep_lsu_dumps")
             and result["latency_min"] is not None):
         result["status"] = "not_collected"
         result["reason"] = "Default six-dump policy excludes LSU; use --keep-all-dumps to measure memory intervals"

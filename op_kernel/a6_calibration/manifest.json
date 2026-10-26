@@ -1,0 +1,372 @@
+{
+  "schema_version": 2,
+  "soc": "Ascend910_9691",
+  "core_arch": "dav-920r1-vec",
+  "core_sim_dir": "dav_9201",
+  "cases": [
+    {
+      "name": "vadd_fp32_ii",
+      "op": "VADD",
+      "form": "fp32",
+      "mode": "ii",
+      "width": 8,
+      "input_dtype": "uint32",
+      "output_dtype": "uint32",
+      "src_lanes": 128,
+      "dst_lanes": 128,
+      "semantic_input_dtype": "fp32",
+      "semantic_output_dtype": "fp32",
+      "target_aliases": [
+        "RV_VADD"
+      ],
+      "expected_target_count": 16,
+      "compound": false,
+      "golden": "not_implemented",
+      "memory_probe": false,
+      "no_register_source": false,
+      "note": "A5 inventory migration; verify emitted opcode/count. Raw bits, no numeric golden.",
+      "loop_iterations": 2,
+      "forwarding_edges": [],
+      "layout": "eight_independent_ops",
+      "implicit_dst_read": false,
+      "source": "vadd_fp32_ii.cce",
+      "source_sha256": "311dfc0668a1fa1a8a9401ec727d0a437968a6e096d39fb7ecc25591e5f506c8"
+    },
+    {
+      "name": "vadd_fp32_ii_w16",
+      "op": "VADD",
+      "form": "fp32",
+      "mode": "ii",
+      "width": 16,
+      "input_dtype": "uint32",
+      "output_dtype": "uint32",
+      "src_lanes": 128,
+      "dst_lanes": 128,
+      "semantic_input_dtype": "fp32",
+      "semantic_output_dtype": "fp32",
+      "target_aliases": [
+        "RV_VADD"
+      ],
+      "expected_target_count": 32,
+      "compound": false,
+      "golden": "not_implemented",
+      "memory_probe": false,
+      "no_register_source": false,
+      "note": "A5 inventory migration; verify emitted opcode/count. Raw bits, no numeric golden.",
+      "loop_iterations": 2,
+      "forwarding_edges": [],
+      "layout": "16_independent_ops",
+      "implicit_dst_read": false,
+      "source": "vadd_fp32_ii_w16.cce",
+      "source_sha256": "e898dcb7780f9aa7de9d7a19373f699c2357205f52458a69dbbf432473aa5b3f",
+      "ii_width": 16
+    },
+    {
+      "name": "vadd_fp32_forwarding",
+      "op": "VADD",
+      "form": "fp32",
+      "mode": "forwarding",
+      "width": 6,
+      "input_dtype": "uint32",
+      "output_dtype": "uint32",
+      "src_lanes": 128,
+      "dst_lanes": 128,
+      "semantic_input_dtype": "fp32",
+      "semantic_output_dtype": "fp32",
+      "target_aliases": [
+        "RV_VADD"
+      ],
+      "expected_target_count": 12,
+      "compound": false,
+      "golden": "not_implemented",
+      "memory_probe": false,
+      "no_register_source": false,
+      "note": "A5 inventory migration; verify emitted opcode/count. Raw bits, no numeric golden.",
+      "loop_iterations": 2,
+      "forwarding_edges": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          5
+        ]
+      ],
+      "layout": "A0_A1_B0_B1_C0_C1",
+      "implicit_dst_read": false,
+      "source": "vadd_fp32_forwarding.cce",
+      "source_sha256": "bdd93c168036354420aaaa6693e8c30648af78e95f82521af269dc3807caab36"
+    },
+    {
+      "name": "vadd_fp32_forwarding_vm",
+      "op": "VADD",
+      "form": "fp32",
+      "mode": "forwarding",
+      "width": 6,
+      "input_dtype": "uint32",
+      "output_dtype": "uint32",
+      "src_lanes": 128,
+      "dst_lanes": 128,
+      "semantic_input_dtype": "fp32",
+      "semantic_output_dtype": "fp32",
+      "target_aliases": [
+        "RV_VADD"
+      ],
+      "expected_target_count": 12,
+      "compound": false,
+      "golden": "not_implemented",
+      "memory_probe": false,
+      "no_register_source": false,
+      "note": "A5 inventory migration; verify emitted opcode/count. Raw bits, no numeric golden.",
+      "loop_iterations": 2,
+      "forwarding_edges": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          5
+        ]
+      ],
+      "layout": "A0_A1_B0_B1_C0_C1",
+      "implicit_dst_read": false,
+      "source": "vadd_fp32_forwarding_vm.cce",
+      "source_sha256": "85e54e76af6297d6c217d1d6d32307589d3c66edc7b8a9c8f2fbea75f92be887",
+      "dependency_role": "vm"
+    },
+    {
+      "name": "vaxpy_fp32_ii",
+      "op": "VAXPY",
+      "form": "fp32",
+      "mode": "ii",
+      "width": 8,
+      "input_dtype": "uint32",
+      "output_dtype": "uint32",
+      "src_lanes": 128,
+      "dst_lanes": 128,
+      "semantic_input_dtype": "fp32",
+      "semantic_output_dtype": "fp32",
+      "target_aliases": [
+        "RV_VAXPY"
+      ],
+      "expected_target_count": 16,
+      "compound": false,
+      "golden": "not_implemented",
+      "memory_probe": false,
+      "no_register_source": false,
+      "note": "A5 inventory migration; verify emitted opcode/count. Raw bits, no numeric golden.",
+      "loop_iterations": 2,
+      "forwarding_edges": [],
+      "layout": "eight_independent_ops",
+      "implicit_dst_read": true,
+      "source": "vaxpy_fp32_ii.cce",
+      "source_sha256": "0e8908a6da35a228ee9f54fd278046d9a359a43bfa98374d20d6002a770e81a5"
+    },
+    {
+      "name": "vaxpy_fp32_ii_w16",
+      "op": "VAXPY",
+      "form": "fp32",
+      "mode": "ii",
+      "width": 16,
+      "input_dtype": "uint32",
+      "output_dtype": "uint32",
+      "src_lanes": 128,
+      "dst_lanes": 128,
+      "semantic_input_dtype": "fp32",
+      "semantic_output_dtype": "fp32",
+      "target_aliases": [
+        "RV_VAXPY"
+      ],
+      "expected_target_count": 32,
+      "compound": false,
+      "golden": "not_implemented",
+      "memory_probe": false,
+      "no_register_source": false,
+      "note": "A5 inventory migration; verify emitted opcode/count. Raw bits, no numeric golden.",
+      "loop_iterations": 2,
+      "forwarding_edges": [],
+      "layout": "16_independent_ops",
+      "implicit_dst_read": true,
+      "source": "vaxpy_fp32_ii_w16.cce",
+      "source_sha256": "3e7a1f850b73a591f81cc1a8a543d24a58e8c55f1444a1213c19808d71b4ec4e",
+      "ii_width": 16
+    },
+    {
+      "name": "vaxpy_fp32_forwarding",
+      "op": "VAXPY",
+      "form": "fp32",
+      "mode": "forwarding",
+      "width": 6,
+      "input_dtype": "uint32",
+      "output_dtype": "uint32",
+      "src_lanes": 128,
+      "dst_lanes": 128,
+      "semantic_input_dtype": "fp32",
+      "semantic_output_dtype": "fp32",
+      "target_aliases": [
+        "RV_VAXPY"
+      ],
+      "expected_target_count": 12,
+      "compound": false,
+      "golden": "not_implemented",
+      "memory_probe": false,
+      "no_register_source": false,
+      "note": "A5 inventory migration; verify emitted opcode/count. Raw bits, no numeric golden.",
+      "loop_iterations": 2,
+      "forwarding_edges": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          5
+        ]
+      ],
+      "layout": "A0_A1_B0_B1_C0_C1",
+      "implicit_dst_read": true,
+      "source": "vaxpy_fp32_forwarding.cce",
+      "source_sha256": "507d21947d2b58d37c92cd072f662e5389505a602a9a1c9b950cf888e248db77"
+    },
+    {
+      "name": "vaxpy_fp32_forwarding_old_vd",
+      "op": "VAXPY",
+      "form": "fp32",
+      "mode": "forwarding",
+      "width": 6,
+      "input_dtype": "uint32",
+      "output_dtype": "uint32",
+      "src_lanes": 128,
+      "dst_lanes": 128,
+      "semantic_input_dtype": "fp32",
+      "semantic_output_dtype": "fp32",
+      "target_aliases": [
+        "RV_VAXPY"
+      ],
+      "expected_target_count": 12,
+      "compound": false,
+      "golden": "not_implemented",
+      "memory_probe": false,
+      "no_register_source": false,
+      "note": "A5 inventory migration; verify emitted opcode/count. Raw bits, no numeric golden.",
+      "loop_iterations": 2,
+      "forwarding_edges": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          5
+        ]
+      ],
+      "layout": "A0_A1_B0_B1_C0_C1",
+      "implicit_dst_read": true,
+      "source": "vaxpy_fp32_forwarding_old_vd.cce",
+      "source_sha256": "ba5c8e0be06d570795cdc26737c9be070e7ec84dc995b5830532712a9ce06d40",
+      "dependency_role": "old_vd"
+    },
+    {
+      "name": "vlds_to_vadd_fp32_forwarding",
+      "op": "VLDS_TO_VADD",
+      "form": "fp32",
+      "mode": "forwarding",
+      "width": 2,
+      "loop_iterations": 1,
+      "src_lanes": 128,
+      "dst_lanes": 128,
+      "input_dtype": "uint32",
+      "output_dtype": "uint32",
+      "semantic_input_dtype": "fp32",
+      "semantic_output_dtype": "fp32",
+      "compound": false,
+      "golden": "semantic_reference",
+      "cross_forwarding": true,
+      "producer_aliases": [
+        "RV_VLDI",
+        "RV_VLDS"
+      ],
+      "consumer_aliases": [
+        "RV_VADD"
+      ],
+      "target_aliases": [
+        "RV_VLDI",
+        "RV_VLDS",
+        "RV_VADD"
+      ],
+      "expected_target_count": 4,
+      "forwarding_edges": [],
+      "source": "vlds_to_vadd_fp32_forwarding.cce",
+      "source_sha256": "0171605d508dd362c24fde118566c15b57655603c5bf7042bf4e20e532754580",
+      "note": "Cross-unit popped gap only; not a calibrated bypass delay or cross-instruction II"
+    },
+    {
+      "name": "vadd_to_vsts_fp32_forwarding",
+      "op": "VADD_TO_VSTS",
+      "form": "fp32",
+      "mode": "forwarding",
+      "width": 2,
+      "loop_iterations": 1,
+      "src_lanes": 128,
+      "dst_lanes": 128,
+      "input_dtype": "uint32",
+      "output_dtype": "uint32",
+      "semantic_input_dtype": "fp32",
+      "semantic_output_dtype": "fp32",
+      "compound": false,
+      "golden": "semantic_reference",
+      "cross_forwarding": true,
+      "producer_aliases": [
+        "RV_VADD"
+      ],
+      "consumer_aliases": [
+        "RV_VSTI",
+        "RV_VSTS"
+      ],
+      "target_aliases": [
+        "RV_VADD",
+        "RV_VSTI",
+        "RV_VSTS"
+      ],
+      "expected_target_count": 4,
+      "forwarding_edges": [],
+      "source": "vadd_to_vsts_fp32_forwarding.cce",
+      "source_sha256": "f501126ab4438935222b88e3d5278f61b8ac7488cf5a9a6f18c374bc1375f757",
+      "note": "Cross-unit popped gap only; not a calibrated bypass delay or cross-instruction II"
+    }
+  ]
+}

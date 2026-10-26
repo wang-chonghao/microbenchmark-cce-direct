@@ -6,6 +6,11 @@ The default kernel is `op_kernel/kernel.cce`, a SIMD VF `A = B + C` fp32 example
 
 ## A6 Instruction Benchmarks
 
+Semantic input validation, GM guards and opt-in operand/saturation probes are documented in
+[`docs/A6_CALIBRATION_VALIDATION.md`](docs/A6_CALIBRATION_VALIDATION.md).
+Start with `python3 run_a6_bench.py --cases op_kernel/a6_calibration --repeats 3 --keep-lsu-dumps --output results/a6_calibration`.
+Timing outputs remain explicitly uncalibrated; repeat stability does not prove hardware limits.
+
 Additional A6 probes migrated from the pinned A5 instruction inventory are in
 [`docs/A6_A5_COVERAGE_BENCHMARK.md`](docs/A6_A5_COVERAGE_BENCHMARK.md).
 Run only these new probes with `python3 run_a6_bench.py --cases op_kernel/a6_a5_coverage --output results/a6_a5_coverage`.

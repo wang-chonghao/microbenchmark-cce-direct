@@ -17,6 +17,8 @@ import time
 from benchmarks.a6.generate import DEFAULT_CASES, ROOT
 from benchmarks.a6.analyze import analyze
 from benchmarks.a6.archive import archive_dumps
+from benchmarks.a6.semantic import prepare_inputs
+from run_test import parse_kernel_manifest
 
 
 def run_command(command, output, timeout, env):
@@ -56,6 +58,8 @@ def main():
     p.add_argument("--full-simulator-home", default=os.environ.get("FULL_SIMULATOR_HOME", ""),
                    help="External full-dump simulator root containing dav_9201 or Ascend910_9691")
     p.add_argument("--keep-all-dumps", action="store_true", help="Keep extra model dumps in _work (default: only six core0.veccore0 kinds)")
+    p.add_argument("--keep-lsu-dumps", action="store_true", help="Keep only LSU in addition to the six standard dump kinds")
+    p.add_argument("--input-seed", type=int, default=0, help="Deterministic semantic input pattern offset")
     args = p.parse_args()
     if args.analyze_only:
         if not args.output:
@@ -97,9 +101,12 @@ def main():
                   "CORE_SIM_DIR", "SOC_VERSION", "NPU_TYPE", "CCEC_EXTRA_FLAGS", "LD_LIBRARY_PATH",
                   "LD_PRELOAD", "LOCAL_MEMORY_SIZE", "ARCH")}
     framework_hash = hashlib.sha256(b"".join((ROOT / f).read_bytes() for f in
-        ("run_test.py", "runner/generic_runner.cpp", "benchmarks/a6/compile_probe.py"))).hexdigest()
+        ("run_test.py", "runner/generic_runner.cpp", "benchmarks/a6/compile_probe.py",
+         "benchmarks/a6/semantic.py", "benchmarks/a6/analyze.py", "benchmarks/a6/archive.py"))).hexdigest()
     # Environment and source must match before reusing a completed experiment.
     for case in selected:
+        case = dict(case)
+        case["semantic_validation"] = case.get("input_dtype") == "uint32" and bool(case.get("semantic_input_dtype"))
         source = args.cases / case["source"]
         contents = source.read_bytes()
         if hashlib.sha256(contents).hexdigest() != case["source_sha256"]:
@@ -109,6 +116,7 @@ def main():
             run = work / case["name"] / f"r{repeat}"
             fingerprint = hashlib.sha256(json.dumps(dict(case=case, env=env_record,
                 framework_hash=framework_hash, keep_all_dumps=args.keep_all_dumps,
+                keep_lsu_dumps=args.keep_lsu_dumps, input_seed=args.input_seed,
                 compile_only=args.compile_only), sort_keys=True).encode()).hexdigest()
             attempts = sorted((work / case["name"]).glob(f"r{repeat}_attempt*"), key=lambda x: x.stat().st_mtime)
             if attempts and args.resume:
@@ -128,6 +136,18 @@ def main():
             run.mkdir(parents=True, exist_ok=True)
             snapshot = run / "kernel.cce"
             snapshot.write_bytes(contents)
+            case_env = env.copy()
+            # Never inherit unrelated experiment inputs from the caller's shell.
+            case_env.pop("MB_INPUT_DIR", None)
+            case_env["MB_GUARD_ENABLE"] = "1"
+            profile, input_error = None, None
+            if case["semantic_validation"] and not args.compile_only:
+                try:
+                    inputs = run / "inputs"
+                    profile = prepare_inputs(case, parse_kernel_manifest(snapshot, 256), inputs, args.input_seed)
+                    case_env["MB_INPUT_DIR"] = str(inputs.resolve())
+                except ValueError as exc:
+                    input_error = str(exc)
             if args.compile_only:
                 cmd = [sys.executable, "-m", "benchmarks.a6.compile_probe", "--kernel", str(snapshot),
                        "--output", str(run), "--cann-home", env["CANN_HOME"]]
@@ -140,13 +160,16 @@ def main():
             record = dict(case=case, fingerprint=fingerprint, environment=env_record,
                           framework_hash=framework_hash, command=cmd,
                           compile_only=args.compile_only, timeout_seconds=args.timeout, returncode=None)
+            record.update(input_profile=profile, input_error=input_error, guard_required=not args.compile_only)
             record_path.write_text(json.dumps(record, indent=2) + "\n")
             print(f"[RUN] {case['name']} r{repeat}", flush=True)
             t = time.monotonic()
-            record["returncode"] = run_command(cmd, run / "console.log", args.timeout, env)
+            record["returncode"] = 78 if input_error else run_command(cmd, run / "console.log", args.timeout, case_env)
+            if input_error:
+                (run / "console.log").write_text("[INPUT UNSUPPORTED] " + input_error + "\n")
             record["wall_seconds"] = time.monotonic() - t
             if not args.compile_only:
-                record["dump_archive"] = archive_dumps(run, out, case, args.keep_all_dumps)
+                record["dump_archive"] = archive_dumps(run, out, case, args.keep_all_dumps, args.keep_lsu_dumps)
                 missing = record["dump_archive"]["missing_or_empty"]
                 if missing:
                     print(f"[WARN] {case['name']} missing/empty dumps: {', '.join(missing)}", flush=True)
@@ -179,11 +202,23 @@ def summarize(out, quiet=False, use_cache=True):
         if key not in latest or rank > latest[key][0]:
             latest[key] = (rank, row)
     (out / "summary.json").write_text(json.dumps(rows, indent=2) + "\n")
-    fields = ["case", "repeat", "status", "golden", "latency_min", "ii_min", "forwarding_min", "memory_interval_min", "reason"]
+    fields = ["case", "repeat", "status", "golden", "guard_status", "timing_quality", "hardware_calibrated",
+              "latency_min", "ii_min", "forwarding_min", "memory_interval_min", "reason"]
     with (out / "summary.csv").open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=fields, extrasaction="ignore")
         w.writeheader()
         w.writerows(rows)
+    convergence = []
+    for name in sorted({r["case"] for _, r in latest.values()}):
+        experiments = [r for _, r in latest.values() if r["case"] == name]
+        for metric in ("ii_min", "forwarding_min", "memory_interval_min"):
+            values = [r[metric] for r in experiments if r.get(metric) is not None]
+            convergence.append(dict(case=name, metric=metric, samples=len(values),
+                minimum=min(values) if values else None, maximum=max(values) if values else None,
+                stable_observed_minimum=len(values) >= 3 and len(values) == len(experiments) and len(set(values)) == 1,
+                hardware_calibrated=False,
+                note="Repeat stability only; does not establish source readiness, saturation or hardware timing"))
+    (out / "convergence.json").write_text(json.dumps(convergence, indent=2) + "\n")
     if not quiet:
         print(f"[SUMMARY] {out / 'summary.csv'}")
     return int(any(r["status"] in {"failed", "missing_logs", "target_mismatch", "invalid_logs"}
