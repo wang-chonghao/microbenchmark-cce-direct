@@ -1,0 +1,4 @@
+{
+  "PLDI/b8": "Local CCEC clang 15.0.5 (2026-04-25), dav-920r1-vec: backend Cannot select intrinsic llvm.hivm.pldi.b8; this is not a hardware-unsupported claim",
+  "PSTI/b8": "Local CCEC clang 15.0.5 (2026-04-25), dav-920r1-vec: backend Cannot select intrinsic llvm.hivm.psti.b8; this is not a hardware-unsupported claim"
+}

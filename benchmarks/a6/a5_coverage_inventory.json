@@ -1,0 +1,1740 @@
+{
+  "source_ref": "tilesim/wch/VfSimulator-refactor",
+  "source_commit": "120384640520b8e5cb53ac7f0b28229dfe664cdf",
+  "source_sha256": "5588e6d9dff05a204e0cc6b0b59b49f5cfd795fec42ccb100a92bae5502a14eb",
+  "instructions": {
+    "PNOT": {
+      "forms": {
+        "b8": {}
+      }
+    },
+    "PXOR": {
+      "forms": {
+        "b8": {}
+      }
+    },
+    "PSEL": {
+      "forms": {
+        "b8": {}
+      }
+    },
+    "MOVP_B16": {
+      "forms": {
+        "b16": {}
+      }
+    },
+    "MOVP_B32": {
+      "forms": {
+        "b32": {}
+      }
+    },
+    "PLDS": {
+      "forms": {
+        "b8": {}
+      }
+    },
+    "PSTS": {
+      "forms": {
+        "b8": {}
+      }
+    },
+    "VMOV": {
+      "forms": {
+        "fp32": {},
+        "b32": {},
+        "bf16": {},
+        "fp16": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {},
+        "int64": {}
+      }
+    },
+    "PLT": {
+      "forms": {
+        "b32": {},
+        "b16": {},
+        "b8": {}
+      }
+    },
+    "VAXPY": {
+      "forms": {
+        "fp32": {},
+        "fp16": {}
+      }
+    },
+    "VINTLV": {
+      "forms": {
+        "fp32": {},
+        "b32": {},
+        "bf16": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "f8e8m0": {},
+        "fp16": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VDINTLV": {
+      "forms": {
+        "fp32": {},
+        "b32": {},
+        "bf16": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "f8e8m0": {},
+        "fp16": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "MOVVP": {
+      "forms": {
+        "b16": {},
+        "b32": {},
+        "uint16": {},
+        "uint32": {}
+      }
+    },
+    "PAND": {
+      "forms": {
+        "b8": {}
+      }
+    },
+    "POR": {
+      "forms": {
+        "b8": {}
+      }
+    },
+    "VCMP_NE": {
+      "forms": {
+        "fp32": {},
+        "bf16": {},
+        "fp16": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VCMP_GT": {
+      "forms": {
+        "fp32": {},
+        "bf16": {},
+        "fp16": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VCMP_GE": {
+      "forms": {
+        "fp32": {},
+        "bf16": {},
+        "fp16": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VCMP_LT": {
+      "forms": {
+        "fp32": {},
+        "bf16": {},
+        "fp16": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VCMP_LE": {
+      "forms": {
+        "fp32": {},
+        "bf16": {},
+        "fp16": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VCMPS_EQ": {
+      "forms": {
+        "fp32": {},
+        "bf16": {},
+        "fp16": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VCMPS_NE": {
+      "forms": {
+        "fp32": {},
+        "bf16": {},
+        "fp16": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VCMPS_GT": {
+      "forms": {
+        "fp32": {},
+        "bf16": {},
+        "fp16": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VCMPS_GE": {
+      "forms": {
+        "fp32": {},
+        "bf16": {},
+        "fp16": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VCMPS_LT": {
+      "forms": {
+        "fp32": {},
+        "bf16": {},
+        "fp16": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VCMPS_LE": {
+      "forms": {
+        "fp32": {},
+        "bf16": {},
+        "fp16": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "PSTU": {
+      "forms": {
+        "b16": {},
+        "b32": {},
+        "uint16": {},
+        "uint32": {}
+      }
+    },
+    "VLDAS": {
+      "forms": {
+        "fp32": {},
+        "fp16": {},
+        "int32": {},
+        "bf16": {},
+        "f4e1m2x2": {},
+        "f4e2m1x2": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "int16": {},
+        "int64": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {},
+        "f8e8m0": {}
+      }
+    },
+    "VLDUS": {
+      "forms": {
+        "fp32": {},
+        "fp16": {},
+        "int32": {},
+        "bf16": {},
+        "f4e1m2x2": {},
+        "f4e2m1x2": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "int16": {},
+        "int64": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {},
+        "f8e8m0": {}
+      }
+    },
+    "PSET_B8": {
+      "forms": {
+        "b8": {}
+      }
+    },
+    "PSET_B16": {
+      "forms": {
+        "b16": {}
+      }
+    },
+    "PSET_B32": {
+      "forms": {
+        "b32": {}
+      }
+    },
+    "VOR": {
+      "forms": {
+        "b32": {},
+        "bf16": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "f8e8m0": {},
+        "fp16": {},
+        "fp32": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VCI": {
+      "forms": {
+        "int32": {},
+        "fp16": {},
+        "fp32": {},
+        "int16": {},
+        "int8": {}
+      }
+    },
+    "VSQRT": {
+      "forms": {
+        "fp32": {},
+        "fp16": {}
+      }
+    },
+    "VLN": {
+      "forms": {
+        "fp32": {},
+        "fp16": {}
+      }
+    },
+    "VADDS": {
+      "forms": {
+        "fp32": {},
+        "fp16": {},
+        "bf16": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VEXP": {
+      "forms": {
+        "fp32": {},
+        "fp16": {}
+      }
+    },
+    "VADD": {
+      "forms": {
+        "fp32": {},
+        "fp16": {},
+        "bf16": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VMULS": {
+      "forms": {
+        "fp32": {},
+        "fp16": {},
+        "int16": {},
+        "int32": {},
+        "uint16": {},
+        "uint32": {}
+      }
+    },
+    "VDIV": {
+      "forms": {
+        "fp32": {},
+        "fp16": {}
+      }
+    },
+    "VABS": {
+      "forms": {
+        "fp32": {},
+        "fp16": {},
+        "int16": {},
+        "int32": {},
+        "int8": {}
+      }
+    },
+    "VSUB": {
+      "forms": {
+        "fp32": {},
+        "fp16": {},
+        "bf16": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VMUL": {
+      "forms": {
+        "fp32": {},
+        "fp16": {},
+        "bf16": {},
+        "int16": {},
+        "int32": {},
+        "uint16": {},
+        "uint32": {}
+      }
+    },
+    "VMAXS": {
+      "forms": {
+        "fp32": {},
+        "fp16": {},
+        "bf16": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VMINS": {
+      "forms": {
+        "fp32": {},
+        "fp16": {},
+        "bf16": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VMAX": {
+      "forms": {
+        "fp32": {},
+        "fp16": {},
+        "bf16": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VMIN": {
+      "forms": {
+        "fp32": {},
+        "fp16": {},
+        "bf16": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VCMAX": {
+      "forms": {
+        "fp32": {},
+        "fp16": {},
+        "int16": {},
+        "int32": {},
+        "uint16": {},
+        "uint32": {}
+      }
+    },
+    "VCMIN": {
+      "forms": {
+        "fp32": {},
+        "fp16": {},
+        "int16": {},
+        "int32": {},
+        "uint16": {},
+        "uint32": {}
+      }
+    },
+    "VCADD": {
+      "forms": {
+        "fp32": {},
+        "fp16": {},
+        "int16": {},
+        "int32": {},
+        "uint16": {},
+        "uint32": {}
+      }
+    },
+    "VLDS": {
+      "forms": {
+        "fp32": {},
+        "fp16": {},
+        "bf16": {},
+        "f4e1m2x2": {},
+        "f4e2m1x2": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "f8e8m0": {},
+        "int16": {},
+        "int32": {},
+        "int64": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint64": {},
+        "uint8": {}
+      }
+    },
+    "VSTS": {
+      "forms": {
+        "fp32": {},
+        "fp16": {},
+        "bf16": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "f8e8m0": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {},
+        "f4e1m2x2": {},
+        "f4e2m1x2": {},
+        "int64": {},
+        "uint64": {}
+      }
+    },
+    "VSTUS": {
+      "forms": {
+        "fp32": {},
+        "fp16": {},
+        "bf16": {},
+        "f4e1m2x2": {},
+        "f4e2m1x2": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "f8e8m0": {},
+        "int16": {},
+        "int32": {},
+        "int64": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VSTAS": {
+      "forms": {
+        "uint16": {},
+        "uint32": {},
+        "fp32": {},
+        "fp16": {},
+        "bf16": {},
+        "f4e1m2x2": {},
+        "f4e2m1x2": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "f8e8m0": {},
+        "int16": {},
+        "int32": {},
+        "int64": {},
+        "int8": {},
+        "uint8": {}
+      }
+    },
+    "VDUP": {
+      "forms": {
+        "fp32": {},
+        "fp16": {},
+        "int8": {},
+        "bf16": {},
+        "int32": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "int16": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {},
+        "f8e8m0": {},
+        "b32": {}
+      }
+    },
+    "VAND": {
+      "forms": {
+        "fp32": {},
+        "fp16": {},
+        "bf16": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "f8e8m0": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VCGMAX": {
+      "forms": {
+        "fp32": {},
+        "fp16": {},
+        "int16": {},
+        "int32": {},
+        "uint16": {},
+        "uint32": {}
+      }
+    },
+    "VCMP_EQ": {
+      "forms": {
+        "fp32": {},
+        "fp16": {},
+        "bf16": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VCVT_F16_TO_F32": {
+      "forms": {
+        "f16_to_f32": {}
+      }
+    },
+    "VCVT_F32_TO_F16": {
+      "forms": {
+        "f32_to_f16": {}
+      }
+    },
+    "VCVT_F32_TO_BF16": {
+      "forms": {
+        "f32_to_bf16": {}
+      }
+    },
+    "VCVT_BF16_TO_F32": {
+      "forms": {
+        "bf16_to_f32": {}
+      }
+    },
+    "VCVT_S32_TO_U8": {
+      "forms": {
+        "s32_to_u8": {}
+      }
+    },
+    "VCVT_F32_TO_S32": {
+      "forms": {
+        "f32_to_s32": {}
+      }
+    },
+    "VCVT_S32_TO_F32": {
+      "forms": {
+        "s32_to_f32": {}
+      }
+    },
+    "VSEL": {
+      "forms": {
+        "fp32": {},
+        "fp16": {},
+        "bf16": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "f8e8m0": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VSHLS": {
+      "forms": {
+        "fp32": {},
+        "fp16": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VSHRS": {
+      "forms": {
+        "fp32": {},
+        "fp16": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VBR": {
+      "forms": {
+        "fp32": {},
+        "fp16": {},
+        "int8": {},
+        "bf16": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "int16": {},
+        "int32": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {},
+        "f8e8m0": {}
+      }
+    },
+    "VPACK": {
+      "forms": {
+        "b32": {},
+        "s16_to_u8": {},
+        "s32_to_u16": {},
+        "u16_to_u8": {},
+        "u32_to_u16": {}
+      }
+    },
+    "VSSTB": {
+      "forms": {
+        "b16": {},
+        "bf16": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "f8e8m0": {},
+        "fp16": {},
+        "fp32": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VEXPDIF": {
+      "forms": {
+        "fp32": {},
+        "fp16": {}
+      }
+    },
+    "VMULSCVT": {
+      "forms": {
+        "f32_to_f16": {}
+      }
+    },
+    "VABSDIF": {
+      "forms": {
+        "fp16": {},
+        "fp32": {}
+      }
+    },
+    "VLRELU": {
+      "forms": {
+        "fp16": {},
+        "fp32": {}
+      }
+    },
+    "VMADD": {
+      "forms": {
+        "bf16": {},
+        "fp16": {},
+        "fp32": {}
+      }
+    },
+    "VMULA": {
+      "forms": {
+        "bf16": {},
+        "fp16": {},
+        "fp32": {},
+        "int16": {},
+        "int32": {},
+        "uint16": {},
+        "uint32": {}
+      }
+    },
+    "VNEG": {
+      "forms": {
+        "fp16": {},
+        "fp32": {},
+        "int16": {},
+        "int32": {},
+        "int8": {}
+      }
+    },
+    "VNOT": {
+      "forms": {
+        "bf16": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "f8e8m0": {},
+        "fp16": {},
+        "fp32": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VPRELU": {
+      "forms": {
+        "fp16": {},
+        "fp32": {}
+      }
+    },
+    "VRELU": {
+      "forms": {
+        "fp16": {},
+        "fp32": {},
+        "int32": {}
+      }
+    },
+    "VSHL": {
+      "forms": {
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VSHR": {
+      "forms": {
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VXOR": {
+      "forms": {
+        "bf16": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "f8e8m0": {},
+        "fp16": {},
+        "fp32": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VADDC": {
+      "forms": {
+        "int32": {},
+        "uint32": {}
+      }
+    },
+    "VADDCS": {
+      "forms": {
+        "int32": {},
+        "uint32": {}
+      }
+    },
+    "VCGADD": {
+      "forms": {
+        "fp16": {},
+        "fp32": {},
+        "int16": {},
+        "int32": {},
+        "uint16": {},
+        "uint32": {}
+      }
+    },
+    "VCGMIN": {
+      "forms": {
+        "fp16": {},
+        "fp32": {},
+        "int16": {},
+        "int32": {},
+        "uint16": {},
+        "uint32": {}
+      }
+    },
+    "VCPADD": {
+      "forms": {
+        "fp16": {},
+        "fp32": {}
+      }
+    },
+    "VMULL": {
+      "forms": {
+        "int32": {},
+        "uint32": {}
+      }
+    },
+    "VSUBC": {
+      "forms": {
+        "int32": {},
+        "uint32": {}
+      }
+    },
+    "VSUBCS": {
+      "forms": {
+        "int32": {},
+        "uint32": {}
+      }
+    },
+    "VCVT_BF16_TO_F16": {
+      "forms": {
+        "bf16_to_f16": {}
+      }
+    },
+    "VCVT_BF16_TO_S32": {
+      "forms": {
+        "bf16_to_s32": {}
+      }
+    },
+    "VCVT_F16_TO_BF16": {
+      "forms": {
+        "f16_to_bf16": {}
+      }
+    },
+    "VCVT_F16_TO_S16": {
+      "forms": {
+        "f16_to_s16": {}
+      }
+    },
+    "VCVT_F16_TO_S32": {
+      "forms": {
+        "f16_to_s32": {}
+      }
+    },
+    "VCVT_F16_TO_S8": {
+      "forms": {
+        "f16_to_s8": {}
+      }
+    },
+    "VCVT_F16_TO_U8": {
+      "forms": {
+        "f16_to_u8": {}
+      }
+    },
+    "VCVT_F32_TO_S16": {
+      "forms": {
+        "f32_to_s16": {}
+      }
+    },
+    "VCVT_F32_TO_S64": {
+      "forms": {
+        "f32_to_s64": {}
+      }
+    },
+    "VCVT_S16_TO_F16": {
+      "forms": {
+        "s16_to_f16": {}
+      }
+    },
+    "VCVT_S16_TO_F32": {
+      "forms": {
+        "s16_to_f32": {}
+      }
+    },
+    "VCVT_S16_TO_S32": {
+      "forms": {
+        "s16_to_s32": {}
+      }
+    },
+    "VCVT_S16_TO_U32": {
+      "forms": {
+        "s16_to_u32": {}
+      }
+    },
+    "VCVT_S16_TO_U8": {
+      "forms": {
+        "s16_to_u8": {}
+      }
+    },
+    "VCVT_S32_TO_S16": {
+      "forms": {
+        "s32_to_s16": {}
+      }
+    },
+    "VCVT_S32_TO_S64": {
+      "forms": {
+        "s32_to_s64": {}
+      }
+    },
+    "VCVT_S32_TO_U16": {
+      "forms": {
+        "s32_to_u16": {}
+      }
+    },
+    "VCVT_S64_TO_F32": {
+      "forms": {
+        "s64_to_f32": {}
+      }
+    },
+    "VCVT_S64_TO_S32": {
+      "forms": {
+        "s64_to_s32": {}
+      }
+    },
+    "VCVT_S8_TO_F16": {
+      "forms": {
+        "s8_to_f16": {}
+      }
+    },
+    "VCVT_S8_TO_S16": {
+      "forms": {
+        "s8_to_s16": {}
+      }
+    },
+    "VCVT_S8_TO_S32": {
+      "forms": {
+        "s8_to_s32": {}
+      }
+    },
+    "VCVT_U16_TO_U32": {
+      "forms": {
+        "u16_to_u32": {}
+      }
+    },
+    "VCVT_U16_TO_U8": {
+      "forms": {
+        "u16_to_u8": {}
+      }
+    },
+    "VCVT_U32_TO_S16": {
+      "forms": {
+        "u32_to_s16": {}
+      }
+    },
+    "VCVT_U32_TO_U16": {
+      "forms": {
+        "u32_to_u16": {}
+      }
+    },
+    "VCVT_U32_TO_U8": {
+      "forms": {
+        "u32_to_u8": {}
+      }
+    },
+    "VCVT_U8_TO_F16": {
+      "forms": {
+        "u8_to_f16": {}
+      }
+    },
+    "VCVT_U8_TO_U16": {
+      "forms": {
+        "u8_to_u16": {}
+      }
+    },
+    "VCVT_U8_TO_U32": {
+      "forms": {
+        "u8_to_u32": {}
+      }
+    },
+    "VUNPACK": {
+      "forms": {
+        "s16_to_s32": {},
+        "s8_to_s16": {},
+        "u16_to_u32": {},
+        "u8_to_u16": {}
+      }
+    },
+    "VCVT_BF16_TO_F4E1M2X2": {
+      "forms": {
+        "bf16_to_f4e1m2x2": {}
+      }
+    },
+    "VCVT_BF16_TO_F4E2M1X2": {
+      "forms": {
+        "bf16_to_f4e2m1x2": {}
+      }
+    },
+    "VCVT_F16_TO_HIF8": {
+      "forms": {
+        "f16_to_hif8": {}
+      }
+    },
+    "VCVT_F16_TO_S4X2": {
+      "forms": {
+        "f16_to_s4x2": {}
+      }
+    },
+    "VCVT_F32_TO_F8E4M3": {
+      "forms": {
+        "f32_to_f8e4m3": {}
+      }
+    },
+    "VCVT_F32_TO_F8E5M2": {
+      "forms": {
+        "f32_to_f8e5m2": {}
+      }
+    },
+    "VCVT_F32_TO_HIF8": {
+      "forms": {
+        "f32_to_hif8": {}
+      }
+    },
+    "VCVT_F4E1M2X2_TO_BF16": {
+      "forms": {
+        "f4e1m2x2_to_bf16": {}
+      }
+    },
+    "VCVT_F4E2M1X2_TO_BF16": {
+      "forms": {
+        "f4e2m1x2_to_bf16": {}
+      }
+    },
+    "VCVT_F8E4M3_TO_F32": {
+      "forms": {
+        "f8e4m3_to_f32": {}
+      }
+    },
+    "VCVT_F8E5M2_TO_F32": {
+      "forms": {
+        "f8e5m2_to_f32": {}
+      }
+    },
+    "VCVT_HIF8_TO_F16": {
+      "forms": {
+        "hif8_to_f16": {}
+      }
+    },
+    "VCVT_HIF8_TO_F32": {
+      "forms": {
+        "hif8_to_f32": {}
+      }
+    },
+    "VCVT_S16_TO_S4X2": {
+      "forms": {
+        "s16_to_s4x2": {}
+      }
+    },
+    "VCVT_S4X2_TO_BF16": {
+      "forms": {
+        "s4x2_to_bf16": {}
+      }
+    },
+    "VCVT_S4X2_TO_F16": {
+      "forms": {
+        "s4x2_to_f16": {}
+      }
+    },
+    "VCVT_S4X2_TO_S16": {
+      "forms": {
+        "s4x2_to_s16": {}
+      }
+    },
+    "PDINTLV": {
+      "forms": {
+        "b16": {},
+        "b32": {},
+        "b8": {}
+      }
+    },
+    "PINTLV": {
+      "forms": {
+        "b16": {},
+        "b32": {},
+        "b8": {}
+      }
+    },
+    "PPACK": {
+      "forms": {
+        "b8": {}
+      }
+    },
+    "PUNPACK": {
+      "forms": {
+        "b8": {}
+      }
+    },
+    "VMOV_MERGE": {
+      "forms": {
+        "bf16": {},
+        "fp16": {},
+        "fp32": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VSELR": {
+      "forms": {
+        "bf16": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "f8e8m0": {},
+        "fp16": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VSQZ": {
+      "forms": {
+        "bf16": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "f8e8m0": {},
+        "fp16": {},
+        "fp32": {},
+        "hif8": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VTRC": {
+      "forms": {
+        "bf16": {},
+        "fp16": {},
+        "fp32": {}
+      }
+    },
+    "VUSQZ": {
+      "forms": {
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "PLTM": {
+      "forms": {
+        "b16": {},
+        "b32": {},
+        "b8": {}
+      }
+    },
+    "VDUPS": {
+      "forms": {
+        "bf16": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "fp16": {},
+        "fp32": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {},
+        "f8e8m0": {}
+      }
+    },
+    "CHISTV2": {
+      "forms": {
+        "uint16": {}
+      }
+    },
+    "DHISTV2": {
+      "forms": {
+        "uint16": {}
+      }
+    },
+    "VDUP_HIGHEST": {
+      "forms": {
+        "bf16": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "fp16": {},
+        "fp32": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {},
+        "f8e8m0": {}
+      }
+    },
+    "VDUP_HIGHEST_MERGE": {
+      "forms": {
+        "bf16": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "fp16": {},
+        "fp32": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {},
+        "f8e8m0": {}
+      }
+    },
+    "VDUP_MERGE": {
+      "forms": {
+        "bf16": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "fp16": {},
+        "fp32": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {},
+        "f8e8m0": {}
+      }
+    },
+    "VDUPS_MERGE": {
+      "forms": {
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "fp16": {},
+        "fp32": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {},
+        "bf16": {},
+        "f8e8m0": {}
+      }
+    },
+    "PLD": {
+      "forms": {
+        "b8": {}
+      }
+    },
+    "PLDI": {
+      "forms": {
+        "b8": {}
+      }
+    },
+    "PST": {
+      "forms": {
+        "b8": {}
+      }
+    },
+    "PSTI": {
+      "forms": {
+        "b8": {}
+      }
+    },
+    "VGATHER2": {
+      "forms": {
+        "bf16": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "f8e8m0": {},
+        "fp16": {},
+        "fp32": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VGATHER2_BC": {
+      "forms": {
+        "bf16": {},
+        "fp16": {},
+        "fp32": {},
+        "int16": {},
+        "int32": {},
+        "uint16": {},
+        "uint32": {}
+      }
+    },
+    "VGATHERB": {
+      "forms": {
+        "bf16": {},
+        "f4e1m2x2": {},
+        "f4e2m1x2": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "f8e8m0": {},
+        "fp16": {},
+        "fp32": {},
+        "int16": {},
+        "int32": {},
+        "int64": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint64": {},
+        "uint8": {}
+      }
+    },
+    "VLD": {
+      "forms": {
+        "uint16": {},
+        "bf16": {},
+        "f4e1m2x2": {},
+        "f4e2m1x2": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "f8e8m0": {},
+        "fp16": {},
+        "fp32": {},
+        "int16": {},
+        "int32": {},
+        "int64": {},
+        "int8": {},
+        "uint32": {},
+        "uint64": {},
+        "uint8": {},
+        "s4x2": {}
+      }
+    },
+    "VLDA": {
+      "forms": {
+        "uint16": {},
+        "bf16": {},
+        "f4e1m2x2": {},
+        "f4e2m1x2": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "fp16": {},
+        "fp32": {},
+        "int16": {},
+        "int32": {},
+        "int64": {},
+        "int8": {},
+        "uint32": {},
+        "uint8": {},
+        "f8e8m0": {}
+      }
+    },
+    "VLDU": {
+      "forms": {
+        "uint16": {},
+        "bf16": {},
+        "f4e1m2x2": {},
+        "f4e2m1x2": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "fp16": {},
+        "fp32": {},
+        "int16": {},
+        "int32": {},
+        "int64": {},
+        "int8": {},
+        "uint32": {},
+        "uint8": {},
+        "f8e8m0": {}
+      }
+    },
+    "VLDUI": {
+      "forms": {
+        "bf16": {},
+        "f4e1m2x2": {},
+        "f4e2m1x2": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "fp16": {},
+        "fp32": {},
+        "int16": {},
+        "int32": {},
+        "int64": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {},
+        "f8e8m0": {}
+      }
+    },
+    "VSCATTER": {
+      "forms": {
+        "bf16": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "f8e8m0": {},
+        "fp16": {},
+        "fp32": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VST": {
+      "forms": {
+        "uint16": {},
+        "bf16": {},
+        "f4e1m2x2": {},
+        "f4e2m1x2": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "f8e8m0": {},
+        "fp16": {},
+        "fp32": {},
+        "int16": {},
+        "int32": {},
+        "int64": {},
+        "int8": {},
+        "uint32": {},
+        "uint64": {},
+        "uint8": {},
+        "s4x2": {}
+      }
+    },
+    "VSTA": {
+      "forms": {
+        "uint16": {},
+        "bf16": {},
+        "f4e1m2x2": {},
+        "f4e2m1x2": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "f8e8m0": {},
+        "fp16": {},
+        "fp32": {},
+        "int16": {},
+        "int32": {},
+        "int64": {},
+        "int8": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VSTAI": {
+      "forms": {
+        "bf16": {},
+        "f4e1m2x2": {},
+        "f4e2m1x2": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "f8e8m0": {},
+        "fp16": {},
+        "fp32": {},
+        "int16": {},
+        "int32": {},
+        "int64": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VSTU": {
+      "forms": {
+        "uint16": {},
+        "bf16": {},
+        "f4e1m2x2": {},
+        "f4e2m1x2": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "f8e8m0": {},
+        "fp16": {},
+        "fp32": {},
+        "int16": {},
+        "int32": {},
+        "int64": {},
+        "int8": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VSTUI": {
+      "forms": {
+        "bf16": {},
+        "f4e1m2x2": {},
+        "f4e2m1x2": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "f8e8m0": {},
+        "fp16": {},
+        "fp32": {},
+        "int16": {},
+        "int32": {},
+        "int64": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VSLDB": {
+      "forms": {
+        "bf16": {},
+        "f4e1m2x2": {},
+        "f4e2m1x2": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "f8e8m0": {},
+        "fp16": {},
+        "fp32": {},
+        "int16": {},
+        "int32": {},
+        "int64": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VSST": {
+      "forms": {
+        "bf16": {},
+        "fp16": {},
+        "fp32": {},
+        "int16": {},
+        "int32": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    },
+    "VLDAS_BYTES": {
+      "forms": {
+        "b32": {}
+      }
+    },
+    "VLDS_PAIR": {
+      "forms": {
+        "b32": {}
+      }
+    },
+    "VLDUS_BYTES": {
+      "forms": {
+        "b32": {}
+      }
+    },
+    "VSTAS_BYTES": {
+      "forms": {
+        "b32": {}
+      }
+    },
+    "VSTS_BYTES": {
+      "forms": {
+        "b32": {}
+      }
+    },
+    "VSTUS_BYTES": {
+      "forms": {
+        "b32": {}
+      }
+    },
+    "VDUPI": {
+      "forms": {
+        "int16": {},
+        "int8": {},
+        "uint16": {},
+        "uint8": {}
+      }
+    },
+    "VDUPI_HI": {
+      "forms": {
+        "int16": {},
+        "uint16": {}
+      }
+    },
+    "VGATHER2_BYTES": {
+      "forms": {
+        "int32": {},
+        "uint32": {}
+      }
+    },
+    "VSCATTER_BYTES": {
+      "forms": {
+        "int32": {},
+        "uint32": {}
+      }
+    },
+    "VGATHERB_UNMASKED": {
+      "forms": {
+        "bf16": {},
+        "f4e1m2x2": {},
+        "f4e2m1x2": {},
+        "f8e4m3": {},
+        "f8e5m2": {},
+        "f8e8m0": {},
+        "fp16": {},
+        "fp32": {},
+        "int16": {},
+        "int32": {},
+        "int64": {},
+        "int8": {},
+        "uint16": {},
+        "uint32": {},
+        "uint8": {}
+      }
+    }
+  }
+}

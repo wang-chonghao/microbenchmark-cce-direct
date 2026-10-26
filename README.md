@@ -6,6 +6,11 @@ The default kernel is `op_kernel/kernel.cce`, a SIMD VF `A = B + C` fp32 example
 
 ## A6 Instruction Benchmarks
 
+Additional A6 probes migrated from the pinned A5 instruction inventory are in
+[`docs/A6_A5_COVERAGE_BENCHMARK.md`](docs/A6_A5_COVERAGE_BENCHMARK.md).
+Run only these new probes with `python3 run_a6_bench.py --cases op_kernel/a6_a5_coverage --output results/a6_a5_coverage`.
+Their manifest accounts for every source form, including explicitly deferred items.
+
 DV121 EXU2 coverage supplements are documented in
 [`docs/A6_EXU2_BENCHMARK.md`](docs/A6_EXU2_BENCHMARK.md).
 Run them separately with `python3 run_a6_bench.py --cases op_kernel/a6_exu2 --output results/a6_exu2`.

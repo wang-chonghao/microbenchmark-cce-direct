@@ -100,6 +100,7 @@ def numeric_check(run, case):
 
 def analyze(run: Path, record):
     case = record["case"]
+    memory_probe = case.get("memory_probe", False) or case["op"] in {"VLDS", "VSTS", "VSTUS", "VSTAS", "VSSTB"}
     result = dict(status="failed", golden="not_run", latency_min=None, ii_min=None,
                   forwarding_min=None, memory_interval_min=None, reason="", streams=[])
     if record["returncode"] != 0:
@@ -183,7 +184,7 @@ def analyze(run: Path, record):
             if not stream["forwarding"]:
                 stream["issues"].append("No confirmed vector-register RAW edge in emitted instructions")
         if case["mode"] == "ii":
-            if case["op"] in {"VLDS", "VSTS", "VSTUS", "VSTAS", "VSSTB"}:
+            if memory_probe:
                 resources = defaultdict(list)
                 memory_logs = list(popped.parent.glob(prefix + ".rvec.LSU.dump"))
                 if archive and archive.get("keep_all_dumps"):
@@ -221,7 +222,7 @@ def analyze(run: Path, record):
                         continue
                     if not a["dst"] or not b["dst"]:
                         continue
-                    if case["op"] not in {"VCI", "VBR", "VDUPS"} and (not a["src"] or not b["src"]):
+                    if not case.get("no_register_source") and case["op"] not in {"VCI", "VBR", "VDUPS"} and (not a["src"] or not b["src"]):
                         continue
                     # Exclude RAW, WAR and WAW pairs, including predicate operands.
                     if set(a["dst"]) & set(b["src"] + b["dst"]) or set(b["dst"]) & set(a["src"]):
@@ -239,7 +240,7 @@ def analyze(run: Path, record):
         if samples:
             result[key + "_min"] = min(samples)
     needed = {"latency": "latency_min", "ii": "ii_min", "forwarding": "forwarding_min"}[case["mode"]]
-    if case["mode"] == "ii" and case["op"] in {"VLDS", "VSTS", "VSTUS", "VSTAS", "VSSTB"}:
+    if case["mode"] == "ii" and memory_probe:
         needed = "memory_interval_min"
     result["status"] = "observed" if result[needed] is not None else "invalid_logs"
     if (needed == "memory_interval_min" and archive and not archive.get("keep_all_dumps")
