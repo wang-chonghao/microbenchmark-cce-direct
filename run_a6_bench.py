@@ -201,6 +201,11 @@ def summarize(out, quiet=False, use_cache=True):
             result = analyze(path.parent, record)
             measurement.write_text(json.dumps(result, indent=2) + "\n")
         row = dict(case=record["case"]["name"], repeat=path.parent.name, **result)
+        # Also works with cached measurements produced before the CSV exposed routing.
+        # Observed routing is not the complete hardware eligibility set.
+        row["observed_exus"] = sorted({exu for stream in result.get("streams", [])
+                                       for exu in stream.get("observed_target_exus", [])})
+        row["exu_evidence"] = "observed" if row["observed_exus"] else "unavailable"
         rows.append(row)
         repeat, _, attempt = path.parent.name.partition("_attempt")
         key = (row["case"], repeat)
@@ -209,11 +214,13 @@ def summarize(out, quiet=False, use_cache=True):
             latest[key] = (rank, row)
     (out / "summary.json").write_text(json.dumps(rows, indent=2) + "\n")
     fields = ["case", "repeat", "status", "golden", "guard_status", "timing_quality", "hardware_calibrated",
+              "observed_exus", "exu_evidence",
               "latency_min", "ii_min", "forwarding_min", "memory_interval_min", "reason"]
     with (out / "summary.csv").open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=fields, extrasaction="ignore")
         w.writeheader()
-        w.writerows(rows)
+        for row in rows:
+            w.writerow(dict(row, observed_exus="|".join(f"EXU{exu}" for exu in row["observed_exus"])))
     convergence = []
     for name in sorted({r["case"] for _, r in latest.values()}):
         experiments = [r for _, r in latest.values() if r["case"] == name]

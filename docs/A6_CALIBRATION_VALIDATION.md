@@ -100,6 +100,14 @@ memory:     named_lsu_request_gap
 `forwarding_by_operand` 分别汇总 Vn、Vm、old_Vd、store_data 等路径。多源同时依赖
 保留为组合角色，不合并成一个已隔离的路径。原 `forwarding_min` 仅为兼容保留的整体最小观察值。
 
+`summary.csv` 的 `observed_exus` 列显示本次目标指令实际出现的 EXU，例如
+`EXU0|EXU2`；`summary.json` 同名字段保留数值数组 `[0, 2]`。
+`exu_evidence=unavailable` 表示没有匹配证据，不能解释为 EXU0 或不能在 EXU 执行。
+该集合来自各 stream 的 `observed_target_exus`，不是完整的硬件支持集合；例如只观察到
+EXU2，并不能证明该指令只能在 EXU2 执行。复合 API/跨指令探针也不能据集合反推各阶段路由。
+已有结果可执行 `python3 run_a6_bench.py --analyze-only --output /path/to/results`
+重新汇总，不需要重跑模型；必须保留 run_record 和相应日志。
+
 `convergence.json` 对每例的有效重复结果给出样本数、最小值、最大值。
 至少三个重复实验全部产生同一个最小观察值时，`stable_observed_minimum=true`。
 这只是重复性检查，**不是 8/16 流饱和性证明**；不同宽度的 summary 需另行对照，
