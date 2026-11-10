@@ -1,0 +1,35 @@
+#include "probe_common.h"
+
+__attribute__((always_inline)) inline [aicore] void probe_vf() {
+    __ubuf__ float *input = (__ubuf__ float *)get_imm(0);
+    __ubuf__ float *output = (__ubuf__ float *)get_imm(0x1000);
+    __VEC_SCOPE__ {
+        vector_bool mask = pset_b32(PAT_ALL);
+        vector_f32 seed;
+        vlds(seed, input, 0, NORM);
+        // All eight barriers are measured; discard the first/last for steady statistics.
+        mem_bar(VLD_VST);
+        mem_bar(VLD_VST);
+        mem_bar(VLD_VST);
+        mem_bar(VLD_VST);
+        mem_bar(VLD_VST);
+        mem_bar(VLD_VST);
+        mem_bar(VLD_VST);
+        mem_bar(VLD_VST);
+        vsts(seed, output, 0, NORM_B32, mask);
+        vsts(seed, output, 64, NORM_B32, mask);
+        vsts(seed, output, 128, NORM_B32, mask);
+        vsts(seed, output, 192, NORM_B32, mask);
+        vsts(seed, output, 256, NORM_B32, mask);
+        vsts(seed, output, 320, NORM_B32, mask);
+        vsts(seed, output, 384, NORM_B32, mask);
+        vsts(seed, output, 448, NORM_B32, mask);
+    }
+}
+
+extern "C" __global__ __aicore__ void probe_cluster_vld_vst(__gm__ float *input, __gm__ float *output) {
+    if (get_block_idx() != 0) return;
+    probe_copy_in(input);
+    probe_vf();
+    probe_copy_out(output);
+}

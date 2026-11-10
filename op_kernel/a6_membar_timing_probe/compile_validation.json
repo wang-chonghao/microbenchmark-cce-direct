@@ -1,0 +1,44 @@
+{
+  "target": "dav-920r1-vec",
+  "toolkit": "CANN 9.0.0",
+  "compiler": "clang 15.0.5 (2026-04-25)",
+  "camodel_executed": false,
+  "cases": [
+    {
+      "name": "01_cluster_vld_vst",
+      "source_sha256": "b992d1e712d8fbf7e427e70c5ecb54011167e5cf558c98f9e351d69d38c08174",
+      "header_sha256": "7d60fbb09a5ca74f19bdb5436a19838166cb9c7f46fa557887e79766b809c504",
+      "generated_sha256": "85e0733064e328b661d3c988d50f55628a12820886ba90a3439f5979ae505cf6",
+      "binary_sha256": "7ea2517b8aa8f6405fe5d895b0f27b9f36bc72c5f950be27313c4beba1373de6",
+      "flags": "--cce-simd-vf-fusion=false -mllvm -cce-aicore-vec-misched=0 -mllvm -cce-vf-stack-size=0",
+      "status": "compiled_only"
+    },
+    {
+      "name": "02_cluster_vst_vld",
+      "source_sha256": "0df4b18512b9d43d88c526c817495131b9b92ecb6d5059fc5411e99ff67990ca",
+      "header_sha256": "7d60fbb09a5ca74f19bdb5436a19838166cb9c7f46fa557887e79766b809c504",
+      "generated_sha256": "c6c3c6a962e40dae0f094a064056d99ef9324fe29f086e6f616619f3de563fde",
+      "binary_sha256": "83eadb1ea46ce847035c937768846edb54e515403eaa833e11e4882814bbb883",
+      "flags": "--cce-simd-vf-fusion=false -mllvm -cce-aicore-vec-misched=0 -mllvm -cce-vf-stack-size=0",
+      "status": "compiled_only"
+    },
+    {
+      "name": "03_interleave_store",
+      "source_sha256": "6bd377bc0923955ab216f80df62a525f59070429b9a8d171b4a12343d86ba061",
+      "header_sha256": "7d60fbb09a5ca74f19bdb5436a19838166cb9c7f46fa557887e79766b809c504",
+      "generated_sha256": "5b722adae4f3d3bd005245cd8dfef4d439d0e267ef8e4dbb79d7202244d31554",
+      "binary_sha256": "ba7fb8b18caffdd676f2026b2708db99b92054fd7dae9905209181db6c6b3ced",
+      "flags": "--cce-simd-vf-fusion=false -mllvm -cce-aicore-vec-misched=0 -mllvm -cce-vf-stack-size=0",
+      "status": "compiled_only"
+    },
+    {
+      "name": "04_interleave_load",
+      "source_sha256": "aa4e690cde4e79f88d8d7b71a2d06715bd0d8b84cf0c322f5c51894bf85721eb",
+      "header_sha256": "7d60fbb09a5ca74f19bdb5436a19838166cb9c7f46fa557887e79766b809c504",
+      "generated_sha256": "770536d71cf5c3a33f903a4b39138874bb709c281db00b05a22236cec7b4d59f",
+      "binary_sha256": "0c226bf020d1fe13a312208f6223d57815d347df9cbe520df1ab2c91e2209b1b",
+      "flags": "--cce-simd-vf-fusion=false -mllvm -cce-aicore-vec-misched=0 -mllvm -cce-vf-stack-size=0",
+      "status": "compiled_only"
+    }
+  ]
+}

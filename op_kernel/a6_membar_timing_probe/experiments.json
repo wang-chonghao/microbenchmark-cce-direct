@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "target": "dav-920r1-vec",
+  "blocks": 8,
+  "input_bytes": 256,
+  "output_bytes": 2048,
+  "cases": {
+    "01_cluster_vld_vst": {
+      "kernel": "probe_cluster_vld_vst", "direction": "VLD_VST", "layout": "cluster",
+      "loads": 1, "stores": 8, "membars": {"VLD_VST": 8}
+    },
+    "02_cluster_vst_vld": {
+      "kernel": "probe_cluster_vst_vld", "direction": "VST_VLD", "layout": "cluster",
+      "loads": 9, "stores": 16, "membars": {"VLD_VST": 2, "VST_VLD": 8}
+    },
+    "03_interleave_store": {
+      "kernel": "probe_interleave_store", "direction": "VLD_VST", "layout": "interleaved",
+      "loads": 1, "stores": 8, "membars": {"VLD_VST": 8}
+    },
+    "04_interleave_load": {
+      "kernel": "probe_interleave_load", "direction": "VST_VLD", "layout": "interleaved",
+      "loads": 9, "stores": 16, "membars": {"VLD_VST": 2, "VST_VLD": 8}
+    }
+  }
+}

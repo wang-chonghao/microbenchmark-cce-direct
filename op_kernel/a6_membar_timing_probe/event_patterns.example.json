@@ -1,0 +1,5 @@
+{
+  "issue": "\\[(?P<unit>SU|RVECSU|REVCSU)\\].*\\b(?:ISU_ISSUE|SU_ISSUE)\\b.*RV_SMEM_BAR.*\\binstr_id\\s+(?P<id>\\d+)",
+  "retire": "\\[(?P<unit>SU|RVECSU|REVCSU)\\].*\\b(?:ISU_BAR_RETIRE|SU_BAR_RETIRE)\\b.*RV_SMEM_BAR.*\\binstr_id\\s+(?P<id>\\d+)",
+  "receive": "\\[(?P<unit>SU|RVECSU|REVCSU)\\].*\\b(?:ISU_RECV|SU_RECV)\\b.*\\binstr_id\\s+(?P<id>\\d+)"
+}

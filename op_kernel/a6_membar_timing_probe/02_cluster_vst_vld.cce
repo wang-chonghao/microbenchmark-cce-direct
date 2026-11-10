@@ -1,0 +1,55 @@
+#include "probe_common.h"
+
+__attribute__((always_inline)) inline [aicore] void probe_vf() {
+    __ubuf__ float *input = (__ubuf__ float *)get_imm(0);
+    __ubuf__ float *output = (__ubuf__ float *)get_imm(0x1000);
+    __ubuf__ float *scratch = (__ubuf__ float *)get_imm(0x2000);
+    __VEC_SCOPE__ {
+        vector_bool mask = pset_b32(PAT_ALL);
+        vector_f32 seed;
+        vector_f32 r0, r1, r2, r3, r4, r5, r6, r7;
+        vlds(seed, input, 0, NORM);
+        mem_bar(VLD_VST); // Preparation, not a measured barrier.
+        vsts(seed, scratch, 0, NORM_B32, mask);
+        vsts(seed, scratch, 64, NORM_B32, mask);
+        vsts(seed, scratch, 128, NORM_B32, mask);
+        vsts(seed, scratch, 192, NORM_B32, mask);
+        vsts(seed, scratch, 256, NORM_B32, mask);
+        vsts(seed, scratch, 320, NORM_B32, mask);
+        vsts(seed, scratch, 384, NORM_B32, mask);
+        vsts(seed, scratch, 448, NORM_B32, mask);
+        mem_bar(VST_VLD);
+        mem_bar(VST_VLD);
+        mem_bar(VST_VLD);
+        mem_bar(VST_VLD);
+        mem_bar(VST_VLD);
+        mem_bar(VST_VLD);
+        mem_bar(VST_VLD);
+        mem_bar(VST_VLD);
+        vlds(r0, scratch, 0, NORM);
+        vlds(r1, scratch, 64, NORM);
+        vlds(r2, scratch, 128, NORM);
+        vlds(r3, scratch, 192, NORM);
+        vlds(r4, scratch, 256, NORM);
+        vlds(r5, scratch, 320, NORM);
+        vlds(r6, scratch, 384, NORM);
+        vlds(r7, scratch, 448, NORM);
+        // Keep output traffic out of the measured LOAD segment.
+        mem_bar(VLD_VST);
+        vsts(r0, output, 0, NORM_B32, mask);
+        vsts(r1, output, 64, NORM_B32, mask);
+        vsts(r2, output, 128, NORM_B32, mask);
+        vsts(r3, output, 192, NORM_B32, mask);
+        vsts(r4, output, 256, NORM_B32, mask);
+        vsts(r5, output, 320, NORM_B32, mask);
+        vsts(r6, output, 384, NORM_B32, mask);
+        vsts(r7, output, 448, NORM_B32, mask);
+    }
+}
+
+extern "C" __global__ __aicore__ void probe_cluster_vst_vld(__gm__ float *input, __gm__ float *output) {
+    if (get_block_idx() != 0) return;
+    probe_copy_in(input);
+    probe_vf();
+    probe_copy_out(output);
+}
