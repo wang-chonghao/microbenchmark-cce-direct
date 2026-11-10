@@ -1,0 +1,499 @@
+// MB_KERNEL candidate_kernel
+// MB_TENSOR input input uint8 12800
+// MB_TENSOR output output uint8 4096
+// A6 wrapper migration only; original VF below is unchanged.
+// Selected A6 software schedule. Current-model historical-pool reselection.
+/**
+ * Copyright (c) 2025 Huawei Technologies Co., Ltd.
+ * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+ * CANN Open Software License Agreement Version 2.0 (the "License").
+ * Please refer to the License for details. You may not use this file except in compliance with the License.
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+ * See LICENSE in the root of the software repository for the full text of the License.
+ */
+#include <stdint.h>
+#ifndef __aicore__
+#define __aicore__ [aicore]
+#endif
+#include <cfloat>
+#include <type_traits>
+__simd_callee__ inline void normalize(vector_f32& x, vector_f32& mean, vector_f32& rstd,
+                                      vector_f32& gamma, vector_f32& beta, vector_f32& y,
+                                      vector_bool& preg) {
+    vsub(x, x, mean, preg, MODE_ZEROING);
+    vmul(x, x, rstd, preg, MODE_ZEROING);
+
+    vmul(x, x, gamma, preg, MODE_ZEROING);
+
+    vadd(x, x, beta, preg, MODE_ZEROING);
+
+    vmuls(y, x, float(-1.0), preg, MODE_ZEROING);
+    vexp(y, y, preg, MODE_ZEROING);
+    vadds(y, y, float(1.0), preg, MODE_ZEROING);
+    vdiv(y, x, y, preg, MODE_ZEROING);
+}
+__aicore__ inline void candidate_vf(__ubuf__ float* xLocal, __ubuf__ float* gammaLocal,
+                                    __ubuf__ float* betaLocal, __ubuf__ float* meanLocal,
+                                    __ubuf__ float* rstdLocal, __ubuf__ float* yLocal) {
+    __ubuf__ uint8_t* arena = (__ubuf__ uint8_t*)get_imm(0);
+    __VEC_SCOPE__ {
+        // Selected A6 Canonical schedule; not compiler/CAModel verified.
+        __ubuf__ uint8_t* listing_arena = (__ubuf__ uint8_t*)get_imm(0);
+        uint32_t count0 = 1024;
+        vector_f32 reg0;
+        vector_f32 reg1;
+        vector_f32 reg2;
+        vector_f32 reg3;
+        vector_f32 reg4;
+        vector_bool reg5;
+        vector_bool reg6;
+        vector_f32 reg7;
+        vector_f32 reg8;
+        vector_f32 reg9;
+        vector_f32 reg10;
+        vector_f32 reg11;
+        vector_f32 reg12;
+        vector_f32 reg13;
+        vector_f32 reg14;
+        vector_f32 reg15;
+        vector_f32 reg16;
+        vector_f32 reg17;
+        vector_bool reg18;
+        vector_bool reg19;
+        vector_f32 reg20;
+        vector_f32 reg21;
+        vector_f32 reg22;
+        vector_f32 reg23;
+        vector_f32 reg24;
+        vector_f32 reg25;
+        vector_f32 reg26;
+        vector_f32 reg27;
+        vector_f32 reg28;
+        vector_f32 reg29;
+        vector_f32 reg30;
+        vector_f32 reg31;
+        vector_f32 reg32;
+        vector_f32 reg33;
+        vector_f32 reg34;
+        vector_f32 reg35;
+        vector_f32 reg36;
+        vector_f32 reg37;
+        vector_bool reg38;
+        vector_f32 reg39;
+        vector_f32 reg40;
+        vector_f32 reg41;
+        vector_f32 reg42;
+        vector_f32 reg43;
+        vector_f32 reg44;
+        vector_f32 reg45;
+        vector_f32 reg46;
+        vector_bool reg47;
+        vector_f32 reg48;
+        vector_f32 reg49;
+        vector_f32 reg50;
+        vector_f32 reg51;
+        vector_f32 reg52;
+        vector_f32 reg53;
+        vector_f32 reg54;
+        vector_f32 reg55;
+        vector_f32 reg56;
+        vector_f32 reg57;
+        vector_f32 reg58;
+        vector_f32 reg59;
+        vector_f32 reg60;
+        vector_f32 reg61;
+        vector_f32 reg62;
+        vector_f32 reg63;
+        vector_f32 reg64;
+        vector_f32 reg65;
+        vector_f32 reg66;
+        vector_f32 reg67;
+        vector_f32 reg68;
+        vector_f32 reg69;
+        vector_f32 reg70;
+        vector_f32 reg71;
+        vector_f32 reg72;
+        vector_f32 reg73;
+        vector_f32 reg74;
+        vector_f32 reg75;
+        vector_f32 reg76;
+        vector_f32 reg77;
+        vector_f32 reg78;
+        vector_f32 reg79;
+        vector_bool reg80;
+        vector_f32 reg81;
+        vector_f32 reg82;
+        vector_f32 reg83;
+        vector_f32 reg84;
+        vector_f32 reg85;
+        vector_f32 reg86;
+        vector_f32 reg87;
+        vector_f32 reg88;
+        vector_bool reg89;
+        vector_f32 reg90;
+        vector_f32 reg91;
+        vector_f32 reg92;
+        vector_f32 reg93;
+        vector_f32 reg94;
+        vector_f32 reg95;
+        vector_f32 reg96;
+        vector_f32 reg97;
+        vector_f32 reg98;
+        vector_f32 reg99;
+        vector_f32 reg100;
+        vector_f32 reg101;
+        vector_f32 reg102;
+        vector_f32 reg103;
+        vector_bool reg104;
+        vector_f32 reg105;
+        vector_f32 reg106;
+        vector_f32 reg107;
+        vector_f32 reg108;
+        vector_f32 reg109;
+        vector_f32 reg110;
+        vector_f32 reg111;
+        vector_f32 reg112;
+        vector_bool reg113;
+        vector_f32 reg114;
+        vector_f32 reg115;
+        vector_f32 reg116;
+        vector_f32 reg117;
+        vector_f32 reg118;
+        vector_f32 reg119;
+        vector_f32 reg120;
+        vector_f32 reg121;
+        vector_f32 reg122;
+        vector_f32 reg123;
+        vector_f32 reg124;
+        vector_bool reg125;
+        vector_f32 reg126;
+        vector_f32 reg127;
+        vector_f32 reg128;
+        vector_f32 reg129;
+        vector_f32 reg130;
+        vector_f32 reg131;
+        vector_f32 reg132;
+        vector_f32 reg133;
+        // trial_00.vf0.pc13b32210.3
+        vlds(reg0, (__ubuf__ float*)(listing_arena + (256)), 0, NORM);
+        // trial_00.vf0.pc13b32208.1
+        vlds(reg1, (__ubuf__ float*)(listing_arena + (12288)), 0, BRC_B32);
+        // trial_00.vf0.pc13b32204.0
+        vlds(reg2, (__ubuf__ float*)(listing_arena + (12544)), 0, BRC_B32);
+        // trial_00.vf0.pc13b32218.5
+        vlds(reg3, (__ubuf__ float*)(listing_arena + (4352)), 0, NORM);
+        // trial_00.vf0.pc13b32220.7
+        vlds(reg4, (__ubuf__ float*)(listing_arena + (8448)), 0, NORM);
+        // trial_00.vf0.pc13b32228.8
+        reg5 = plt_b32(count0, POST_UPDATE);
+        // trial_00.vf0.pc13b32250.18
+        reg6 = plt_b32(count0, POST_UPDATE);
+        // trial_00.vf0.pc13b32254.19
+        vsub(reg7, reg0, reg1, reg6, MODE_ZEROING);
+        // trial_00.vf0.pc13b32258.20
+        vmul(reg8, reg7, reg2, reg6, MODE_ZEROING);
+        // trial_00.vf0.pc13b3225c.21
+        vmul(reg9, reg8, reg3, reg6, MODE_ZEROING);
+        // trial_00.vf0.pc13b32260.22
+        vadd(reg10, reg9, reg4, reg6, MODE_ZEROING);
+        // trial_00.vf0.pc13b32264.23
+        vmuls(reg11, reg10, -0x1.0000000000000p+0f, reg6, MODE_ZEROING);
+        // trial_00.vf0.pc13b32268.24
+        vexp(reg12, reg11, reg6, MODE_ZEROING);
+        // trial_00.vf0.pc13b3226c.25
+        vadds(reg13, reg12, 0x1.0000000000000p+0f, reg6, MODE_ZEROING);
+        // trial_00.vf0.pc13b32270.26
+        vdiv(reg14, reg10, reg13, reg6, MODE_ZEROING);
+        // trial_00.vf0.pc13b32274.27
+        vsts(reg14, (__ubuf__ float*)(listing_arena + (13056)), 0, NORM_B32, reg6);
+        // trial_00.vf0.pc13b3227c.29
+        vlds(reg15, (__ubuf__ float*)(listing_arena + (768)), 0, NORM);
+        // trial_00.vf0.pc13b32284.31
+        vlds(reg16, (__ubuf__ float*)(listing_arena + (4864)), 0, NORM);
+        // trial_00.vf0.pc13b3228c.33
+        vlds(reg17, (__ubuf__ float*)(listing_arena + (8960)), 0, NORM);
+        // trial_00.vf0.pc13b32290.34
+        reg18 = plt_b32(count0, POST_UPDATE);
+        // trial_00.vf0.pc13b322b8.44
+        reg19 = plt_b32(count0, POST_UPDATE);
+        // trial_00.vf0.pc13b322bc.45
+        vsub(reg20, reg15, reg1, reg19, MODE_ZEROING);
+        // trial_00.vf0.pc13b322c0.46
+        vmul(reg21, reg20, reg2, reg19, MODE_ZEROING);
+        // trial_00.vf0.pc13b322c4.47
+        vmul(reg22, reg21, reg16, reg19, MODE_ZEROING);
+        // trial_00.vf0.pc13b322c8.48
+        vadd(reg23, reg22, reg17, reg19, MODE_ZEROING);
+        // trial_00.vf0.pc13b322cc.49
+        vmuls(reg24, reg23, -0x1.0000000000000p+0f, reg19, MODE_ZEROING);
+        // trial_00.vf0.pc13b322d0.50
+        vexp(reg25, reg24, reg19, MODE_ZEROING);
+        // trial_00.vf0.pc13b322d4.51
+        vadds(reg26, reg25, 0x1.0000000000000p+0f, reg19, MODE_ZEROING);
+        // trial_00.vf0.pc13b322d8.52
+        vdiv(reg27, reg23, reg26, reg19, MODE_ZEROING);
+        // trial_00.vf0.pc13b322dc.53
+        vsts(reg27, (__ubuf__ float*)(listing_arena + (13568)), 0, NORM_B32, reg19);
+        // trial_00.vf0.pc13b322e4.55
+        vlds(reg28, (__ubuf__ float*)(listing_arena + (1280)), 0, NORM);
+        // trial_00.vf0.pc13b322ec.57
+        vlds(reg29, (__ubuf__ float*)(listing_arena + (5376)), 0, NORM);
+        // trial_00.vf0.pc13b322f4.59
+        vlds(reg30, (__ubuf__ float*)(listing_arena + (9472)), 0, NORM);
+        // trial_00.vf0.pc13b322e0.54
+        vlds(reg31, (__ubuf__ float*)(listing_arena + (1024)), 0, NORM);
+        // trial_00.vf0.pc13b32278.28
+        vlds(reg32, (__ubuf__ float*)(listing_arena + (512)), 0, NORM);
+        // trial_00.vf0.pc13b32294.35
+        vsub(reg33, reg32, reg1, reg18, MODE_ZEROING);
+        // trial_00.vf0.pc13b32298.36
+        vmul(reg34, reg33, reg2, reg18, MODE_ZEROING);
+        // trial_00.vf0.pc13b3220c.2
+        vlds(reg35, (__ubuf__ float*)(listing_arena + (0)), 0, NORM);
+        // trial_00.vf0.pc13b3222c.9
+        vsub(reg36, reg35, reg1, reg5, MODE_ZEROING);
+        // trial_00.vf0.pc13b32230.10
+        vmul(reg37, reg36, reg2, reg5, MODE_ZEROING);
+        // trial_00.vf0.pc13b322f8.60
+        reg38 = plt_b32(count0, POST_UPDATE);
+        // trial_00.vf0.pc13b322fc.61
+        vsub(reg39, reg31, reg1, reg38, MODE_ZEROING);
+        // trial_00.vf0.pc13b32300.62
+        vmul(reg40, reg39, reg2, reg38, MODE_ZEROING);
+        // trial_00.vf0.pc13b32280.30
+        vlds(reg41, (__ubuf__ float*)(listing_arena + (4608)), 0, NORM);
+        // trial_00.vf0.pc13b3229c.37
+        vmul(reg42, reg34, reg41, reg18, MODE_ZEROING);
+        // trial_00.vf0.pc13b322e8.56
+        vlds(reg43, (__ubuf__ float*)(listing_arena + (5120)), 0, NORM);
+        // trial_00.vf0.pc13b32304.63
+        vmul(reg44, reg40, reg43, reg38, MODE_ZEROING);
+        // trial_00.vf0.pc13b32214.4
+        vlds(reg45, (__ubuf__ float*)(listing_arena + (4096)), 0, NORM);
+        // trial_00.vf0.pc13b32234.11
+        vmul(reg46, reg37, reg45, reg5, MODE_ZEROING);
+        // trial_00.vf0.pc13b32320.70
+        reg47 = plt_b32(count0, POST_UPDATE);
+        // trial_00.vf0.pc13b32324.71
+        vsub(reg48, reg28, reg1, reg47, MODE_ZEROING);
+        // trial_00.vf0.pc13b32328.72
+        vmul(reg49, reg48, reg2, reg47, MODE_ZEROING);
+        // trial_00.vf0.pc13b3232c.73
+        vmul(reg50, reg49, reg29, reg47, MODE_ZEROING);
+        // trial_00.vf0.pc13b32330.74
+        vadd(reg51, reg50, reg30, reg47, MODE_ZEROING);
+        // trial_00.vf0.pc13b3233c.75
+        vmuls(reg52, reg51, -0x1.0000000000000p+0f, reg47, MODE_ZEROING);
+        // trial_00.vf0.pc13b32340.76
+        vexp(reg53, reg52, reg47, MODE_ZEROING);
+        // trial_00.vf0.pc13b3234c.77
+        vadds(reg54, reg53, 0x1.0000000000000p+0f, reg47, MODE_ZEROING);
+        // trial_00.vf0.pc13b32350.78
+        vdiv(reg55, reg51, reg54, reg47, MODE_ZEROING);
+        // trial_00.vf0.pc13b32358.79
+        vsts(reg55, (__ubuf__ float*)(listing_arena + (14080)), 0, NORM_B32, reg47);
+        // trial_00.vf0.pc13b32368.81
+        vlds(reg56, (__ubuf__ float*)(listing_arena + (1792)), 0, NORM);
+        // trial_00.vf0.pc13b32378.83
+        vlds(reg57, (__ubuf__ float*)(listing_arena + (5888)), 0, NORM);
+        // trial_00.vf0.pc13b32388.85
+        vlds(reg58, (__ubuf__ float*)(listing_arena + (9984)), 0, NORM);
+        // trial_00.vf0.pc13b32360.80
+        vlds(reg59, (__ubuf__ float*)(listing_arena + (1536)), 0, NORM);
+        // trial_00.vf0.pc13b32370.82
+        vlds(reg60, (__ubuf__ float*)(listing_arena + (5632)), 0, NORM);
+        // trial_00.vf0.pc13b322f0.58
+        vlds(reg61, (__ubuf__ float*)(listing_arena + (9216)), 0, NORM);
+        // trial_00.vf0.pc13b32308.64
+        vadd(reg62, reg44, reg61, reg38, MODE_ZEROING);
+        // trial_00.vf0.pc13b32380.84
+        vlds(reg63, (__ubuf__ float*)(listing_arena + (9728)), 0, NORM);
+        // trial_00.vf0.pc13b32288.32
+        vlds(reg64, (__ubuf__ float*)(listing_arena + (8704)), 0, NORM);
+        // trial_00.vf0.pc13b322a0.38
+        vadd(reg65, reg42, reg64, reg18, MODE_ZEROING);
+        // trial_00.vf0.pc13b3221c.6
+        vlds(reg66, (__ubuf__ float*)(listing_arena + (8192)), 0, NORM);
+        // trial_00.vf0.pc13b32238.12
+        vadd(reg67, reg46, reg66, reg5, MODE_ZEROING);
+        // trial_00.vf0.pc13b3230c.65
+        vmuls(reg68, reg62, -0x1.0000000000000p+0f, reg38, MODE_ZEROING);
+        // trial_00.vf0.pc13b32310.66
+        vexp(reg69, reg68, reg38, MODE_ZEROING);
+        // trial_00.vf0.pc13b32314.67
+        vadds(reg70, reg69, 0x1.0000000000000p+0f, reg38, MODE_ZEROING);
+        // trial_00.vf0.pc13b32318.68
+        vdiv(reg71, reg62, reg70, reg38, MODE_ZEROING);
+        // trial_00.vf0.pc13b3231c.69
+        vsts(reg71, (__ubuf__ float*)(listing_arena + (13824)), 0, NORM_B32, reg38);
+        // trial_00.vf0.pc13b3223c.13
+        vmuls(reg72, reg67, -0x1.0000000000000p+0f, reg5, MODE_ZEROING);
+        // trial_00.vf0.pc13b32240.14
+        vexp(reg73, reg72, reg5, MODE_ZEROING);
+        // trial_00.vf0.pc13b32244.15
+        vadds(reg74, reg73, 0x1.0000000000000p+0f, reg5, MODE_ZEROING);
+        // trial_00.vf0.pc13b32248.16
+        vdiv(reg75, reg67, reg74, reg5, MODE_ZEROING);
+        // trial_00.vf0.pc13b3224c.17
+        vsts(reg75, (__ubuf__ float*)(listing_arena + (12800)), 0, NORM_B32, reg5);
+        // trial_00.vf0.pc13b322a4.39
+        vmuls(reg76, reg65, -0x1.0000000000000p+0f, reg18, MODE_ZEROING);
+        // trial_00.vf0.pc13b322a8.40
+        vexp(reg77, reg76, reg18, MODE_ZEROING);
+        // trial_00.vf0.pc13b322ac.41
+        vadds(reg78, reg77, 0x1.0000000000000p+0f, reg18, MODE_ZEROING);
+        // trial_00.vf0.pc13b322b0.42
+        vdiv(reg79, reg65, reg78, reg18, MODE_ZEROING);
+        // trial_00.vf0.pc13b322b4.43
+        vsts(reg79, (__ubuf__ float*)(listing_arena + (13312)), 0, NORM_B32, reg18);
+        // trial_00.vf0.pc13b3238c.86
+        reg80 = plt_b32(count0, POST_UPDATE);
+        // trial_00.vf0.pc13b32390.87
+        vsub(reg81, reg59, reg1, reg80, MODE_ZEROING);
+        // trial_00.vf0.pc13b32394.88
+        vmul(reg82, reg81, reg2, reg80, MODE_ZEROING);
+        // trial_00.vf0.pc13b32398.89
+        vmul(reg83, reg82, reg60, reg80, MODE_ZEROING);
+        // trial_00.vf0.pc13b3239c.90
+        vadd(reg84, reg83, reg63, reg80, MODE_ZEROING);
+        // trial_00.vf0.pc13b323a0.91
+        vmuls(reg85, reg84, -0x1.0000000000000p+0f, reg80, MODE_ZEROING);
+        // trial_00.vf0.pc13b323a4.92
+        vexp(reg86, reg85, reg80, MODE_ZEROING);
+        // trial_00.vf0.pc13b323a8.93
+        vadds(reg87, reg86, 0x1.0000000000000p+0f, reg80, MODE_ZEROING);
+        // trial_00.vf0.pc13b323ac.94
+        vdiv(reg88, reg84, reg87, reg80, MODE_ZEROING);
+        // trial_00.vf0.pc13b323b4.95
+        vsts(reg88, (__ubuf__ float*)(listing_arena + (14336)), 0, NORM_B32, reg80);
+        // trial_00.vf0.pc13b323b8.96
+        reg89 = plt_b32(count0, POST_UPDATE);
+        // trial_00.vf0.pc13b323bc.97
+        vsub(reg90, reg56, reg1, reg89, MODE_ZEROING);
+        // trial_00.vf0.pc13b323c0.98
+        vmul(reg91, reg90, reg2, reg89, MODE_ZEROING);
+        // trial_00.vf0.pc13b323c4.99
+        vmul(reg92, reg91, reg57, reg89, MODE_ZEROING);
+        // trial_00.vf0.pc13b323c8.100
+        vadd(reg93, reg92, reg58, reg89, MODE_ZEROING);
+        // trial_00.vf0.pc13b323cc.101
+        vmuls(reg94, reg93, -0x1.0000000000000p+0f, reg89, MODE_ZEROING);
+        // trial_00.vf0.pc13b323d0.102
+        vexp(reg95, reg94, reg89, MODE_ZEROING);
+        // trial_00.vf0.pc13b323d4.103
+        vadds(reg96, reg95, 0x1.0000000000000p+0f, reg89, MODE_ZEROING);
+        // trial_00.vf0.pc13b323d8.104
+        vdiv(reg97, reg93, reg96, reg89, MODE_ZEROING);
+        // trial_00.vf0.pc13b323e0.105
+        vsts(reg97, (__ubuf__ float*)(listing_arena + (14592)), 0, NORM_B32, reg89);
+        // trial_00.vf0.pc13b323f0.107
+        vlds(reg98, (__ubuf__ float*)(listing_arena + (2304)), 0, NORM);
+        // trial_00.vf0.pc13b323e8.106
+        vlds(reg99, (__ubuf__ float*)(listing_arena + (2048)), 0, NORM);
+        // trial_00.vf0.pc13b323f8.108
+        vlds(reg100, (__ubuf__ float*)(listing_arena + (6144)), 0, NORM);
+        // trial_00.vf0.pc13b32400.109
+        vlds(reg101, (__ubuf__ float*)(listing_arena + (6400)), 0, NORM);
+        // trial_00.vf0.pc13b32410.111
+        vlds(reg102, (__ubuf__ float*)(listing_arena + (10496)), 0, NORM);
+        // trial_00.vf0.pc13b32408.110
+        vlds(reg103, (__ubuf__ float*)(listing_arena + (10240)), 0, NORM);
+        // trial_00.vf0.pc13b32414.112
+        reg104 = plt_b32(count0, POST_UPDATE);
+        // trial_00.vf0.pc13b32418.113
+        vsub(reg105, reg99, reg1, reg104, MODE_ZEROING);
+        // trial_00.vf0.pc13b3241c.114
+        vmul(reg106, reg105, reg2, reg104, MODE_ZEROING);
+        // trial_00.vf0.pc13b32420.115
+        vmul(reg107, reg106, reg100, reg104, MODE_ZEROING);
+        // trial_00.vf0.pc13b32424.116
+        vadd(reg108, reg107, reg103, reg104, MODE_ZEROING);
+        // trial_00.vf0.pc13b32428.117
+        vmuls(reg109, reg108, -0x1.0000000000000p+0f, reg104, MODE_ZEROING);
+        // trial_00.vf0.pc13b3242c.118
+        vexp(reg110, reg109, reg104, MODE_ZEROING);
+        // trial_00.vf0.pc13b32430.119
+        vadds(reg111, reg110, 0x1.0000000000000p+0f, reg104, MODE_ZEROING);
+        // trial_00.vf0.pc13b32434.120
+        vdiv(reg112, reg108, reg111, reg104, MODE_ZEROING);
+        // trial_00.vf0.pc13b3243c.121
+        vsts(reg112, (__ubuf__ float*)(listing_arena + (14848)), 0, NORM_B32, reg104);
+        // trial_00.vf0.pc13b32440.122
+        reg113 = plt_b32(count0, POST_UPDATE);
+        // trial_00.vf0.pc13b32444.123
+        vsub(reg114, reg98, reg1, reg113, MODE_ZEROING);
+        // trial_00.vf0.pc13b32448.124
+        vmul(reg115, reg114, reg2, reg113, MODE_ZEROING);
+        // trial_00.vf0.pc13b3244c.125
+        vmul(reg116, reg115, reg101, reg113, MODE_ZEROING);
+        // trial_00.vf0.pc13b32450.126
+        vadd(reg117, reg116, reg102, reg113, MODE_ZEROING);
+        // trial_00.vf0.pc13b32454.127
+        vmuls(reg118, reg117, -0x1.0000000000000p+0f, reg113, MODE_ZEROING);
+        // trial_00.vf0.pc13b32458.128
+        vexp(reg119, reg118, reg113, MODE_ZEROING);
+        // trial_00.vf0.pc13b3245c.129
+        vadds(reg120, reg119, 0x1.0000000000000p+0f, reg113, MODE_ZEROING);
+        // trial_00.vf0.pc13b32460.130
+        vdiv(reg121, reg117, reg120, reg113, MODE_ZEROING);
+        // trial_00.vf0.pc13b32468.131
+        vsts(reg121, (__ubuf__ float*)(listing_arena + (15104)), 0, NORM_B32, reg113);
+        #pragma unroll 1
+        for (int32_t iter_13b32480 = 0; iter_13b32480 < 6; ++iter_13b32480) {
+            // trial_00.vf0.pc13b32484.133
+            vlds(reg122, (__ubuf__ float*)(listing_arena + (2560 + (iter_13b32480 * 256))), 0, NORM);
+            // trial_00.vf0.pc13b32488.134
+            vlds(reg123, (__ubuf__ float*)(listing_arena + (6656 + (iter_13b32480 * 256))), 0, NORM);
+            // trial_00.vf0.pc13b3248c.135
+            vlds(reg124, (__ubuf__ float*)(listing_arena + (10752 + (iter_13b32480 * 256))), 0, NORM);
+            // trial_00.vf0.pc13b32490.136
+            reg125 = plt_b32(count0, POST_UPDATE);
+            // trial_00.vf0.pc13b32494.137
+            vsub(reg126, reg122, reg1, reg125, MODE_ZEROING);
+            // trial_00.vf0.pc13b32498.138
+            vmul(reg127, reg126, reg2, reg125, MODE_ZEROING);
+            // trial_00.vf0.pc13b3249c.139
+            vmul(reg128, reg127, reg123, reg125, MODE_ZEROING);
+            // trial_00.vf0.pc13b324a0.140
+            vadd(reg129, reg128, reg124, reg125, MODE_ZEROING);
+            // trial_00.vf0.pc13b324a4.141
+            vmuls(reg130, reg129, -0x1.0000000000000p+0f, reg125, MODE_ZEROING);
+            // trial_00.vf0.pc13b324a8.142
+            vexp(reg131, reg130, reg125, MODE_ZEROING);
+            // trial_00.vf0.pc13b324ac.143
+            vadds(reg132, reg131, 0x1.0000000000000p+0f, reg125, MODE_ZEROING);
+            // trial_00.vf0.pc13b324b0.144
+            vdiv(reg133, reg129, reg132, reg125, MODE_ZEROING);
+            // trial_00.vf0.pc13b324b4.145
+            vsts(reg133, (__ubuf__ float*)(listing_arena + (15360 + (iter_13b32480 * 256))), 0, NORM_B32, reg125);
+        }
+    }
+}
+
+extern "C" __global__ __aicore__ void candidate_kernel(__gm__ uint8_t* input,
+                                                       __gm__ uint8_t* output) {
+    __ubuf__ float* xLocal = (__ubuf__ float*)get_imm(0);
+    __ubuf__ float* gammaLocal = (__ubuf__ float*)get_imm(4096);
+    __ubuf__ float* betaLocal = (__ubuf__ float*)get_imm(8192);
+    __ubuf__ float* meanLocal = (__ubuf__ float*)get_imm(12288);
+    __ubuf__ float* rstdLocal = (__ubuf__ float*)get_imm(12544);
+    __ubuf__ float* yLocal = (__ubuf__ float*)get_imm(12800);
+    nddma_desc a6_desc(nddma_desc::loop_desc(3200, 1, 1));
+    nddma_out_to_ub((__ubuf__ uint32_t*)get_imm(0), (__gm__ uint32_t*)input, 0, a6_desc, 0, NEAREST_PADDING, 0);
+    set_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    wait_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    candidate_vf(xLocal, gammaLocal, betaLocal, meanLocal, rstdLocal, yLocal);
+    set_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    wait_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    pipe_barrier(PIPE_ALL);
+    set_flag(PIPE_V, PIPE_S, EVENT_ID1);
+    wait_flag(PIPE_V, PIPE_S, EVENT_ID1);
+    __ubuf__ uint32_t* a6_offsets = (__ubuf__ uint32_t*)get_imm(0);
+    a6_offsets[0] = 0;
+    set_flag(PIPE_S, PIPE_MTE3, EVENT_ID1);
+    wait_flag(PIPE_S, PIPE_MTE3, EVENT_ID1);
+    scatter_ubuf_to_gm((__gm__ uint32_t*)(output + 0), (__ubuf__ uint32_t*)yLocal, 0, 0, a6_offsets, 0, 4096, 0, 1);
+    set_flag(PIPE_MTE3, PIPE_S, EVENT_ID0);
+    wait_flag(PIPE_MTE3, PIPE_S, EVENT_ID0);
+}

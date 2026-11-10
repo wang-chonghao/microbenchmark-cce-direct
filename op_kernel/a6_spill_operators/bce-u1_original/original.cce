@@ -1,0 +1,88 @@
+/**
+ * Copyright (c) 2025 Huawei Technologies Co., Ltd.
+ * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+ * CANN Open Software License Agreement Version 2.0 (the "License").
+ * Please refer to the License for details. You may not use this file except in compliance with the License.
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+ * See LICENSE in the root of the software repository for the full text of the License.
+ */
+#include "kernel_operator.h"
+#include <cfloat>
+#include <type_traits>
+__aicore__ inline void candidate_vf(__ubuf__ float* xAddr, __ubuf__ float* yAddr,
+                                    __ubuf__ float* weightAddr, __ubuf__ float* posWeightAddr,
+                                    __ubuf__ float* lossAddr) {
+    uint32_t oneRepeat = 64, totalLen = 1024, repeatTimes = 16;
+    __VEC_SCOPE__ {
+        vector_bool pregUp;
+        vector_f32 regX;
+        vector_f32 regY;
+        vector_f32 regWeight;
+        vector_f32 regPosWeight;
+        vector_f32 regLoss;
+
+        vector_f32 regMinVal;
+        vector_f32 regAbsX;
+        vector_f32 regNegAbsX;
+        vector_f32 regExpNegAbsX;
+        vector_f32 regOneAddExp;
+        vector_f32 regLog;
+        vector_f32 regLogSigmoid;
+        vector_f32 regPWSubOne;
+        vector_f32 regPWSubOneMulY;
+        vector_f32 regPWSubOneMulYAddOne;
+        vector_f32 regOneSubY;
+        vector_f32 regOneSubYMulX;
+
+        vector_f32 regOne;
+
+        for (uint16_t loop = 0; loop < (uint16_t)repeatTimes; loop++) {
+            pregUp = plt_b32(totalLen, POST_UPDATE);
+            vdup(regOne, (float)1.0f, pregUp, MODE_ZEROING);
+            vlds(regX, xAddr, (int32_t)oneRepeat, NORM, POST_UPDATE);
+            vlds(regY, yAddr, (int32_t)oneRepeat, NORM, POST_UPDATE);
+
+            vlds(regWeight, weightAddr, (int32_t)oneRepeat, NORM, POST_UPDATE);
+
+            vlds(regPosWeight, posWeightAddr, (int32_t)oneRepeat, NORM, POST_UPDATE);
+
+            vmins(regMinVal, regX, (float)0.0f, pregUp, MODE_ZEROING);
+            vabs(regAbsX, regX, pregUp, MODE_ZEROING);
+            vmuls(regNegAbsX, regAbsX, -1.0f, pregUp, MODE_ZEROING);
+            vexp(regExpNegAbsX, regNegAbsX, pregUp, MODE_ZEROING);
+            vadds(regOneAddExp, regExpNegAbsX, (float)1.0f, pregUp, MODE_ZEROING);
+            vln(regLog, regOneAddExp, pregUp, MODE_ZEROING);
+
+            vsub(regLogSigmoid, regMinVal, regLog, pregUp, MODE_ZEROING);
+
+            vsub(regPWSubOne, regPosWeight, regOne, pregUp, MODE_ZEROING);
+            vmul(regPWSubOneMulY, regPWSubOne, regY, pregUp, MODE_ZEROING);
+            vadds(regPWSubOneMulYAddOne, regPWSubOneMulY, (float)1.0f, pregUp, MODE_ZEROING);
+            vmul(regLogSigmoid, regLogSigmoid, regPWSubOneMulYAddOne, pregUp, MODE_ZEROING);
+
+            vsub(regOneSubY, regOne, regY, pregUp, MODE_ZEROING);
+            vmul(regOneSubYMulX, regOneSubY, regX, pregUp, MODE_ZEROING);
+            vsub(regLoss, regOneSubYMulX, regLogSigmoid, pregUp, MODE_ZEROING);
+
+            vmul(regLoss, regLoss, regWeight, pregUp, MODE_ZEROING);
+
+            vsts(regLoss, lossAddr, (int32_t)oneRepeat, NORM_B32, pregUp, POST_UPDATE);
+        }
+    }
+}
+extern "C" __global__ __aicore__ void candidate_kernel(__gm__ uint8_t* input,
+                                                       __gm__ uint8_t* output) {
+    __ubuf__ float* xAddr = (__ubuf__ float*)get_imm(0);
+    __ubuf__ float* yAddr = (__ubuf__ float*)get_imm(4096);
+    __ubuf__ float* weightAddr = (__ubuf__ float*)get_imm(8192);
+    __ubuf__ float* posWeightAddr = (__ubuf__ float*)get_imm(12288);
+    __ubuf__ float* lossAddr = (__ubuf__ float*)get_imm(16384);
+    copy_gm_to_ubuf_align_v2((__ubuf__ uint8_t*)get_imm(0), input, 0, 1, 16384, 0, 0, 0, 0, 0, 0);
+    set_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    wait_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    candidate_vf(xAddr, yAddr, weightAddr, posWeightAddr, lossAddr);
+    set_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    wait_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    copy_ubuf_to_gm_align_v2(output + 0, (__ubuf__ uint8_t*)lossAddr, 0, 1, 4096, 0, 0, 0);
+}

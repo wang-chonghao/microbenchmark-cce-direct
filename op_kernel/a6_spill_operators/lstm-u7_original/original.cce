@@ -1,0 +1,313 @@
+/**
+ * Copyright (c) 2026 Huawei Technologies Co., Ltd.
+ * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+ * CANN Open Software License Agreement Version 2.0 (the "License").
+ * Please refer to the License for details. You may not use this file except in compliance with the License.
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+ * See LICENSE in the root of the software repository for the full text of the License.
+ */
+#include "kernel_operator.h"
+#include <cfloat>
+#include <type_traits>
+__aicore__ inline void candidate_vf(__ubuf__ float* dcsUb, __ubuf__ float* ciUb,
+                                    __ubuf__ float* iUb, __ubuf__ float* csPrevUb,
+                                    __ubuf__ float* fUb, __ubuf__ float* diPreUb,
+                                    __ubuf__ float* dciPreUb, __ubuf__ float* dfPreUb) {
+    constexpr uint32_t REP_F32 = 64;
+    uint32_t segElems = 1024;
+    uint16_t repeatTime = 16;
+    __VEC_SCOPE__ {
+        constexpr bool IsFp32 = std::is_same_v<float, float>;
+        vector_f32 dcsReg;
+        vector_f32 ciReg;
+        vector_f32 iReg;
+        vector_f32 cspReg;
+        vector_f32 fReg;
+        vector_f32 t0Reg;
+        vector_f32 t1Reg;
+        vector_f32 oneReg;
+        vector_bool mask;
+        vdup(oneReg, 1.0f, pset_b32(PAT_ALL), MODE_ZEROING);
+        uint32_t remaining = segElems;
+
+        {
+            vector_f32 ciReg_u0;
+            vector_f32 ciReg_u1;
+            vector_f32 ciReg_u2;
+            vector_f32 ciReg_u3;
+            vector_f32 ciReg_u4;
+            vector_f32 ciReg_u5;
+            vector_f32 ciReg_u6;
+            vector_f32 cspReg_u0;
+            vector_f32 cspReg_u1;
+            vector_f32 cspReg_u2;
+            vector_f32 cspReg_u3;
+            vector_f32 cspReg_u4;
+            vector_f32 cspReg_u5;
+            vector_f32 cspReg_u6;
+            vector_f32 dcsReg_u0;
+            vector_f32 dcsReg_u1;
+            vector_f32 dcsReg_u2;
+            vector_f32 dcsReg_u3;
+            vector_f32 dcsReg_u4;
+            vector_f32 dcsReg_u5;
+            vector_f32 dcsReg_u6;
+            vector_f32 fReg_u0;
+            vector_f32 fReg_u1;
+            vector_f32 fReg_u2;
+            vector_f32 fReg_u3;
+            vector_f32 fReg_u4;
+            vector_f32 fReg_u5;
+            vector_f32 fReg_u6;
+            vector_f32 iReg_u0;
+            vector_f32 iReg_u1;
+            vector_f32 iReg_u2;
+            vector_f32 iReg_u3;
+            vector_f32 iReg_u4;
+            vector_f32 iReg_u5;
+            vector_f32 iReg_u6;
+            vector_bool mask_u0;
+            vector_bool mask_u1;
+            vector_bool mask_u2;
+            vector_bool mask_u3;
+            vector_bool mask_u4;
+            vector_bool mask_u5;
+            vector_bool mask_u6;
+            vector_f32 t0Reg_u0;
+            vector_f32 t0Reg_u1;
+            vector_f32 t0Reg_u2;
+            vector_f32 t0Reg_u3;
+            vector_f32 t0Reg_u4;
+            vector_f32 t0Reg_u5;
+            vector_f32 t0Reg_u6;
+            vector_f32 t1Reg_u0;
+            vector_f32 t1Reg_u1;
+            vector_f32 t1Reg_u2;
+            vector_f32 t1Reg_u3;
+            vector_f32 t1Reg_u4;
+            vector_f32 t1Reg_u5;
+            vector_f32 t1Reg_u6;
+#pragma unroll 1
+            for (uint16_t i = 0; i < 14; i += 7) {
+                int32_t off_u0 = static_cast<int32_t>((i + 0)) * static_cast<int32_t>(REP_F32);
+                int32_t off_u1 = static_cast<int32_t>((i + 1)) * static_cast<int32_t>(REP_F32);
+                int32_t off_u2 = static_cast<int32_t>((i + 2)) * static_cast<int32_t>(REP_F32);
+                int32_t off_u3 = static_cast<int32_t>((i + 3)) * static_cast<int32_t>(REP_F32);
+                int32_t off_u4 = static_cast<int32_t>((i + 4)) * static_cast<int32_t>(REP_F32);
+                int32_t off_u5 = static_cast<int32_t>((i + 5)) * static_cast<int32_t>(REP_F32);
+                int32_t off_u6 = static_cast<int32_t>((i + 6)) * static_cast<int32_t>(REP_F32);
+                mask_u0 = plt_b32(remaining, POST_UPDATE);
+                mask_u1 = plt_b32(remaining, POST_UPDATE);
+                mask_u2 = plt_b32(remaining, POST_UPDATE);
+                mask_u3 = plt_b32(remaining, POST_UPDATE);
+                mask_u4 = plt_b32(remaining, POST_UPDATE);
+                mask_u5 = plt_b32(remaining, POST_UPDATE);
+                mask_u6 = plt_b32(remaining, POST_UPDATE);
+                vlds(dcsReg_u0, dcsUb + off_u0, 0, NORM);
+                vlds(dcsReg_u1, dcsUb + off_u1, 0, NORM);
+                vlds(dcsReg_u2, dcsUb + off_u2, 0, NORM);
+                vlds(dcsReg_u3, dcsUb + off_u3, 0, NORM);
+                vlds(dcsReg_u4, dcsUb + off_u4, 0, NORM);
+                vlds(dcsReg_u5, dcsUb + off_u5, 0, NORM);
+                vlds(dcsReg_u6, dcsUb + off_u6, 0, NORM);
+                vlds(ciReg_u0, reinterpret_cast<__ubuf__ float*>(ciUb) + off_u0, 0, NORM);
+                vlds(ciReg_u1, reinterpret_cast<__ubuf__ float*>(ciUb) + off_u1, 0, NORM);
+                vlds(ciReg_u2, reinterpret_cast<__ubuf__ float*>(ciUb) + off_u2, 0, NORM);
+                vlds(ciReg_u3, reinterpret_cast<__ubuf__ float*>(ciUb) + off_u3, 0, NORM);
+                vlds(ciReg_u4, reinterpret_cast<__ubuf__ float*>(ciUb) + off_u4, 0, NORM);
+                vlds(ciReg_u5, reinterpret_cast<__ubuf__ float*>(ciUb) + off_u5, 0, NORM);
+                vlds(ciReg_u6, reinterpret_cast<__ubuf__ float*>(ciUb) + off_u6, 0, NORM);
+                vlds(iReg_u0, reinterpret_cast<__ubuf__ float*>(iUb) + off_u0, 0, NORM);
+                vlds(iReg_u1, reinterpret_cast<__ubuf__ float*>(iUb) + off_u1, 0, NORM);
+                vlds(iReg_u2, reinterpret_cast<__ubuf__ float*>(iUb) + off_u2, 0, NORM);
+                vlds(iReg_u3, reinterpret_cast<__ubuf__ float*>(iUb) + off_u3, 0, NORM);
+                vlds(iReg_u4, reinterpret_cast<__ubuf__ float*>(iUb) + off_u4, 0, NORM);
+                vlds(iReg_u5, reinterpret_cast<__ubuf__ float*>(iUb) + off_u5, 0, NORM);
+                vlds(iReg_u6, reinterpret_cast<__ubuf__ float*>(iUb) + off_u6, 0, NORM);
+                vlds(cspReg_u0, reinterpret_cast<__ubuf__ float*>(csPrevUb) + off_u0, 0, NORM);
+                vlds(cspReg_u1, reinterpret_cast<__ubuf__ float*>(csPrevUb) + off_u1, 0, NORM);
+                vlds(cspReg_u2, reinterpret_cast<__ubuf__ float*>(csPrevUb) + off_u2, 0, NORM);
+                vlds(cspReg_u3, reinterpret_cast<__ubuf__ float*>(csPrevUb) + off_u3, 0, NORM);
+                vlds(cspReg_u4, reinterpret_cast<__ubuf__ float*>(csPrevUb) + off_u4, 0, NORM);
+                vlds(cspReg_u5, reinterpret_cast<__ubuf__ float*>(csPrevUb) + off_u5, 0, NORM);
+                vlds(cspReg_u6, reinterpret_cast<__ubuf__ float*>(csPrevUb) + off_u6, 0, NORM);
+                vlds(fReg_u0, reinterpret_cast<__ubuf__ float*>(fUb) + off_u0, 0, NORM);
+                vlds(fReg_u1, reinterpret_cast<__ubuf__ float*>(fUb) + off_u1, 0, NORM);
+                vlds(fReg_u2, reinterpret_cast<__ubuf__ float*>(fUb) + off_u2, 0, NORM);
+                vlds(fReg_u3, reinterpret_cast<__ubuf__ float*>(fUb) + off_u3, 0, NORM);
+                vlds(fReg_u4, reinterpret_cast<__ubuf__ float*>(fUb) + off_u4, 0, NORM);
+                vlds(fReg_u5, reinterpret_cast<__ubuf__ float*>(fUb) + off_u5, 0, NORM);
+                vlds(fReg_u6, reinterpret_cast<__ubuf__ float*>(fUb) + off_u6, 0, NORM);
+                vsub(t1Reg_u0, oneReg, iReg_u0, mask_u0, MODE_ZEROING);
+                vsub(t1Reg_u1, oneReg, iReg_u1, mask_u1, MODE_ZEROING);
+                vsub(t1Reg_u2, oneReg, iReg_u2, mask_u2, MODE_ZEROING);
+                vsub(t1Reg_u3, oneReg, iReg_u3, mask_u3, MODE_ZEROING);
+                vsub(t1Reg_u4, oneReg, iReg_u4, mask_u4, MODE_ZEROING);
+                vsub(t1Reg_u5, oneReg, iReg_u5, mask_u5, MODE_ZEROING);
+                vsub(t1Reg_u6, oneReg, iReg_u6, mask_u6, MODE_ZEROING);
+                vmul(t0Reg_u0, iReg_u0, t1Reg_u0, mask_u0, MODE_ZEROING);
+                vmul(t0Reg_u1, iReg_u1, t1Reg_u1, mask_u1, MODE_ZEROING);
+                vmul(t0Reg_u2, iReg_u2, t1Reg_u2, mask_u2, MODE_ZEROING);
+                vmul(t0Reg_u3, iReg_u3, t1Reg_u3, mask_u3, MODE_ZEROING);
+                vmul(t0Reg_u4, iReg_u4, t1Reg_u4, mask_u4, MODE_ZEROING);
+                vmul(t0Reg_u5, iReg_u5, t1Reg_u5, mask_u5, MODE_ZEROING);
+                vmul(t0Reg_u6, iReg_u6, t1Reg_u6, mask_u6, MODE_ZEROING);
+                vmul(t0Reg_u0, t0Reg_u0, dcsReg_u0, mask_u0, MODE_ZEROING);
+                vmul(t0Reg_u1, t0Reg_u1, dcsReg_u1, mask_u1, MODE_ZEROING);
+                vmul(t0Reg_u2, t0Reg_u2, dcsReg_u2, mask_u2, MODE_ZEROING);
+                vmul(t0Reg_u3, t0Reg_u3, dcsReg_u3, mask_u3, MODE_ZEROING);
+                vmul(t0Reg_u4, t0Reg_u4, dcsReg_u4, mask_u4, MODE_ZEROING);
+                vmul(t0Reg_u5, t0Reg_u5, dcsReg_u5, mask_u5, MODE_ZEROING);
+                vmul(t0Reg_u6, t0Reg_u6, dcsReg_u6, mask_u6, MODE_ZEROING);
+                vmul(t0Reg_u0, t0Reg_u0, ciReg_u0, mask_u0, MODE_ZEROING);
+                vmul(t0Reg_u1, t0Reg_u1, ciReg_u1, mask_u1, MODE_ZEROING);
+                vmul(t0Reg_u2, t0Reg_u2, ciReg_u2, mask_u2, MODE_ZEROING);
+                vmul(t0Reg_u3, t0Reg_u3, ciReg_u3, mask_u3, MODE_ZEROING);
+                vmul(t0Reg_u4, t0Reg_u4, ciReg_u4, mask_u4, MODE_ZEROING);
+                vmul(t0Reg_u5, t0Reg_u5, ciReg_u5, mask_u5, MODE_ZEROING);
+                vmul(t0Reg_u6, t0Reg_u6, ciReg_u6, mask_u6, MODE_ZEROING);
+                vsts(t0Reg_u0, diPreUb + off_u0, 0, NORM_B32, mask_u0);
+                vsts(t0Reg_u1, diPreUb + off_u1, 0, NORM_B32, mask_u1);
+                vsts(t0Reg_u2, diPreUb + off_u2, 0, NORM_B32, mask_u2);
+                vsts(t0Reg_u3, diPreUb + off_u3, 0, NORM_B32, mask_u3);
+                vsts(t0Reg_u4, diPreUb + off_u4, 0, NORM_B32, mask_u4);
+                vsts(t0Reg_u5, diPreUb + off_u5, 0, NORM_B32, mask_u5);
+                vsts(t0Reg_u6, diPreUb + off_u6, 0, NORM_B32, mask_u6);
+                vmul(t1Reg_u0, ciReg_u0, ciReg_u0, mask_u0, MODE_ZEROING);
+                vmul(t1Reg_u1, ciReg_u1, ciReg_u1, mask_u1, MODE_ZEROING);
+                vmul(t1Reg_u2, ciReg_u2, ciReg_u2, mask_u2, MODE_ZEROING);
+                vmul(t1Reg_u3, ciReg_u3, ciReg_u3, mask_u3, MODE_ZEROING);
+                vmul(t1Reg_u4, ciReg_u4, ciReg_u4, mask_u4, MODE_ZEROING);
+                vmul(t1Reg_u5, ciReg_u5, ciReg_u5, mask_u5, MODE_ZEROING);
+                vmul(t1Reg_u6, ciReg_u6, ciReg_u6, mask_u6, MODE_ZEROING);
+                vsub(t1Reg_u0, oneReg, t1Reg_u0, mask_u0, MODE_ZEROING);
+                vsub(t1Reg_u1, oneReg, t1Reg_u1, mask_u1, MODE_ZEROING);
+                vsub(t1Reg_u2, oneReg, t1Reg_u2, mask_u2, MODE_ZEROING);
+                vsub(t1Reg_u3, oneReg, t1Reg_u3, mask_u3, MODE_ZEROING);
+                vsub(t1Reg_u4, oneReg, t1Reg_u4, mask_u4, MODE_ZEROING);
+                vsub(t1Reg_u5, oneReg, t1Reg_u5, mask_u5, MODE_ZEROING);
+                vsub(t1Reg_u6, oneReg, t1Reg_u6, mask_u6, MODE_ZEROING);
+                vmul(t0Reg_u0, t1Reg_u0, dcsReg_u0, mask_u0, MODE_ZEROING);
+                vmul(t0Reg_u1, t1Reg_u1, dcsReg_u1, mask_u1, MODE_ZEROING);
+                vmul(t0Reg_u2, t1Reg_u2, dcsReg_u2, mask_u2, MODE_ZEROING);
+                vmul(t0Reg_u3, t1Reg_u3, dcsReg_u3, mask_u3, MODE_ZEROING);
+                vmul(t0Reg_u4, t1Reg_u4, dcsReg_u4, mask_u4, MODE_ZEROING);
+                vmul(t0Reg_u5, t1Reg_u5, dcsReg_u5, mask_u5, MODE_ZEROING);
+                vmul(t0Reg_u6, t1Reg_u6, dcsReg_u6, mask_u6, MODE_ZEROING);
+                vmul(t0Reg_u0, t0Reg_u0, iReg_u0, mask_u0, MODE_ZEROING);
+                vmul(t0Reg_u1, t0Reg_u1, iReg_u1, mask_u1, MODE_ZEROING);
+                vmul(t0Reg_u2, t0Reg_u2, iReg_u2, mask_u2, MODE_ZEROING);
+                vmul(t0Reg_u3, t0Reg_u3, iReg_u3, mask_u3, MODE_ZEROING);
+                vmul(t0Reg_u4, t0Reg_u4, iReg_u4, mask_u4, MODE_ZEROING);
+                vmul(t0Reg_u5, t0Reg_u5, iReg_u5, mask_u5, MODE_ZEROING);
+                vmul(t0Reg_u6, t0Reg_u6, iReg_u6, mask_u6, MODE_ZEROING);
+                vsts(t0Reg_u0, dciPreUb + off_u0, 0, NORM_B32, mask_u0);
+                vsts(t0Reg_u1, dciPreUb + off_u1, 0, NORM_B32, mask_u1);
+                vsts(t0Reg_u2, dciPreUb + off_u2, 0, NORM_B32, mask_u2);
+                vsts(t0Reg_u3, dciPreUb + off_u3, 0, NORM_B32, mask_u3);
+                vsts(t0Reg_u4, dciPreUb + off_u4, 0, NORM_B32, mask_u4);
+                vsts(t0Reg_u5, dciPreUb + off_u5, 0, NORM_B32, mask_u5);
+                vsts(t0Reg_u6, dciPreUb + off_u6, 0, NORM_B32, mask_u6);
+                vsub(t1Reg_u0, oneReg, fReg_u0, mask_u0, MODE_ZEROING);
+                vsub(t1Reg_u1, oneReg, fReg_u1, mask_u1, MODE_ZEROING);
+                vsub(t1Reg_u2, oneReg, fReg_u2, mask_u2, MODE_ZEROING);
+                vsub(t1Reg_u3, oneReg, fReg_u3, mask_u3, MODE_ZEROING);
+                vsub(t1Reg_u4, oneReg, fReg_u4, mask_u4, MODE_ZEROING);
+                vsub(t1Reg_u5, oneReg, fReg_u5, mask_u5, MODE_ZEROING);
+                vsub(t1Reg_u6, oneReg, fReg_u6, mask_u6, MODE_ZEROING);
+                vmul(t1Reg_u0, fReg_u0, t1Reg_u0, mask_u0, MODE_ZEROING);
+                vmul(t1Reg_u1, fReg_u1, t1Reg_u1, mask_u1, MODE_ZEROING);
+                vmul(t1Reg_u2, fReg_u2, t1Reg_u2, mask_u2, MODE_ZEROING);
+                vmul(t1Reg_u3, fReg_u3, t1Reg_u3, mask_u3, MODE_ZEROING);
+                vmul(t1Reg_u4, fReg_u4, t1Reg_u4, mask_u4, MODE_ZEROING);
+                vmul(t1Reg_u5, fReg_u5, t1Reg_u5, mask_u5, MODE_ZEROING);
+                vmul(t1Reg_u6, fReg_u6, t1Reg_u6, mask_u6, MODE_ZEROING);
+                vmul(t0Reg_u0, t1Reg_u0, dcsReg_u0, mask_u0, MODE_ZEROING);
+                vmul(t0Reg_u1, t1Reg_u1, dcsReg_u1, mask_u1, MODE_ZEROING);
+                vmul(t0Reg_u2, t1Reg_u2, dcsReg_u2, mask_u2, MODE_ZEROING);
+                vmul(t0Reg_u3, t1Reg_u3, dcsReg_u3, mask_u3, MODE_ZEROING);
+                vmul(t0Reg_u4, t1Reg_u4, dcsReg_u4, mask_u4, MODE_ZEROING);
+                vmul(t0Reg_u5, t1Reg_u5, dcsReg_u5, mask_u5, MODE_ZEROING);
+                vmul(t0Reg_u6, t1Reg_u6, dcsReg_u6, mask_u6, MODE_ZEROING);
+                vmul(t0Reg_u0, t0Reg_u0, cspReg_u0, mask_u0, MODE_ZEROING);
+                vmul(t0Reg_u1, t0Reg_u1, cspReg_u1, mask_u1, MODE_ZEROING);
+                vmul(t0Reg_u2, t0Reg_u2, cspReg_u2, mask_u2, MODE_ZEROING);
+                vmul(t0Reg_u3, t0Reg_u3, cspReg_u3, mask_u3, MODE_ZEROING);
+                vmul(t0Reg_u4, t0Reg_u4, cspReg_u4, mask_u4, MODE_ZEROING);
+                vmul(t0Reg_u5, t0Reg_u5, cspReg_u5, mask_u5, MODE_ZEROING);
+                vmul(t0Reg_u6, t0Reg_u6, cspReg_u6, mask_u6, MODE_ZEROING);
+                vsts(t0Reg_u0, dfPreUb + off_u0, 0, NORM_B32, mask_u0);
+                vsts(t0Reg_u1, dfPreUb + off_u1, 0, NORM_B32, mask_u1);
+                vsts(t0Reg_u2, dfPreUb + off_u2, 0, NORM_B32, mask_u2);
+                vsts(t0Reg_u3, dfPreUb + off_u3, 0, NORM_B32, mask_u3);
+                vsts(t0Reg_u4, dfPreUb + off_u4, 0, NORM_B32, mask_u4);
+                vsts(t0Reg_u5, dfPreUb + off_u5, 0, NORM_B32, mask_u5);
+                vsts(t0Reg_u6, dfPreUb + off_u6, 0, NORM_B32, mask_u6);
+            }
+#pragma unroll 1
+            for (uint16_t i = 14; i < 16; ++i) {
+
+                int32_t off = static_cast<int32_t>(i) * static_cast<int32_t>(REP_F32);
+                mask = plt_b32(remaining, POST_UPDATE);
+
+                vlds(dcsReg, dcsUb + off, 0, NORM);
+
+                vlds(ciReg, reinterpret_cast<__ubuf__ float*>(ciUb) + off, 0, NORM);
+                vlds(iReg, reinterpret_cast<__ubuf__ float*>(iUb) + off, 0, NORM);
+                vlds(cspReg, reinterpret_cast<__ubuf__ float*>(csPrevUb) + off, 0, NORM);
+                vlds(fReg, reinterpret_cast<__ubuf__ float*>(fUb) + off, 0, NORM);
+
+                vsub(t1Reg, oneReg, iReg, mask, MODE_ZEROING);
+
+                vmul(t0Reg, iReg, t1Reg, mask, MODE_ZEROING);
+
+                vmul(t0Reg, t0Reg, dcsReg, mask, MODE_ZEROING);
+
+                vmul(t0Reg, t0Reg, ciReg, mask, MODE_ZEROING);
+
+                vsts(t0Reg, diPreUb + off, 0, NORM_B32, mask);
+
+                vmul(t1Reg, ciReg, ciReg, mask, MODE_ZEROING);
+
+                vsub(t1Reg, oneReg, t1Reg, mask, MODE_ZEROING);
+
+                vmul(t0Reg, t1Reg, dcsReg, mask, MODE_ZEROING);
+
+                vmul(t0Reg, t0Reg, iReg, mask, MODE_ZEROING);
+
+                vsts(t0Reg, dciPreUb + off, 0, NORM_B32, mask);
+
+                vsub(t1Reg, oneReg, fReg, mask, MODE_ZEROING);
+
+                vmul(t1Reg, fReg, t1Reg, mask, MODE_ZEROING);
+
+                vmul(t0Reg, t1Reg, dcsReg, mask, MODE_ZEROING);
+
+                vmul(t0Reg, t0Reg, cspReg, mask, MODE_ZEROING);
+
+                vsts(t0Reg, dfPreUb + off, 0, NORM_B32, mask);
+            }
+        }
+    }
+}
+extern "C" __global__ __aicore__ void candidate_kernel(__gm__ uint8_t* input,
+                                                       __gm__ uint8_t* output) {
+    __ubuf__ float* dcsUb = (__ubuf__ float*)get_imm(0);
+    __ubuf__ float* ciUb = (__ubuf__ float*)get_imm(4096);
+    __ubuf__ float* iUb = (__ubuf__ float*)get_imm(8192);
+    __ubuf__ float* csPrevUb = (__ubuf__ float*)get_imm(12288);
+    __ubuf__ float* fUb = (__ubuf__ float*)get_imm(16384);
+    __ubuf__ float* diPreUb = (__ubuf__ float*)get_imm(20480);
+    __ubuf__ float* dciPreUb = (__ubuf__ float*)get_imm(24576);
+    __ubuf__ float* dfPreUb = (__ubuf__ float*)get_imm(28672);
+    copy_gm_to_ubuf_align_v2((__ubuf__ uint8_t*)get_imm(0), input, 0, 1, 20480, 0, 0, 0, 0, 0, 0);
+    set_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    wait_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    candidate_vf(dcsUb, ciUb, iUb, csPrevUb, fUb, diPreUb, dciPreUb, dfPreUb);
+    set_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    wait_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    copy_ubuf_to_gm_align_v2(output + 0, (__ubuf__ uint8_t*)diPreUb, 0, 1, 4096, 0, 0, 0);
+    copy_ubuf_to_gm_align_v2(output + 4096, (__ubuf__ uint8_t*)dciPreUb, 0, 1, 4096, 0, 0, 0);
+    copy_ubuf_to_gm_align_v2(output + 8192, (__ubuf__ uint8_t*)dfPreUb, 0, 1, 4096, 0, 0, 0);
+}

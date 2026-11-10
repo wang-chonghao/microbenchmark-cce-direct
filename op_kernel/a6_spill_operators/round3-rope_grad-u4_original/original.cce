@@ -1,0 +1,240 @@
+/**
+ * Copyright (c) 2026 Huawei Technologies Co., Ltd.
+ * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+ * CANN Open Software License Agreement Version 2.0 (the "License").
+ * Please refer to the License for details. You may not use this file except in compliance with the License.
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+ * See LICENSE in the root of the software repository for the full text of the License.
+ */
+#include "kernel_operator.h"
+#include <cfloat>
+#include <type_traits>
+__aicore__ inline void candidate_vf(__ubuf__ float* in_, __ubuf__ float* cos, __ubuf__ float* sin,
+                                    __ubuf__ float* out) {
+    uint16_t sLength = 48, bLength = 1, nLength = 1;
+    int64_t d = 128, dAlign = 128, ubFactorS = 48, ubFactorN = 1;
+    constexpr uint32_t HALF_COEF = 2, VL_FLOAT32_SIZE = 64;
+
+    uint32_t dHalfSize = d / HALF_COEF;
+    uint16_t dLoopCount = (dHalfSize + VL_FLOAT32_SIZE - 1) / VL_FLOAT32_SIZE;
+    uint32_t dHalfOffset = dAlign / HALF_COEF;
+
+    int32_t bStepUb = ubFactorN * ubFactorS * dAlign;
+    int32_t nStepUb = ubFactorS * dAlign;
+
+    __VEC_SCOPE__ {
+        vector_f32 inPart1Reg, inPart2Reg, cosPart1Reg, cosPart2Reg, sinPart1Reg, sinPart2Reg;
+        vector_bool pregLoop;
+        __ubuf__ float *currInUb, *currOutUb, *currSinUb, *currCosUb;
+#pragma unroll 1
+        for (uint16_t bIdx = 0; bIdx < bLength; bIdx++) {
+#pragma unroll 1
+            for (uint16_t nIdx = 0; nIdx < nLength; nIdx++) {
+                {
+                    vector_f32 cosPart1Reg_u0;
+                    vector_f32 cosPart1Reg_u1;
+                    vector_f32 cosPart1Reg_u2;
+                    vector_f32 cosPart1Reg_u3;
+                    vector_f32 cosPart2Reg_u0;
+                    vector_f32 cosPart2Reg_u1;
+                    vector_f32 cosPart2Reg_u2;
+                    vector_f32 cosPart2Reg_u3;
+                    __ubuf__ float* currCosUb_u0;
+                    __ubuf__ float* currCosUb_u1;
+                    __ubuf__ float* currCosUb_u2;
+                    __ubuf__ float* currCosUb_u3;
+                    __ubuf__ float* currInUb_u0;
+                    __ubuf__ float* currInUb_u1;
+                    __ubuf__ float* currInUb_u2;
+                    __ubuf__ float* currInUb_u3;
+                    __ubuf__ float* currOutUb_u0;
+                    __ubuf__ float* currOutUb_u1;
+                    __ubuf__ float* currOutUb_u2;
+                    __ubuf__ float* currOutUb_u3;
+                    __ubuf__ float* currSinUb_u0;
+                    __ubuf__ float* currSinUb_u1;
+                    __ubuf__ float* currSinUb_u2;
+                    __ubuf__ float* currSinUb_u3;
+                    vector_f32 inPart1Reg_u0;
+                    vector_f32 inPart1Reg_u1;
+                    vector_f32 inPart1Reg_u2;
+                    vector_f32 inPart1Reg_u3;
+                    vector_f32 inPart2Reg_u0;
+                    vector_f32 inPart2Reg_u1;
+                    vector_f32 inPart2Reg_u2;
+                    vector_f32 inPart2Reg_u3;
+                    vector_bool pregLoop_u0;
+                    vector_bool pregLoop_u1;
+                    vector_bool pregLoop_u2;
+                    vector_bool pregLoop_u3;
+                    vector_f32 sinPart1Reg_u0;
+                    vector_f32 sinPart1Reg_u1;
+                    vector_f32 sinPart1Reg_u2;
+                    vector_f32 sinPart1Reg_u3;
+                    vector_f32 sinPart2Reg_u0;
+                    vector_f32 sinPart2Reg_u1;
+                    vector_f32 sinPart2Reg_u2;
+                    vector_f32 sinPart2Reg_u3;
+#pragma unroll 1
+                    for (uint32_t sIdx = 0; sIdx < 48; sIdx += 4) {
+                        uint32_t count_u0 = dHalfSize;
+                        uint32_t count_u1 = dHalfSize;
+                        uint32_t count_u2 = dHalfSize;
+                        uint32_t count_u3 = dHalfSize;
+                        currInUb_u0 = in_ + bIdx * bStepUb + nIdx * nStepUb + (sIdx + 0) * dAlign;
+                        currInUb_u1 = in_ + bIdx * bStepUb + nIdx * nStepUb + (sIdx + 1) * dAlign;
+                        currInUb_u2 = in_ + bIdx * bStepUb + nIdx * nStepUb + (sIdx + 2) * dAlign;
+                        currInUb_u3 = in_ + bIdx * bStepUb + nIdx * nStepUb + (sIdx + 3) * dAlign;
+                        currOutUb_u0 = out + bIdx * bStepUb + nIdx * nStepUb + (sIdx + 0) * dAlign;
+                        currOutUb_u1 = out + bIdx * bStepUb + nIdx * nStepUb + (sIdx + 1) * dAlign;
+                        currOutUb_u2 = out + bIdx * bStepUb + nIdx * nStepUb + (sIdx + 2) * dAlign;
+                        currOutUb_u3 = out + bIdx * bStepUb + nIdx * nStepUb + (sIdx + 3) * dAlign;
+                        currCosUb_u0 = cos + bIdx * nStepUb + (sIdx + 0) * dAlign;
+                        currCosUb_u1 = cos + bIdx * nStepUb + (sIdx + 1) * dAlign;
+                        currCosUb_u2 = cos + bIdx * nStepUb + (sIdx + 2) * dAlign;
+                        currCosUb_u3 = cos + bIdx * nStepUb + (sIdx + 3) * dAlign;
+                        currSinUb_u0 = sin + bIdx * nStepUb + (sIdx + 0) * dAlign;
+                        currSinUb_u1 = sin + bIdx * nStepUb + (sIdx + 1) * dAlign;
+                        currSinUb_u2 = sin + bIdx * nStepUb + (sIdx + 2) * dAlign;
+                        currSinUb_u3 = sin + bIdx * nStepUb + (sIdx + 3) * dAlign;
+#pragma unroll 1
+
+                        for (uint16_t i = 0; i < dLoopCount; i++) {
+                            pregLoop_u0 = plt_b32(count_u0, POST_UPDATE);
+                            vlds(inPart1Reg_u0, currInUb_u0 + (i * VL_FLOAT32_SIZE), 0, NORM);
+                            vlds(inPart2Reg_u0, currInUb_u0 + (i * VL_FLOAT32_SIZE + dHalfOffset),
+                                 0, NORM);
+                            vlds(cosPart1Reg_u0, currCosUb_u0 + (i * VL_FLOAT32_SIZE), 0, NORM);
+                            vlds(cosPart2Reg_u0, currCosUb_u0 + (i * VL_FLOAT32_SIZE + dHalfOffset),
+                                 0, NORM);
+                            vlds(sinPart1Reg_u0, currSinUb_u0 + (i * VL_FLOAT32_SIZE), 0, NORM);
+                            vlds(sinPart2Reg_u0, currSinUb_u0 + (i * VL_FLOAT32_SIZE + dHalfOffset),
+                                 0, NORM);
+                            vmul(cosPart1Reg_u0, inPart1Reg_u0, cosPart1Reg_u0, pregLoop_u0,
+                                 MODE_ZEROING);
+                            vmul(sinPart2Reg_u0, sinPart2Reg_u0, inPart2Reg_u0, pregLoop_u0,
+                                 MODE_ZEROING);
+                            vadd(cosPart1Reg_u0, cosPart1Reg_u0, sinPart2Reg_u0, pregLoop_u0,
+                                 MODE_ZEROING);
+                            vmul(cosPart2Reg_u0, inPart2Reg_u0, cosPart2Reg_u0, pregLoop_u0,
+                                 MODE_ZEROING);
+                            vmul(sinPart1Reg_u0, inPart1Reg_u0, sinPart1Reg_u0, pregLoop_u0,
+                                 MODE_ZEROING);
+                            vsub(cosPart2Reg_u0, cosPart2Reg_u0, sinPart1Reg_u0, pregLoop_u0,
+                                 MODE_ZEROING);
+                            vsts(cosPart1Reg_u0, currOutUb_u0 + (i * VL_FLOAT32_SIZE), 0, NORM_B32,
+                                 pregLoop_u0);
+                            vsts(cosPart2Reg_u0, currOutUb_u0 + (i * VL_FLOAT32_SIZE + dHalfOffset),
+                                 0, NORM_B32, pregLoop_u0);
+                        }
+#pragma unroll 1
+
+                        for (uint16_t i = 0; i < dLoopCount; i++) {
+                            pregLoop_u1 = plt_b32(count_u1, POST_UPDATE);
+                            vlds(inPart1Reg_u1, currInUb_u1 + (i * VL_FLOAT32_SIZE), 0, NORM);
+                            vlds(inPart2Reg_u1, currInUb_u1 + (i * VL_FLOAT32_SIZE + dHalfOffset),
+                                 0, NORM);
+                            vlds(cosPart1Reg_u1, currCosUb_u1 + (i * VL_FLOAT32_SIZE), 0, NORM);
+                            vlds(cosPart2Reg_u1, currCosUb_u1 + (i * VL_FLOAT32_SIZE + dHalfOffset),
+                                 0, NORM);
+                            vlds(sinPart1Reg_u1, currSinUb_u1 + (i * VL_FLOAT32_SIZE), 0, NORM);
+                            vlds(sinPart2Reg_u1, currSinUb_u1 + (i * VL_FLOAT32_SIZE + dHalfOffset),
+                                 0, NORM);
+                            vmul(cosPart1Reg_u1, inPart1Reg_u1, cosPart1Reg_u1, pregLoop_u1,
+                                 MODE_ZEROING);
+                            vmul(sinPart2Reg_u1, sinPart2Reg_u1, inPart2Reg_u1, pregLoop_u1,
+                                 MODE_ZEROING);
+                            vadd(cosPart1Reg_u1, cosPart1Reg_u1, sinPart2Reg_u1, pregLoop_u1,
+                                 MODE_ZEROING);
+                            vmul(cosPart2Reg_u1, inPart2Reg_u1, cosPart2Reg_u1, pregLoop_u1,
+                                 MODE_ZEROING);
+                            vmul(sinPart1Reg_u1, inPart1Reg_u1, sinPart1Reg_u1, pregLoop_u1,
+                                 MODE_ZEROING);
+                            vsub(cosPart2Reg_u1, cosPart2Reg_u1, sinPart1Reg_u1, pregLoop_u1,
+                                 MODE_ZEROING);
+                            vsts(cosPart1Reg_u1, currOutUb_u1 + (i * VL_FLOAT32_SIZE), 0, NORM_B32,
+                                 pregLoop_u1);
+                            vsts(cosPart2Reg_u1, currOutUb_u1 + (i * VL_FLOAT32_SIZE + dHalfOffset),
+                                 0, NORM_B32, pregLoop_u1);
+                        }
+#pragma unroll 1
+
+                        for (uint16_t i = 0; i < dLoopCount; i++) {
+                            pregLoop_u2 = plt_b32(count_u2, POST_UPDATE);
+                            vlds(inPart1Reg_u2, currInUb_u2 + (i * VL_FLOAT32_SIZE), 0, NORM);
+                            vlds(inPart2Reg_u2, currInUb_u2 + (i * VL_FLOAT32_SIZE + dHalfOffset),
+                                 0, NORM);
+                            vlds(cosPart1Reg_u2, currCosUb_u2 + (i * VL_FLOAT32_SIZE), 0, NORM);
+                            vlds(cosPart2Reg_u2, currCosUb_u2 + (i * VL_FLOAT32_SIZE + dHalfOffset),
+                                 0, NORM);
+                            vlds(sinPart1Reg_u2, currSinUb_u2 + (i * VL_FLOAT32_SIZE), 0, NORM);
+                            vlds(sinPart2Reg_u2, currSinUb_u2 + (i * VL_FLOAT32_SIZE + dHalfOffset),
+                                 0, NORM);
+                            vmul(cosPart1Reg_u2, inPart1Reg_u2, cosPart1Reg_u2, pregLoop_u2,
+                                 MODE_ZEROING);
+                            vmul(sinPart2Reg_u2, sinPart2Reg_u2, inPart2Reg_u2, pregLoop_u2,
+                                 MODE_ZEROING);
+                            vadd(cosPart1Reg_u2, cosPart1Reg_u2, sinPart2Reg_u2, pregLoop_u2,
+                                 MODE_ZEROING);
+                            vmul(cosPart2Reg_u2, inPart2Reg_u2, cosPart2Reg_u2, pregLoop_u2,
+                                 MODE_ZEROING);
+                            vmul(sinPart1Reg_u2, inPart1Reg_u2, sinPart1Reg_u2, pregLoop_u2,
+                                 MODE_ZEROING);
+                            vsub(cosPart2Reg_u2, cosPart2Reg_u2, sinPart1Reg_u2, pregLoop_u2,
+                                 MODE_ZEROING);
+                            vsts(cosPart1Reg_u2, currOutUb_u2 + (i * VL_FLOAT32_SIZE), 0, NORM_B32,
+                                 pregLoop_u2);
+                            vsts(cosPart2Reg_u2, currOutUb_u2 + (i * VL_FLOAT32_SIZE + dHalfOffset),
+                                 0, NORM_B32, pregLoop_u2);
+                        }
+#pragma unroll 1
+
+                        for (uint16_t i = 0; i < dLoopCount; i++) {
+                            pregLoop_u3 = plt_b32(count_u3, POST_UPDATE);
+                            vlds(inPart1Reg_u3, currInUb_u3 + (i * VL_FLOAT32_SIZE), 0, NORM);
+                            vlds(inPart2Reg_u3, currInUb_u3 + (i * VL_FLOAT32_SIZE + dHalfOffset),
+                                 0, NORM);
+                            vlds(cosPart1Reg_u3, currCosUb_u3 + (i * VL_FLOAT32_SIZE), 0, NORM);
+                            vlds(cosPart2Reg_u3, currCosUb_u3 + (i * VL_FLOAT32_SIZE + dHalfOffset),
+                                 0, NORM);
+                            vlds(sinPart1Reg_u3, currSinUb_u3 + (i * VL_FLOAT32_SIZE), 0, NORM);
+                            vlds(sinPart2Reg_u3, currSinUb_u3 + (i * VL_FLOAT32_SIZE + dHalfOffset),
+                                 0, NORM);
+                            vmul(cosPart1Reg_u3, inPart1Reg_u3, cosPart1Reg_u3, pregLoop_u3,
+                                 MODE_ZEROING);
+                            vmul(sinPart2Reg_u3, sinPart2Reg_u3, inPart2Reg_u3, pregLoop_u3,
+                                 MODE_ZEROING);
+                            vadd(cosPart1Reg_u3, cosPart1Reg_u3, sinPart2Reg_u3, pregLoop_u3,
+                                 MODE_ZEROING);
+                            vmul(cosPart2Reg_u3, inPart2Reg_u3, cosPart2Reg_u3, pregLoop_u3,
+                                 MODE_ZEROING);
+                            vmul(sinPart1Reg_u3, inPart1Reg_u3, sinPart1Reg_u3, pregLoop_u3,
+                                 MODE_ZEROING);
+                            vsub(cosPart2Reg_u3, cosPart2Reg_u3, sinPart1Reg_u3, pregLoop_u3,
+                                 MODE_ZEROING);
+                            vsts(cosPart1Reg_u3, currOutUb_u3 + (i * VL_FLOAT32_SIZE), 0, NORM_B32,
+                                 pregLoop_u3);
+                            vsts(cosPart2Reg_u3, currOutUb_u3 + (i * VL_FLOAT32_SIZE + dHalfOffset),
+                                 0, NORM_B32, pregLoop_u3);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+extern "C" __global__ __aicore__ void candidate_kernel(__gm__ uint8_t* input,
+                                                       __gm__ uint8_t* output) {
+    __ubuf__ float* in_ = (__ubuf__ float*)get_imm(0);
+    __ubuf__ float* cos = (__ubuf__ float*)get_imm(24576);
+    __ubuf__ float* sin = (__ubuf__ float*)get_imm(49152);
+    __ubuf__ float* out = (__ubuf__ float*)get_imm(73728);
+    copy_gm_to_ubuf_align_v2((__ubuf__ uint8_t*)get_imm(0), input, 0, 1, 73728, 0, 0, 0, 0, 0, 0);
+    set_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    wait_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    candidate_vf(in_, cos, sin, out);
+    set_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    wait_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    copy_ubuf_to_gm_align_v2(output + 0, (__ubuf__ uint8_t*)out, 0, 1, 24576, 0, 0, 0);
+}

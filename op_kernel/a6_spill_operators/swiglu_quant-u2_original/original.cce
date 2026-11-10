@@ -1,0 +1,199 @@
+/**
+ * Copyright (c) 2026 Huawei Technologies Co., Ltd.
+ * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+ * CANN Open Software License Agreement Version 2.0 (the "License").
+ * Please refer to the License for details. You may not use this file except in compliance with the License.
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+ * See LICENSE in the root of the software repository for the full text of the License.
+ */
+#include "kernel_operator.h"
+#include <cfloat>
+#include <type_traits>
+__aicore__ inline void candidate_vf(__ubuf__ half* actAddr, __ubuf__ half* gateAddr,
+                                    __ubuf__ half* gradYAddr, __ubuf__ float* weightAddr,
+                                    __ubuf__ half* gradXAddr) {
+    constexpr uint32_t VF_LEN_FP32 = 64, DIGIT_TWO = 2;
+    uint32_t oneBlockCountB16_ = 16;
+    uint16_t dataLenAB = 1024, blockCount = 1;
+    uint32_t rowWidth = 2048;
+    float alpha_ = 1.702f, limit_ = 2.0f, bias_ = 1.0f;
+
+    const uint32_t alignDim1In =
+        ((dataLenAB + oneBlockCountB16_ - 1) / oneBlockCountB16_) * oneBlockCountB16_;
+    const uint16_t dim1VfTimes = static_cast<uint16_t>(dataLenAB / VF_LEN_FP32);
+    const uint32_t dim1Tail = dataLenAB % VF_LEN_FP32;
+    const uint16_t dim1TailTimes = dim1Tail > 0 ? 1 : 0;
+    const uint32_t validRowWidth = dataLenAB * DIGIT_TWO;
+    uint32_t paddingLen = rowWidth - validRowWidth;
+
+    __VEC_SCOPE__ {
+        vector_f16 regHalf;
+        vector_f32 regA;
+        vector_f32 regB;
+        vector_f32 regGrad;
+        vector_f32 regWeight;
+        vector_f32 regWeightInput;
+        vector_f32 regSig;
+        vector_f32 regTmp;
+        vector_f32 regDa;
+        vector_f32 regDb;
+        vector_f32 regOne;
+        vector_f32 regLimit;
+        vector_f32 regNegLimit;
+        vector_f32 regZero;
+        vector_bool mask;
+        vector_bool maskA;
+        vector_bool maskB;
+        vector_bool maskBn;
+
+        vdup(regLimit, limit_, pset_b32(PAT_ALL), MODE_ZEROING);
+        vdup(regNegLimit, -limit_, pset_b32(PAT_ALL), MODE_ZEROING);
+        vdup(regZero, 0.0f, pset_b32(PAT_ALL), MODE_ZEROING);
+
+        const uint16_t dim1LoopCount = static_cast<uint16_t>(dim1VfTimes + dim1TailTimes);
+        for (uint16_t row = 0; row < blockCount; ++row) {
+
+            vlds(regWeight, weightAddr + row, 0, BRC_B32);
+
+            uint32_t length = dataLenAB;
+            {
+                vector_bool mask_u0;
+                vector_bool mask_u1;
+                vector_bool maskA_u0;
+                vector_bool maskA_u1;
+                vector_bool maskB_u0;
+                vector_bool maskB_u1;
+                vector_bool maskBn_u0;
+                vector_bool maskBn_u1;
+                vector_f32 regA_u0;
+                vector_f32 regA_u1;
+                vector_f32 regB_u0;
+                vector_f32 regB_u1;
+                vector_f32 regDa_u0;
+                vector_f32 regDa_u1;
+                vector_f32 regDb_u0;
+                vector_f32 regDb_u1;
+                vector_f32 regGrad_u0;
+                vector_f32 regGrad_u1;
+                vector_f16 regHalf_u0;
+                vector_f16 regHalf_u1;
+                vector_f32 regOne_u0;
+                vector_f32 regOne_u1;
+                vector_f32 regSig_u0;
+                vector_f32 regSig_u1;
+                vector_f32 regTmp_u0;
+                vector_f32 regTmp_u1;
+#pragma unroll 1
+                for (uint16_t col = 0; col < 16; col += 2) {
+                    mask_u0 = plt_b32(length, POST_UPDATE);
+                    mask_u1 = plt_b32(length, POST_UPDATE);
+                    uint32_t inOffset_u0 = ((row) * (alignDim1In) + ((col + 0)) * (VF_LEN_FP32));
+                    uint32_t inOffset_u1 = ((row) * (alignDim1In) + ((col + 1)) * (VF_LEN_FP32));
+                    vlds(regHalf_u0, actAddr, inOffset_u0, UNPK_B16);
+                    vlds(regHalf_u1, actAddr, inOffset_u1, UNPK_B16);
+                    vcvt(regA_u0, regHalf_u0, mask_u0, PART_EVEN, MODE_ZEROING);
+                    vcvt(regA_u1, regHalf_u1, mask_u1, PART_EVEN, MODE_ZEROING);
+                    vlds(regHalf_u0, gateAddr, inOffset_u0, UNPK_B16);
+                    vlds(regHalf_u1, gateAddr, inOffset_u1, UNPK_B16);
+                    vcvt(regB_u0, regHalf_u0, mask_u0, PART_EVEN, MODE_ZEROING);
+                    vcvt(regB_u1, regHalf_u1, mask_u1, PART_EVEN, MODE_ZEROING);
+                    vlds(regHalf_u0, gradYAddr, inOffset_u0, UNPK_B16);
+                    vlds(regHalf_u1, gradYAddr, inOffset_u1, UNPK_B16);
+                    vcvt(regGrad_u0, regHalf_u0, mask_u0, PART_EVEN, MODE_ZEROING);
+                    vcvt(regGrad_u1, regHalf_u1, mask_u1, PART_EVEN, MODE_ZEROING);
+                    vmul(regGrad_u0, regGrad_u0, regWeight, mask_u0, MODE_ZEROING);
+                    vmul(regGrad_u1, regGrad_u1, regWeight, mask_u1, MODE_ZEROING);
+                    vcmp_le(maskA_u0, regA_u0, regLimit, mask_u0);
+                    vcmp_le(maskA_u1, regA_u1, regLimit, mask_u1);
+                    vcmp_le(maskB_u0, regB_u0, regLimit, mask_u0);
+                    vcmp_le(maskB_u1, regB_u1, regLimit, mask_u1);
+                    vcmp_ge(maskBn_u0, regB_u0, regNegLimit, mask_u0);
+                    vcmp_ge(maskBn_u1, regB_u1, regNegLimit, mask_u1);
+                    vmins(regA_u0, regA_u0, limit_, mask_u0, MODE_ZEROING);
+                    vmins(regA_u1, regA_u1, limit_, mask_u1, MODE_ZEROING);
+                    vmuls(regSig_u0, regA_u0, -alpha_, mask_u0, MODE_ZEROING);
+                    vmuls(regSig_u1, regA_u1, -alpha_, mask_u1, MODE_ZEROING);
+                    vexp(regSig_u0, regSig_u0, mask_u0, MODE_ZEROING);
+                    vexp(regSig_u1, regSig_u1, mask_u1, MODE_ZEROING);
+                    vadds(regSig_u0, regSig_u0, 1.0f, mask_u0, MODE_ZEROING);
+                    vadds(regSig_u1, regSig_u1, 1.0f, mask_u1, MODE_ZEROING);
+                    vdup(regOne_u0, 1.0f, mask_u0, MODE_ZEROING);
+                    vdup(regOne_u1, 1.0f, mask_u1, MODE_ZEROING);
+                    vdiv(regSig_u0, regOne_u0, regSig_u0, mask_u0, MODE_ZEROING);
+                    vdiv(regSig_u1, regOne_u1, regSig_u1, mask_u1, MODE_ZEROING);
+                    vmins(regB_u0, regB_u0, limit_, mask_u0, MODE_ZEROING);
+                    vmins(regB_u1, regB_u1, limit_, mask_u1, MODE_ZEROING);
+                    vmaxs(regB_u0, regB_u0, -limit_, mask_u0, MODE_ZEROING);
+                    vmaxs(regB_u1, regB_u1, -limit_, mask_u1, MODE_ZEROING);
+                    vadds(regB_u0, regB_u0, bias_, mask_u0, MODE_ZEROING);
+                    vadds(regB_u1, regB_u1, bias_, mask_u1, MODE_ZEROING);
+                    vmul(regDb_u0, regGrad_u0, regA_u0, mask_u0, MODE_ZEROING);
+                    vmul(regDb_u1, regGrad_u1, regA_u1, mask_u1, MODE_ZEROING);
+                    vmul(regDb_u0, regDb_u0, regSig_u0, mask_u0, MODE_ZEROING);
+                    vmul(regDb_u1, regDb_u1, regSig_u1, mask_u1, MODE_ZEROING);
+                    vsel(regDb_u0, regDb_u0, regZero, maskB_u0);
+                    vsel(regDb_u1, regDb_u1, regZero, maskB_u1);
+                    vsel(regDb_u0, regDb_u0, regZero, maskBn_u0);
+                    vsel(regDb_u1, regDb_u1, regZero, maskBn_u1);
+                    vmuls(regTmp_u0, regSig_u0, -1.0f, mask_u0, MODE_ZEROING);
+                    vmuls(regTmp_u1, regSig_u1, -1.0f, mask_u1, MODE_ZEROING);
+                    vadds(regTmp_u0, regTmp_u0, 1.0f, mask_u0, MODE_ZEROING);
+                    vadds(regTmp_u1, regTmp_u1, 1.0f, mask_u1, MODE_ZEROING);
+                    vmul(regTmp_u0, regTmp_u0, regA_u0, mask_u0, MODE_ZEROING);
+                    vmul(regTmp_u1, regTmp_u1, regA_u1, mask_u1, MODE_ZEROING);
+                    vmuls(regTmp_u0, regTmp_u0, alpha_, mask_u0, MODE_ZEROING);
+                    vmuls(regTmp_u1, regTmp_u1, alpha_, mask_u1, MODE_ZEROING);
+                    vadds(regTmp_u0, regTmp_u0, 1.0f, mask_u0, MODE_ZEROING);
+                    vadds(regTmp_u1, regTmp_u1, 1.0f, mask_u1, MODE_ZEROING);
+                    vmul(regTmp_u0, regTmp_u0, regSig_u0, mask_u0, MODE_ZEROING);
+                    vmul(regTmp_u1, regTmp_u1, regSig_u1, mask_u1, MODE_ZEROING);
+                    vmul(regTmp_u0, regTmp_u0, regB_u0, mask_u0, MODE_ZEROING);
+                    vmul(regTmp_u1, regTmp_u1, regB_u1, mask_u1, MODE_ZEROING);
+                    vmul(regDa_u0, regTmp_u0, regGrad_u0, mask_u0, MODE_ZEROING);
+                    vmul(regDa_u1, regTmp_u1, regGrad_u1, mask_u1, MODE_ZEROING);
+                    vsel(regDa_u0, regDa_u0, regZero, maskA_u0);
+                    vsel(regDa_u1, regDa_u1, regZero, maskA_u1);
+                    uint32_t outOffset_u0 = ((row) * (rowWidth) + ((col + 0)) * (VF_LEN_FP32));
+                    uint32_t outOffset_u1 = ((row) * (rowWidth) + ((col + 1)) * (VF_LEN_FP32));
+                    vcvt(regHalf_u0, regDa_u0, mask_u0, ROUND_R, RS_DISABLE, PART_EVEN,
+                         MODE_ZEROING);
+                    vcvt(regHalf_u1, regDa_u1, mask_u1, ROUND_R, RS_DISABLE, PART_EVEN,
+                         MODE_ZEROING);
+                    vsts(regHalf_u0, gradXAddr, outOffset_u0, PK_B32, mask_u0);
+                    vsts(regHalf_u1, gradXAddr, outOffset_u1, PK_B32, mask_u1);
+                    vcvt(regHalf_u0, regDb_u0, mask_u0, ROUND_R, RS_DISABLE, PART_EVEN,
+                         MODE_ZEROING);
+                    vcvt(regHalf_u1, regDb_u1, mask_u1, ROUND_R, RS_DISABLE, PART_EVEN,
+                         MODE_ZEROING);
+                    vsts(regHalf_u0, gradXAddr + dataLenAB, outOffset_u0, PK_B32, mask_u0);
+                    vsts(regHalf_u1, gradXAddr + dataLenAB, outOffset_u1, PK_B32, mask_u1);
+                }
+            }
+        }
+
+        if (paddingLen > 0) {
+            vdup(regHalf, static_cast<half>(0), pset_b32(PAT_ALL), MODE_ZEROING);
+            mask = plt_b32(paddingLen, POST_UPDATE);
+            for (uint16_t row = 0; row < blockCount; ++row) {
+                uint32_t paddingOffset = ((row) * (rowWidth));
+                vsts(regHalf, gradXAddr + validRowWidth, paddingOffset, NORM_B32, mask);
+            }
+        }
+    }
+}
+extern "C" __global__ __aicore__ void candidate_kernel(__gm__ uint8_t* input,
+                                                       __gm__ uint8_t* output) {
+    __ubuf__ half* actAddr = (__ubuf__ half*)get_imm(0);
+    __ubuf__ half* gateAddr = (__ubuf__ half*)get_imm(2048);
+    __ubuf__ half* gradYAddr = (__ubuf__ half*)get_imm(4096);
+    __ubuf__ float* weightAddr = (__ubuf__ float*)get_imm(6144);
+    __ubuf__ half* gradXAddr = (__ubuf__ half*)get_imm(6400);
+    copy_gm_to_ubuf_align_v2((__ubuf__ uint8_t*)get_imm(0), input, 0, 1, 6400, 0, 0, 0, 0, 0, 0);
+    set_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    wait_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    candidate_vf(actAddr, gateAddr, gradYAddr, weightAddr, gradXAddr);
+    set_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    wait_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    copy_ubuf_to_gm_align_v2(output + 0, (__ubuf__ uint8_t*)gradXAddr, 0, 1, 4096, 0, 0, 0);
+}

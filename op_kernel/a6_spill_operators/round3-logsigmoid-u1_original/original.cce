@@ -1,0 +1,73 @@
+/**
+ * Copyright (c) 2026 Huawei Technologies Co., Ltd.
+ * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+ * CANN Open Software License Agreement Version 2.0 (the "License").
+ * Please refer to the License for details. You may not use this file except in compliance with the License.
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE. 
+ * See LICENSE in the root of the software repository for the full text of the License.
+ */
+#include "kernel_operator.h"
+#include <cfloat>
+#include <type_traits>
+__aicore__ inline void candidate_vf(__ubuf__ float* srcAddr, __ubuf__ float* dstAddr) {
+    uint32_t count = 3072, vlSize = 64;
+    uint16_t loopNum = 48;
+    float valZero = 0.0f, valPosOne = 1.0f, valNegOne = -1.0f;
+    __VEC_SCOPE__ {
+
+        vector_f32 x;
+        vector_f32 zeroReg;
+        vector_f32 xAbs;
+        vector_f32 xAbsNeg;
+        vector_f32 expRes;
+        vector_f32 expResPlusOne;
+        vector_f32 expResPlusOneSubOne;
+        vector_f32 logExpXPlus1;
+        vector_f32 divRes;
+        vector_f32 mulRes;
+        vector_f32 minRes;
+        vector_f32 selectRes;
+        vector_f32 ans;
+
+        vector_bool mask;
+        vector_bool cmpLog1pPosvector_bool;
+
+        vdup(zeroReg, valZero, pset_b32(PAT_ALL), MODE_ZEROING);
+
+#pragma unroll 1
+
+        for (uint16_t loopIdx = 0; loopIdx < loopNum; loopIdx++) {
+
+            mask = plt_b32(count, POST_UPDATE);
+            vlds(x, (srcAddr + loopIdx * vlSize), 0, NORM);
+            vmin(minRes, x, zeroReg, mask, MODE_ZEROING);
+            vabs(xAbs, x, mask, MODE_ZEROING);
+            vmuls(xAbsNeg, xAbs, valNegOne, mask, MODE_ZEROING);
+            vexp(expRes, xAbsNeg, mask, MODE_ZEROING);
+
+            vadds(expResPlusOne, expRes, valPosOne, mask, MODE_ZEROING);
+            vadds(expResPlusOneSubOne, expResPlusOne, valNegOne, mask, MODE_ZEROING);
+            vdiv(divRes, expRes, expResPlusOneSubOne, mask, MODE_ZEROING);
+            vln(logExpXPlus1, expResPlusOne, mask, MODE_ZEROING);
+            vmul(mulRes, logExpXPlus1, divRes, mask, MODE_ZEROING);
+            vcmps_ne(cmpLog1pPosvector_bool, expResPlusOne, valPosOne, mask);
+            vsel(selectRes, mulRes, expRes, cmpLog1pPosvector_bool);
+            vsub(ans, minRes, selectRes, mask, MODE_ZEROING);
+
+            vsts(ans, (dstAddr + loopIdx * vlSize), 0, NORM_B32, mask);
+        }
+    }
+}
+extern "C" __global__ __aicore__ void candidate_kernel(__gm__ uint8_t* input,
+                                                       __gm__ uint8_t* output) {
+    __ubuf__ float* srcAddr = (__ubuf__ float*)get_imm(0);
+    __ubuf__ float* dstAddr = (__ubuf__ float*)get_imm(12288);
+    copy_gm_to_ubuf_align_v2((__ubuf__ uint8_t*)get_imm(0), input, 0, 1, 12288, 0, 0, 0, 0, 0, 0);
+    set_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    wait_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    candidate_vf(srcAddr, dstAddr);
+    set_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    wait_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    copy_ubuf_to_gm_align_v2(output + 0, (__ubuf__ uint8_t*)dstAddr, 0, 1, 12288, 0, 0, 0);
+}

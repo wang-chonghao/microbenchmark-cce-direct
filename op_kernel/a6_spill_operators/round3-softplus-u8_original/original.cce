@@ -1,0 +1,220 @@
+/**
+ * Copyright (c) 2025 Huawei Technologies Co., Ltd.
+ * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+ * CANN Open Software License Agreement Version 2.0 (the "License").
+ * Please refer to the License for details. You may not use this file except in compliance with the License.
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+ * See LICENSE in the root of the software repository for the full text of the License.
+ */
+#include "kernel_operator.h"
+#include <cfloat>
+#include <type_traits>
+__aicore__ inline void candidate_vf(__ubuf__ float* src, __ubuf__ float* dst) {
+    uint32_t count = 3072;
+    __VEC_SCOPE__ {
+        vector_f32 x, pos, neg, t, pres, nres, y;
+        vector_bool mask;
+        {
+            vector_bool mask_u0;
+            vector_bool mask_u1;
+            vector_bool mask_u2;
+            vector_bool mask_u3;
+            vector_bool mask_u4;
+            vector_bool mask_u5;
+            vector_bool mask_u6;
+            vector_bool mask_u7;
+            vector_f32 neg_u0;
+            vector_f32 neg_u1;
+            vector_f32 neg_u2;
+            vector_f32 neg_u3;
+            vector_f32 neg_u4;
+            vector_f32 neg_u5;
+            vector_f32 neg_u6;
+            vector_f32 neg_u7;
+            vector_f32 nres_u0;
+            vector_f32 nres_u1;
+            vector_f32 nres_u2;
+            vector_f32 nres_u3;
+            vector_f32 nres_u4;
+            vector_f32 nres_u5;
+            vector_f32 nres_u6;
+            vector_f32 nres_u7;
+            vector_f32 pos_u0;
+            vector_f32 pos_u1;
+            vector_f32 pos_u2;
+            vector_f32 pos_u3;
+            vector_f32 pos_u4;
+            vector_f32 pos_u5;
+            vector_f32 pos_u6;
+            vector_f32 pos_u7;
+            vector_f32 pres_u0;
+            vector_f32 pres_u1;
+            vector_f32 pres_u2;
+            vector_f32 pres_u3;
+            vector_f32 pres_u4;
+            vector_f32 pres_u5;
+            vector_f32 pres_u6;
+            vector_f32 pres_u7;
+            vector_f32 t_u0;
+            vector_f32 t_u1;
+            vector_f32 t_u2;
+            vector_f32 t_u3;
+            vector_f32 t_u4;
+            vector_f32 t_u5;
+            vector_f32 t_u6;
+            vector_f32 t_u7;
+            vector_f32 x_u0;
+            vector_f32 x_u1;
+            vector_f32 x_u2;
+            vector_f32 x_u3;
+            vector_f32 x_u4;
+            vector_f32 x_u5;
+            vector_f32 x_u6;
+            vector_f32 x_u7;
+            vector_f32 y_u0;
+            vector_f32 y_u1;
+            vector_f32 y_u2;
+            vector_f32 y_u3;
+            vector_f32 y_u4;
+            vector_f32 y_u5;
+            vector_f32 y_u6;
+            vector_f32 y_u7;
+#pragma unroll 1
+            for (uint32_t i = 0; i < 48; i += 8) {
+                mask_u0 = plt_b32(count, POST_UPDATE);
+                mask_u1 = plt_b32(count, POST_UPDATE);
+                mask_u2 = plt_b32(count, POST_UPDATE);
+                mask_u3 = plt_b32(count, POST_UPDATE);
+                mask_u4 = plt_b32(count, POST_UPDATE);
+                mask_u5 = plt_b32(count, POST_UPDATE);
+                mask_u6 = plt_b32(count, POST_UPDATE);
+                mask_u7 = plt_b32(count, POST_UPDATE);
+                vlds(x_u0, src + (i + 0) * 64, 0, NORM);
+                vlds(x_u1, src + (i + 1) * 64, 0, NORM);
+                vlds(x_u2, src + (i + 2) * 64, 0, NORM);
+                vlds(x_u3, src + (i + 3) * 64, 0, NORM);
+                vlds(x_u4, src + (i + 4) * 64, 0, NORM);
+                vlds(x_u5, src + (i + 5) * 64, 0, NORM);
+                vlds(x_u6, src + (i + 6) * 64, 0, NORM);
+                vlds(x_u7, src + (i + 7) * 64, 0, NORM);
+                vmaxs(pos_u0, x_u0, 0.0f, mask_u0, MODE_ZEROING);
+                vmaxs(pos_u1, x_u1, 0.0f, mask_u1, MODE_ZEROING);
+                vmaxs(pos_u2, x_u2, 0.0f, mask_u2, MODE_ZEROING);
+                vmaxs(pos_u3, x_u3, 0.0f, mask_u3, MODE_ZEROING);
+                vmaxs(pos_u4, x_u4, 0.0f, mask_u4, MODE_ZEROING);
+                vmaxs(pos_u5, x_u5, 0.0f, mask_u5, MODE_ZEROING);
+                vmaxs(pos_u6, x_u6, 0.0f, mask_u6, MODE_ZEROING);
+                vmaxs(pos_u7, x_u7, 0.0f, mask_u7, MODE_ZEROING);
+                vmuls(t_u0, pos_u0, -1.0f, mask_u0, MODE_ZEROING);
+                vmuls(t_u1, pos_u1, -1.0f, mask_u1, MODE_ZEROING);
+                vmuls(t_u2, pos_u2, -1.0f, mask_u2, MODE_ZEROING);
+                vmuls(t_u3, pos_u3, -1.0f, mask_u3, MODE_ZEROING);
+                vmuls(t_u4, pos_u4, -1.0f, mask_u4, MODE_ZEROING);
+                vmuls(t_u5, pos_u5, -1.0f, mask_u5, MODE_ZEROING);
+                vmuls(t_u6, pos_u6, -1.0f, mask_u6, MODE_ZEROING);
+                vmuls(t_u7, pos_u7, -1.0f, mask_u7, MODE_ZEROING);
+                vexp(t_u0, t_u0, mask_u0, MODE_ZEROING);
+                vexp(t_u1, t_u1, mask_u1, MODE_ZEROING);
+                vexp(t_u2, t_u2, mask_u2, MODE_ZEROING);
+                vexp(t_u3, t_u3, mask_u3, MODE_ZEROING);
+                vexp(t_u4, t_u4, mask_u4, MODE_ZEROING);
+                vexp(t_u5, t_u5, mask_u5, MODE_ZEROING);
+                vexp(t_u6, t_u6, mask_u6, MODE_ZEROING);
+                vexp(t_u7, t_u7, mask_u7, MODE_ZEROING);
+                vadds(t_u0, t_u0, 1.0f, mask_u0, MODE_ZEROING);
+                vadds(t_u1, t_u1, 1.0f, mask_u1, MODE_ZEROING);
+                vadds(t_u2, t_u2, 1.0f, mask_u2, MODE_ZEROING);
+                vadds(t_u3, t_u3, 1.0f, mask_u3, MODE_ZEROING);
+                vadds(t_u4, t_u4, 1.0f, mask_u4, MODE_ZEROING);
+                vadds(t_u5, t_u5, 1.0f, mask_u5, MODE_ZEROING);
+                vadds(t_u6, t_u6, 1.0f, mask_u6, MODE_ZEROING);
+                vadds(t_u7, t_u7, 1.0f, mask_u7, MODE_ZEROING);
+                vln(pres_u0, t_u0, mask_u0, MODE_ZEROING);
+                vln(pres_u1, t_u1, mask_u1, MODE_ZEROING);
+                vln(pres_u2, t_u2, mask_u2, MODE_ZEROING);
+                vln(pres_u3, t_u3, mask_u3, MODE_ZEROING);
+                vln(pres_u4, t_u4, mask_u4, MODE_ZEROING);
+                vln(pres_u5, t_u5, mask_u5, MODE_ZEROING);
+                vln(pres_u6, t_u6, mask_u6, MODE_ZEROING);
+                vln(pres_u7, t_u7, mask_u7, MODE_ZEROING);
+                vadd(pres_u0, pres_u0, pos_u0, mask_u0, MODE_ZEROING);
+                vadd(pres_u1, pres_u1, pos_u1, mask_u1, MODE_ZEROING);
+                vadd(pres_u2, pres_u2, pos_u2, mask_u2, MODE_ZEROING);
+                vadd(pres_u3, pres_u3, pos_u3, mask_u3, MODE_ZEROING);
+                vadd(pres_u4, pres_u4, pos_u4, mask_u4, MODE_ZEROING);
+                vadd(pres_u5, pres_u5, pos_u5, mask_u5, MODE_ZEROING);
+                vadd(pres_u6, pres_u6, pos_u6, mask_u6, MODE_ZEROING);
+                vadd(pres_u7, pres_u7, pos_u7, mask_u7, MODE_ZEROING);
+                vmins(neg_u0, x_u0, 0.0f, mask_u0, MODE_ZEROING);
+                vmins(neg_u1, x_u1, 0.0f, mask_u1, MODE_ZEROING);
+                vmins(neg_u2, x_u2, 0.0f, mask_u2, MODE_ZEROING);
+                vmins(neg_u3, x_u3, 0.0f, mask_u3, MODE_ZEROING);
+                vmins(neg_u4, x_u4, 0.0f, mask_u4, MODE_ZEROING);
+                vmins(neg_u5, x_u5, 0.0f, mask_u5, MODE_ZEROING);
+                vmins(neg_u6, x_u6, 0.0f, mask_u6, MODE_ZEROING);
+                vmins(neg_u7, x_u7, 0.0f, mask_u7, MODE_ZEROING);
+                vexp(t_u0, neg_u0, mask_u0, MODE_ZEROING);
+                vexp(t_u1, neg_u1, mask_u1, MODE_ZEROING);
+                vexp(t_u2, neg_u2, mask_u2, MODE_ZEROING);
+                vexp(t_u3, neg_u3, mask_u3, MODE_ZEROING);
+                vexp(t_u4, neg_u4, mask_u4, MODE_ZEROING);
+                vexp(t_u5, neg_u5, mask_u5, MODE_ZEROING);
+                vexp(t_u6, neg_u6, mask_u6, MODE_ZEROING);
+                vexp(t_u7, neg_u7, mask_u7, MODE_ZEROING);
+                vadds(t_u0, t_u0, 1.0f, mask_u0, MODE_ZEROING);
+                vadds(t_u1, t_u1, 1.0f, mask_u1, MODE_ZEROING);
+                vadds(t_u2, t_u2, 1.0f, mask_u2, MODE_ZEROING);
+                vadds(t_u3, t_u3, 1.0f, mask_u3, MODE_ZEROING);
+                vadds(t_u4, t_u4, 1.0f, mask_u4, MODE_ZEROING);
+                vadds(t_u5, t_u5, 1.0f, mask_u5, MODE_ZEROING);
+                vadds(t_u6, t_u6, 1.0f, mask_u6, MODE_ZEROING);
+                vadds(t_u7, t_u7, 1.0f, mask_u7, MODE_ZEROING);
+                vln(nres_u0, t_u0, mask_u0, MODE_ZEROING);
+                vln(nres_u1, t_u1, mask_u1, MODE_ZEROING);
+                vln(nres_u2, t_u2, mask_u2, MODE_ZEROING);
+                vln(nres_u3, t_u3, mask_u3, MODE_ZEROING);
+                vln(nres_u4, t_u4, mask_u4, MODE_ZEROING);
+                vln(nres_u5, t_u5, mask_u5, MODE_ZEROING);
+                vln(nres_u6, t_u6, mask_u6, MODE_ZEROING);
+                vln(nres_u7, t_u7, mask_u7, MODE_ZEROING);
+                vadd(y_u0, pres_u0, nres_u0, mask_u0, MODE_ZEROING);
+                vadd(y_u1, pres_u1, nres_u1, mask_u1, MODE_ZEROING);
+                vadd(y_u2, pres_u2, nres_u2, mask_u2, MODE_ZEROING);
+                vadd(y_u3, pres_u3, nres_u3, mask_u3, MODE_ZEROING);
+                vadd(y_u4, pres_u4, nres_u4, mask_u4, MODE_ZEROING);
+                vadd(y_u5, pres_u5, nres_u5, mask_u5, MODE_ZEROING);
+                vadd(y_u6, pres_u6, nres_u6, mask_u6, MODE_ZEROING);
+                vadd(y_u7, pres_u7, nres_u7, mask_u7, MODE_ZEROING);
+                vadds(y_u0, y_u0, -0.6931471805599453f, mask_u0, MODE_ZEROING);
+                vadds(y_u1, y_u1, -0.6931471805599453f, mask_u1, MODE_ZEROING);
+                vadds(y_u2, y_u2, -0.6931471805599453f, mask_u2, MODE_ZEROING);
+                vadds(y_u3, y_u3, -0.6931471805599453f, mask_u3, MODE_ZEROING);
+                vadds(y_u4, y_u4, -0.6931471805599453f, mask_u4, MODE_ZEROING);
+                vadds(y_u5, y_u5, -0.6931471805599453f, mask_u5, MODE_ZEROING);
+                vadds(y_u6, y_u6, -0.6931471805599453f, mask_u6, MODE_ZEROING);
+                vadds(y_u7, y_u7, -0.6931471805599453f, mask_u7, MODE_ZEROING);
+                vsts(y_u0, dst + (i + 0) * 64, 0, NORM_B32, mask_u0);
+                vsts(y_u1, dst + (i + 1) * 64, 0, NORM_B32, mask_u1);
+                vsts(y_u2, dst + (i + 2) * 64, 0, NORM_B32, mask_u2);
+                vsts(y_u3, dst + (i + 3) * 64, 0, NORM_B32, mask_u3);
+                vsts(y_u4, dst + (i + 4) * 64, 0, NORM_B32, mask_u4);
+                vsts(y_u5, dst + (i + 5) * 64, 0, NORM_B32, mask_u5);
+                vsts(y_u6, dst + (i + 6) * 64, 0, NORM_B32, mask_u6);
+                vsts(y_u7, dst + (i + 7) * 64, 0, NORM_B32, mask_u7);
+            }
+        }
+    }
+}
+extern "C" __global__ __aicore__ void candidate_kernel(__gm__ uint8_t* input,
+                                                       __gm__ uint8_t* output) {
+    __ubuf__ float* src = (__ubuf__ float*)get_imm(0);
+    __ubuf__ float* dst = (__ubuf__ float*)get_imm(12288);
+    copy_gm_to_ubuf_align_v2((__ubuf__ uint8_t*)get_imm(0), input, 0, 1, 12288, 0, 0, 0, 0, 0, 0);
+    set_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    wait_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    candidate_vf(src, dst);
+    set_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    wait_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    copy_ubuf_to_gm_align_v2(output + 0, (__ubuf__ uint8_t*)dst, 0, 1, 12288, 0, 0, 0);
+}

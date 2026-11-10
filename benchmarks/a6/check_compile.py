@@ -4,6 +4,7 @@ import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
 import os
+import shlex
 from pathlib import Path
 import sys
 
@@ -36,7 +37,9 @@ def main():
         source.write_bytes((args.cases / case["source"]).read_bytes())
         cmd = [sys.executable, "-m", "benchmarks.a6.compile_probe", "--kernel", str(source),
                "--output", str(dest), "--cann-home", args.cann_home]
-        code = run_command(cmd, dest / "console.log", 180, os.environ.copy())
+        env = os.environ.copy()
+        env["CCEC_EXTRA_FLAGS"] = shlex.join(shlex.split(env.get("CCEC_EXTRA_FLAGS", "")) + case.get("compiler_flags", []))
+        code = run_command(cmd, dest / "console.log", 180, env)
         return dict(name=case["name"], returncode=code, source_sha256=case["source_sha256"])
 
     rows = []

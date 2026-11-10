@@ -1,0 +1,244 @@
+/**
+ * Copyright (c) 2026 Huawei Technologies Co., Ltd.
+ * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+ * CANN Open Software License Agreement Version 2.0 (the "License").
+ * Please refer to the License for details. You may not use this file except in compliance with the License.
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+ * See LICENSE in the root of the software repository for the full text of the License.
+ */
+#include "kernel_operator.h"
+#include <cfloat>
+#include <type_traits>
+__aicore__ inline void candidate_vf(__ubuf__ float* src0Addr, __ubuf__ float* src1Addr,
+                                    __ubuf__ float* dstAddr) {
+    uint32_t count = 3072, vlSize = 64;
+    uint16_t loopNum = 48;
+    vector_f32 DataOne;
+    vector_f32 DataZero;
+    vector_f32 vregInputGradOut;
+    vector_f32 vregInputSelf;
+    vector_f32 SelfAbs;
+    vector_f32 SelfAbsNeg;
+    vector_f32 SelfAbsNegExp;
+    vector_f32 SelfAbsNegExpAdd;
+    vector_f32 vregSelect;
+    vector_f32 Answer;
+    vector_f32 LastAnswer;
+    vector_bool mask, cmpMask;
+
+    __VEC_SCOPE__ {
+        vdup(DataOne, (float)1.0, pset_b32(PAT_ALL), MODE_ZEROING);
+        vdup(DataZero, (float)0.0, pset_b32(PAT_ALL), MODE_ZEROING);
+        {
+            vector_f32 Answer_u0;
+            vector_f32 Answer_u1;
+            vector_f32 Answer_u2;
+            vector_f32 Answer_u3;
+            vector_f32 Answer_u4;
+            vector_f32 Answer_u5;
+            vector_f32 Answer_u6;
+            vector_f32 Answer_u7;
+            vector_f32 LastAnswer_u0;
+            vector_f32 LastAnswer_u1;
+            vector_f32 LastAnswer_u2;
+            vector_f32 LastAnswer_u3;
+            vector_f32 LastAnswer_u4;
+            vector_f32 LastAnswer_u5;
+            vector_f32 LastAnswer_u6;
+            vector_f32 LastAnswer_u7;
+            vector_f32 SelfAbs_u0;
+            vector_f32 SelfAbs_u1;
+            vector_f32 SelfAbs_u2;
+            vector_f32 SelfAbs_u3;
+            vector_f32 SelfAbs_u4;
+            vector_f32 SelfAbs_u5;
+            vector_f32 SelfAbs_u6;
+            vector_f32 SelfAbs_u7;
+            vector_f32 SelfAbsNeg_u0;
+            vector_f32 SelfAbsNeg_u1;
+            vector_f32 SelfAbsNeg_u2;
+            vector_f32 SelfAbsNeg_u3;
+            vector_f32 SelfAbsNeg_u4;
+            vector_f32 SelfAbsNeg_u5;
+            vector_f32 SelfAbsNeg_u6;
+            vector_f32 SelfAbsNeg_u7;
+            vector_f32 SelfAbsNegExp_u0;
+            vector_f32 SelfAbsNegExp_u1;
+            vector_f32 SelfAbsNegExp_u2;
+            vector_f32 SelfAbsNegExp_u3;
+            vector_f32 SelfAbsNegExp_u4;
+            vector_f32 SelfAbsNegExp_u5;
+            vector_f32 SelfAbsNegExp_u6;
+            vector_f32 SelfAbsNegExp_u7;
+            vector_f32 SelfAbsNegExpAdd_u0;
+            vector_f32 SelfAbsNegExpAdd_u1;
+            vector_f32 SelfAbsNegExpAdd_u2;
+            vector_f32 SelfAbsNegExpAdd_u3;
+            vector_f32 SelfAbsNegExpAdd_u4;
+            vector_f32 SelfAbsNegExpAdd_u5;
+            vector_f32 SelfAbsNegExpAdd_u6;
+            vector_f32 SelfAbsNegExpAdd_u7;
+            vector_bool cmpMask_u0;
+            vector_bool cmpMask_u1;
+            vector_bool cmpMask_u2;
+            vector_bool cmpMask_u3;
+            vector_bool cmpMask_u4;
+            vector_bool cmpMask_u5;
+            vector_bool cmpMask_u6;
+            vector_bool cmpMask_u7;
+            vector_bool mask_u0;
+            vector_bool mask_u1;
+            vector_bool mask_u2;
+            vector_bool mask_u3;
+            vector_bool mask_u4;
+            vector_bool mask_u5;
+            vector_bool mask_u6;
+            vector_bool mask_u7;
+            vector_f32 vregInputGradOut_u0;
+            vector_f32 vregInputGradOut_u1;
+            vector_f32 vregInputGradOut_u2;
+            vector_f32 vregInputGradOut_u3;
+            vector_f32 vregInputGradOut_u4;
+            vector_f32 vregInputGradOut_u5;
+            vector_f32 vregInputGradOut_u6;
+            vector_f32 vregInputGradOut_u7;
+            vector_f32 vregInputSelf_u0;
+            vector_f32 vregInputSelf_u1;
+            vector_f32 vregInputSelf_u2;
+            vector_f32 vregInputSelf_u3;
+            vector_f32 vregInputSelf_u4;
+            vector_f32 vregInputSelf_u5;
+            vector_f32 vregInputSelf_u6;
+            vector_f32 vregInputSelf_u7;
+            vector_f32 vregSelect_u0;
+            vector_f32 vregSelect_u1;
+            vector_f32 vregSelect_u2;
+            vector_f32 vregSelect_u3;
+            vector_f32 vregSelect_u4;
+            vector_f32 vregSelect_u5;
+            vector_f32 vregSelect_u6;
+            vector_f32 vregSelect_u7;
+#pragma unroll 1
+            for (uint16_t i = 0; i < 48; i += 8) {
+                mask_u0 = plt_b32(count, POST_UPDATE);
+                mask_u1 = plt_b32(count, POST_UPDATE);
+                mask_u2 = plt_b32(count, POST_UPDATE);
+                mask_u3 = plt_b32(count, POST_UPDATE);
+                mask_u4 = plt_b32(count, POST_UPDATE);
+                mask_u5 = plt_b32(count, POST_UPDATE);
+                mask_u6 = plt_b32(count, POST_UPDATE);
+                mask_u7 = plt_b32(count, POST_UPDATE);
+                vlds(vregInputGradOut_u0, (__ubuf__ float*)(src0Addr + (i + 0) * vlSize), 0, NORM);
+                vlds(vregInputGradOut_u1, (__ubuf__ float*)(src0Addr + (i + 1) * vlSize), 0, NORM);
+                vlds(vregInputGradOut_u2, (__ubuf__ float*)(src0Addr + (i + 2) * vlSize), 0, NORM);
+                vlds(vregInputGradOut_u3, (__ubuf__ float*)(src0Addr + (i + 3) * vlSize), 0, NORM);
+                vlds(vregInputGradOut_u4, (__ubuf__ float*)(src0Addr + (i + 4) * vlSize), 0, NORM);
+                vlds(vregInputGradOut_u5, (__ubuf__ float*)(src0Addr + (i + 5) * vlSize), 0, NORM);
+                vlds(vregInputGradOut_u6, (__ubuf__ float*)(src0Addr + (i + 6) * vlSize), 0, NORM);
+                vlds(vregInputGradOut_u7, (__ubuf__ float*)(src0Addr + (i + 7) * vlSize), 0, NORM);
+                vlds(vregInputSelf_u0, (__ubuf__ float*)(src1Addr + (i + 0) * vlSize), 0, NORM);
+                vlds(vregInputSelf_u1, (__ubuf__ float*)(src1Addr + (i + 1) * vlSize), 0, NORM);
+                vlds(vregInputSelf_u2, (__ubuf__ float*)(src1Addr + (i + 2) * vlSize), 0, NORM);
+                vlds(vregInputSelf_u3, (__ubuf__ float*)(src1Addr + (i + 3) * vlSize), 0, NORM);
+                vlds(vregInputSelf_u4, (__ubuf__ float*)(src1Addr + (i + 4) * vlSize), 0, NORM);
+                vlds(vregInputSelf_u5, (__ubuf__ float*)(src1Addr + (i + 5) * vlSize), 0, NORM);
+                vlds(vregInputSelf_u6, (__ubuf__ float*)(src1Addr + (i + 6) * vlSize), 0, NORM);
+                vlds(vregInputSelf_u7, (__ubuf__ float*)(src1Addr + (i + 7) * vlSize), 0, NORM);
+                vabs(SelfAbs_u0, vregInputSelf_u0, mask_u0, MODE_ZEROING);
+                vabs(SelfAbs_u1, vregInputSelf_u1, mask_u1, MODE_ZEROING);
+                vabs(SelfAbs_u2, vregInputSelf_u2, mask_u2, MODE_ZEROING);
+                vabs(SelfAbs_u3, vregInputSelf_u3, mask_u3, MODE_ZEROING);
+                vabs(SelfAbs_u4, vregInputSelf_u4, mask_u4, MODE_ZEROING);
+                vabs(SelfAbs_u5, vregInputSelf_u5, mask_u5, MODE_ZEROING);
+                vabs(SelfAbs_u6, vregInputSelf_u6, mask_u6, MODE_ZEROING);
+                vabs(SelfAbs_u7, vregInputSelf_u7, mask_u7, MODE_ZEROING);
+                vmuls(SelfAbsNeg_u0, SelfAbs_u0, (float)-1.0, mask_u0, MODE_ZEROING);
+                vmuls(SelfAbsNeg_u1, SelfAbs_u1, (float)-1.0, mask_u1, MODE_ZEROING);
+                vmuls(SelfAbsNeg_u2, SelfAbs_u2, (float)-1.0, mask_u2, MODE_ZEROING);
+                vmuls(SelfAbsNeg_u3, SelfAbs_u3, (float)-1.0, mask_u3, MODE_ZEROING);
+                vmuls(SelfAbsNeg_u4, SelfAbs_u4, (float)-1.0, mask_u4, MODE_ZEROING);
+                vmuls(SelfAbsNeg_u5, SelfAbs_u5, (float)-1.0, mask_u5, MODE_ZEROING);
+                vmuls(SelfAbsNeg_u6, SelfAbs_u6, (float)-1.0, mask_u6, MODE_ZEROING);
+                vmuls(SelfAbsNeg_u7, SelfAbs_u7, (float)-1.0, mask_u7, MODE_ZEROING);
+                vexp(SelfAbsNegExp_u0, SelfAbsNeg_u0, mask_u0, MODE_ZEROING);
+                vexp(SelfAbsNegExp_u1, SelfAbsNeg_u1, mask_u1, MODE_ZEROING);
+                vexp(SelfAbsNegExp_u2, SelfAbsNeg_u2, mask_u2, MODE_ZEROING);
+                vexp(SelfAbsNegExp_u3, SelfAbsNeg_u3, mask_u3, MODE_ZEROING);
+                vexp(SelfAbsNegExp_u4, SelfAbsNeg_u4, mask_u4, MODE_ZEROING);
+                vexp(SelfAbsNegExp_u5, SelfAbsNeg_u5, mask_u5, MODE_ZEROING);
+                vexp(SelfAbsNegExp_u6, SelfAbsNeg_u6, mask_u6, MODE_ZEROING);
+                vexp(SelfAbsNegExp_u7, SelfAbsNeg_u7, mask_u7, MODE_ZEROING);
+                vadds(SelfAbsNegExpAdd_u0, SelfAbsNegExp_u0, (float)1.0, mask_u0, MODE_ZEROING);
+                vadds(SelfAbsNegExpAdd_u1, SelfAbsNegExp_u1, (float)1.0, mask_u1, MODE_ZEROING);
+                vadds(SelfAbsNegExpAdd_u2, SelfAbsNegExp_u2, (float)1.0, mask_u2, MODE_ZEROING);
+                vadds(SelfAbsNegExpAdd_u3, SelfAbsNegExp_u3, (float)1.0, mask_u3, MODE_ZEROING);
+                vadds(SelfAbsNegExpAdd_u4, SelfAbsNegExp_u4, (float)1.0, mask_u4, MODE_ZEROING);
+                vadds(SelfAbsNegExpAdd_u5, SelfAbsNegExp_u5, (float)1.0, mask_u5, MODE_ZEROING);
+                vadds(SelfAbsNegExpAdd_u6, SelfAbsNegExp_u6, (float)1.0, mask_u6, MODE_ZEROING);
+                vadds(SelfAbsNegExpAdd_u7, SelfAbsNegExp_u7, (float)1.0, mask_u7, MODE_ZEROING);
+                vcmp_lt(cmpMask_u0, vregInputSelf_u0, DataZero, mask_u0);
+                vcmp_lt(cmpMask_u1, vregInputSelf_u1, DataZero, mask_u1);
+                vcmp_lt(cmpMask_u2, vregInputSelf_u2, DataZero, mask_u2);
+                vcmp_lt(cmpMask_u3, vregInputSelf_u3, DataZero, mask_u3);
+                vcmp_lt(cmpMask_u4, vregInputSelf_u4, DataZero, mask_u4);
+                vcmp_lt(cmpMask_u5, vregInputSelf_u5, DataZero, mask_u5);
+                vcmp_lt(cmpMask_u6, vregInputSelf_u6, DataZero, mask_u6);
+                vcmp_lt(cmpMask_u7, vregInputSelf_u7, DataZero, mask_u7);
+                vsel(vregSelect_u0, DataOne, SelfAbsNegExp_u0, cmpMask_u0);
+                vsel(vregSelect_u1, DataOne, SelfAbsNegExp_u1, cmpMask_u1);
+                vsel(vregSelect_u2, DataOne, SelfAbsNegExp_u2, cmpMask_u2);
+                vsel(vregSelect_u3, DataOne, SelfAbsNegExp_u3, cmpMask_u3);
+                vsel(vregSelect_u4, DataOne, SelfAbsNegExp_u4, cmpMask_u4);
+                vsel(vregSelect_u5, DataOne, SelfAbsNegExp_u5, cmpMask_u5);
+                vsel(vregSelect_u6, DataOne, SelfAbsNegExp_u6, cmpMask_u6);
+                vsel(vregSelect_u7, DataOne, SelfAbsNegExp_u7, cmpMask_u7);
+                vdiv(Answer_u0, vregSelect_u0, SelfAbsNegExpAdd_u0, mask_u0, MODE_ZEROING);
+                vdiv(Answer_u1, vregSelect_u1, SelfAbsNegExpAdd_u1, mask_u1, MODE_ZEROING);
+                vdiv(Answer_u2, vregSelect_u2, SelfAbsNegExpAdd_u2, mask_u2, MODE_ZEROING);
+                vdiv(Answer_u3, vregSelect_u3, SelfAbsNegExpAdd_u3, mask_u3, MODE_ZEROING);
+                vdiv(Answer_u4, vregSelect_u4, SelfAbsNegExpAdd_u4, mask_u4, MODE_ZEROING);
+                vdiv(Answer_u5, vregSelect_u5, SelfAbsNegExpAdd_u5, mask_u5, MODE_ZEROING);
+                vdiv(Answer_u6, vregSelect_u6, SelfAbsNegExpAdd_u6, mask_u6, MODE_ZEROING);
+                vdiv(Answer_u7, vregSelect_u7, SelfAbsNegExpAdd_u7, mask_u7, MODE_ZEROING);
+                vmul(LastAnswer_u0, Answer_u0, vregInputGradOut_u0, mask_u0, MODE_ZEROING);
+                vmul(LastAnswer_u1, Answer_u1, vregInputGradOut_u1, mask_u1, MODE_ZEROING);
+                vmul(LastAnswer_u2, Answer_u2, vregInputGradOut_u2, mask_u2, MODE_ZEROING);
+                vmul(LastAnswer_u3, Answer_u3, vregInputGradOut_u3, mask_u3, MODE_ZEROING);
+                vmul(LastAnswer_u4, Answer_u4, vregInputGradOut_u4, mask_u4, MODE_ZEROING);
+                vmul(LastAnswer_u5, Answer_u5, vregInputGradOut_u5, mask_u5, MODE_ZEROING);
+                vmul(LastAnswer_u6, Answer_u6, vregInputGradOut_u6, mask_u6, MODE_ZEROING);
+                vmul(LastAnswer_u7, Answer_u7, vregInputGradOut_u7, mask_u7, MODE_ZEROING);
+                vsts(LastAnswer_u0, (__ubuf__ float*)(dstAddr + (i + 0) * vlSize), 0, NORM_B32,
+                     mask_u0);
+                vsts(LastAnswer_u1, (__ubuf__ float*)(dstAddr + (i + 1) * vlSize), 0, NORM_B32,
+                     mask_u1);
+                vsts(LastAnswer_u2, (__ubuf__ float*)(dstAddr + (i + 2) * vlSize), 0, NORM_B32,
+                     mask_u2);
+                vsts(LastAnswer_u3, (__ubuf__ float*)(dstAddr + (i + 3) * vlSize), 0, NORM_B32,
+                     mask_u3);
+                vsts(LastAnswer_u4, (__ubuf__ float*)(dstAddr + (i + 4) * vlSize), 0, NORM_B32,
+                     mask_u4);
+                vsts(LastAnswer_u5, (__ubuf__ float*)(dstAddr + (i + 5) * vlSize), 0, NORM_B32,
+                     mask_u5);
+                vsts(LastAnswer_u6, (__ubuf__ float*)(dstAddr + (i + 6) * vlSize), 0, NORM_B32,
+                     mask_u6);
+                vsts(LastAnswer_u7, (__ubuf__ float*)(dstAddr + (i + 7) * vlSize), 0, NORM_B32,
+                     mask_u7);
+            }
+        }
+    }
+}
+extern "C" __global__ __aicore__ void candidate_kernel(__gm__ uint8_t* input,
+                                                       __gm__ uint8_t* output) {
+    __ubuf__ float* src0Addr = (__ubuf__ float*)get_imm(0);
+    __ubuf__ float* src1Addr = (__ubuf__ float*)get_imm(12288);
+    __ubuf__ float* dstAddr = (__ubuf__ float*)get_imm(24576);
+    copy_gm_to_ubuf_align_v2((__ubuf__ uint8_t*)get_imm(0), input, 0, 1, 24576, 0, 0, 0, 0, 0, 0);
+    set_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    wait_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    candidate_vf(src0Addr, src1Addr, dstAddr);
+    set_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    wait_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    copy_ubuf_to_gm_align_v2(output + 0, (__ubuf__ uint8_t*)dstAddr, 0, 1, 12288, 0, 0, 0);
+}

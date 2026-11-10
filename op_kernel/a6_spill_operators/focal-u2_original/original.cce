@@ -1,0 +1,163 @@
+/**
+ * Copyright (c) 2026 Huawei Technologies Co., Ltd.
+ * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+ * CANN Open Software License Agreement Version 2.0 (the "License").
+ * Please refer to the License for details. You may not use this file except in compliance with the License.
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+ * See LICENSE in the root of the software repository for the full text of the License.
+ */
+#include "kernel_operator.h"
+#include <cfloat>
+#include <type_traits>
+__aicore__ inline void candidate_vf(__ubuf__ float* pSrc, __ubuf__ float* pFloorSrc,
+                                    __ubuf__ float* qGammaSrc, __ubuf__ float* qGamma1Src,
+                                    __ubuf__ float* dst) {
+    float alpha = 0.25f, gamma = 2.0f;
+    uint32_t count = 1024;
+    uint16_t repeatTimes = 16;
+    __VEC_SCOPE__ {
+        constexpr uint32_t kVl = 256 / sizeof(float);
+        constexpr float kMinNormal = 1.17549435e-38f;
+        constexpr float kMaxFloat = 3.402823466e+38f;
+        vector_f32 p, q, pFloor, qGamma, qGamma1, logP, reconstructed, corrected, original, lhs,
+            rhs;
+        vector_f32 absOriginal, absLhs, absRhs, maxTerm, cancellationLimit;
+        vector_bool mask, cancellation, nonzeroTerms, qNormal, qGamma1Normal, qGamma1Finite;
+        uint32_t remaining = count;
+        {
+            vector_f32 absLhs_u0;
+            vector_f32 absLhs_u1;
+            vector_f32 absOriginal_u0;
+            vector_f32 absOriginal_u1;
+            vector_f32 absRhs_u0;
+            vector_f32 absRhs_u1;
+            vector_bool cancellation_u0;
+            vector_bool cancellation_u1;
+            vector_f32 cancellationLimit_u0;
+            vector_f32 cancellationLimit_u1;
+            vector_f32 corrected_u0;
+            vector_f32 corrected_u1;
+            vector_f32 lhs_u0;
+            vector_f32 lhs_u1;
+            vector_f32 logP_u0;
+            vector_f32 logP_u1;
+            vector_bool mask_u0;
+            vector_bool mask_u1;
+            vector_f32 maxTerm_u0;
+            vector_f32 maxTerm_u1;
+            vector_bool nonzeroTerms_u0;
+            vector_bool nonzeroTerms_u1;
+            vector_f32 original_u0;
+            vector_f32 original_u1;
+            vector_f32 p_u0;
+            vector_f32 p_u1;
+            vector_f32 pFloor_u0;
+            vector_f32 pFloor_u1;
+            vector_f32 q_u0;
+            vector_f32 q_u1;
+            vector_f32 qGamma_u0;
+            vector_f32 qGamma_u1;
+            vector_f32 qGamma1_u0;
+            vector_f32 qGamma1_u1;
+            vector_bool qGamma1Finite_u0;
+            vector_bool qGamma1Finite_u1;
+            vector_bool qGamma1Normal_u0;
+            vector_bool qGamma1Normal_u1;
+            vector_bool qNormal_u0;
+            vector_bool qNormal_u1;
+            vector_f32 reconstructed_u0;
+            vector_f32 reconstructed_u1;
+            vector_f32 rhs_u0;
+            vector_f32 rhs_u1;
+#pragma unroll 1
+            for (uint16_t i = 0; i < 16; i += 2) {
+                const int32_t off_u0 = static_cast<int32_t>((i + 0)) * kVl;
+                const int32_t off_u1 = static_cast<int32_t>((i + 1)) * kVl;
+                mask_u0 = plt_b32(remaining, POST_UPDATE);
+                mask_u1 = plt_b32(remaining, POST_UPDATE);
+                vlds(p_u0, pSrc + off_u0, 0, NORM);
+                vlds(p_u1, pSrc + off_u1, 0, NORM);
+                vlds(pFloor_u0, pFloorSrc + off_u0, 0, NORM);
+                vlds(pFloor_u1, pFloorSrc + off_u1, 0, NORM);
+                vlds(qGamma_u0, qGammaSrc + off_u0, 0, NORM);
+                vlds(qGamma_u1, qGammaSrc + off_u1, 0, NORM);
+                vlds(qGamma1_u0, qGamma1Src + off_u0, 0, NORM);
+                vlds(qGamma1_u1, qGamma1Src + off_u1, 0, NORM);
+                vln(logP_u0, pFloor_u0, mask_u0, MODE_ZEROING);
+                vln(logP_u1, pFloor_u1, mask_u1, MODE_ZEROING);
+                vmuls(q_u0, p_u0, -1.0f, mask_u0, MODE_ZEROING);
+                vmuls(q_u1, p_u1, -1.0f, mask_u1, MODE_ZEROING);
+                vadds(q_u0, q_u0, 1.0f, mask_u0, MODE_ZEROING);
+                vadds(q_u1, q_u1, 1.0f, mask_u1, MODE_ZEROING);
+                vmul(lhs_u0, qGamma_u0, logP_u0, mask_u0, MODE_ZEROING);
+                vmul(lhs_u1, qGamma_u1, logP_u1, mask_u1, MODE_ZEROING);
+                vmul(lhs_u0, lhs_u0, p_u0, mask_u0, MODE_ZEROING);
+                vmul(lhs_u1, lhs_u1, p_u1, mask_u1, MODE_ZEROING);
+                vmuls(lhs_u0, lhs_u0, gamma * alpha, mask_u0, MODE_ZEROING);
+                vmuls(lhs_u1, lhs_u1, gamma * alpha, mask_u1, MODE_ZEROING);
+                vmuls(rhs_u0, qGamma1_u0, alpha, mask_u0, MODE_ZEROING);
+                vmuls(rhs_u1, qGamma1_u1, alpha, mask_u1, MODE_ZEROING);
+                vsub(original_u0, lhs_u0, rhs_u0, mask_u0, MODE_ZEROING);
+                vsub(original_u1, lhs_u1, rhs_u1, mask_u1, MODE_ZEROING);
+                vdiv(reconstructed_u0, qGamma1_u0, q_u0, mask_u0, MODE_ZEROING);
+                vdiv(reconstructed_u1, qGamma1_u1, q_u1, mask_u1, MODE_ZEROING);
+                vmul(corrected_u0, reconstructed_u0, logP_u0, mask_u0, MODE_ZEROING);
+                vmul(corrected_u1, reconstructed_u1, logP_u1, mask_u1, MODE_ZEROING);
+                vmul(corrected_u0, corrected_u0, p_u0, mask_u0, MODE_ZEROING);
+                vmul(corrected_u1, corrected_u1, p_u1, mask_u1, MODE_ZEROING);
+                vmuls(corrected_u0, corrected_u0, gamma * alpha, mask_u0, MODE_ZEROING);
+                vmuls(corrected_u1, corrected_u1, gamma * alpha, mask_u1, MODE_ZEROING);
+                vsub(corrected_u0, corrected_u0, rhs_u0, mask_u0, MODE_ZEROING);
+                vsub(corrected_u1, corrected_u1, rhs_u1, mask_u1, MODE_ZEROING);
+                vabs(absOriginal_u0, original_u0, mask_u0, MODE_ZEROING);
+                vabs(absOriginal_u1, original_u1, mask_u1, MODE_ZEROING);
+                vabs(absLhs_u0, lhs_u0, mask_u0, MODE_ZEROING);
+                vabs(absLhs_u1, lhs_u1, mask_u1, MODE_ZEROING);
+                vabs(absRhs_u0, rhs_u0, mask_u0, MODE_ZEROING);
+                vabs(absRhs_u1, rhs_u1, mask_u1, MODE_ZEROING);
+                vmax(maxTerm_u0, absLhs_u0, absRhs_u0, mask_u0, MODE_ZEROING);
+                vmax(maxTerm_u1, absLhs_u1, absRhs_u1, mask_u1, MODE_ZEROING);
+                vmuls(cancellationLimit_u0, maxTerm_u0, 0.015625f, mask_u0, MODE_ZEROING);
+                vmuls(cancellationLimit_u1, maxTerm_u1, 0.015625f, mask_u1, MODE_ZEROING);
+                vcmp_le(cancellation_u0, absOriginal_u0, cancellationLimit_u0, mask_u0);
+                vcmp_le(cancellation_u1, absOriginal_u1, cancellationLimit_u1, mask_u1);
+                vcmps_gt(nonzeroTerms_u0, maxTerm_u0, kMinNormal, mask_u0);
+                vcmps_gt(nonzeroTerms_u1, maxTerm_u1, kMinNormal, mask_u1);
+                vcmps_gt(qNormal_u0, q_u0, kMinNormal, mask_u0);
+                vcmps_gt(qNormal_u1, q_u1, kMinNormal, mask_u1);
+                vcmps_gt(qGamma1Normal_u0, qGamma1_u0, kMinNormal, mask_u0);
+                vcmps_gt(qGamma1Normal_u1, qGamma1_u1, kMinNormal, mask_u1);
+                vcmps_le(qGamma1Finite_u0, qGamma1_u0, kMaxFloat, mask_u0);
+                vcmps_le(qGamma1Finite_u1, qGamma1_u1, kMaxFloat, mask_u1);
+                vsel(corrected_u0, corrected_u0, original_u0, cancellation_u0);
+                vsel(corrected_u1, corrected_u1, original_u1, cancellation_u1);
+                vsel(corrected_u0, corrected_u0, original_u0, nonzeroTerms_u0);
+                vsel(corrected_u1, corrected_u1, original_u1, nonzeroTerms_u1);
+                vsel(corrected_u0, corrected_u0, original_u0, qNormal_u0);
+                vsel(corrected_u1, corrected_u1, original_u1, qNormal_u1);
+                vsel(corrected_u0, corrected_u0, original_u0, qGamma1Normal_u0);
+                vsel(corrected_u1, corrected_u1, original_u1, qGamma1Normal_u1);
+                vsel(corrected_u0, corrected_u0, original_u0, qGamma1Finite_u0);
+                vsel(corrected_u1, corrected_u1, original_u1, qGamma1Finite_u1);
+                vsts(corrected_u0, dst + off_u0, 0, NORM_B32, mask_u0);
+                vsts(corrected_u1, dst + off_u1, 0, NORM_B32, mask_u1);
+            }
+        }
+    }
+}
+extern "C" __global__ __aicore__ void candidate_kernel(__gm__ uint8_t* input,
+                                                       __gm__ uint8_t* output) {
+    __ubuf__ float* pSrc = (__ubuf__ float*)get_imm(0);
+    __ubuf__ float* pFloorSrc = (__ubuf__ float*)get_imm(4096);
+    __ubuf__ float* qGammaSrc = (__ubuf__ float*)get_imm(8192);
+    __ubuf__ float* qGamma1Src = (__ubuf__ float*)get_imm(12288);
+    __ubuf__ float* dst = (__ubuf__ float*)get_imm(16384);
+    copy_gm_to_ubuf_align_v2((__ubuf__ uint8_t*)get_imm(0), input, 0, 1, 16384, 0, 0, 0, 0, 0, 0);
+    set_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    wait_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    candidate_vf(pSrc, pFloorSrc, qGammaSrc, qGamma1Src, dst);
+    set_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    wait_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    copy_ubuf_to_gm_align_v2(output + 0, (__ubuf__ uint8_t*)dst, 0, 1, 4096, 0, 0, 0);
+}

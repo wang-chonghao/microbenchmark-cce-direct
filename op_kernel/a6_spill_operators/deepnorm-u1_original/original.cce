@@ -1,0 +1,85 @@
+/**
+ * Copyright (c) 2026 Huawei Technologies Co., Ltd.
+ * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+ * CANN Open Software License Agreement Version 2.0 (the "License").
+ * Please refer to the License for details. You may not use this file except in compliance with the License.
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+ * See LICENSE in the root of the software repository for the full text of the License.
+ */
+#include "kernel_operator.h"
+#include <cfloat>
+#include <type_traits>
+__aicore__ inline void candidate_vf(__ubuf__ float* dyPtr, __ubuf__ float* xPtr,
+                                    __ubuf__ float* gxPtr, __ubuf__ float* gammaPtr,
+                                    __ubuf__ float* meanPtr, __ubuf__ float* rstdPtr,
+                                    __ubuf__ float* avgTmpPtr, __ubuf__ float* avgTmpNormPtr,
+                                    __ubuf__ float* dgxPtr, __ubuf__ float* dxPtr) {
+    constexpr uint32_t VL_FP32 = 64;
+    uint16_t loops = 16;
+    uint32_t remaining = 1024;
+    float alpha = 0.5f;
+    __VEC_SCOPE__ {
+        mem_bar(VST_VLD);
+        vector_f32 dyReg;
+        vector_f32 xReg;
+        vector_f32 gxReg;
+        vector_f32 gammaReg;
+        vector_f32 meanReg;
+        vector_f32 rstdReg;
+        vector_f32 avgTmpReg;
+        vector_f32 avgTmpNormReg;
+        vector_f32 tmpReg;
+        vector_f32 normReg;
+        vector_f32 dgxReg;
+        vector_f32 dxReg;
+        vector_bool mask;
+        vlds(meanReg, meanPtr, 0, BRC_B32);
+        vlds(rstdReg, rstdPtr, 0, BRC_B32);
+        vlds(avgTmpReg, avgTmpPtr, 0, BRC_B32);
+        vlds(avgTmpNormReg, avgTmpNormPtr, 0, BRC_B32);
+        for (uint16_t i = 0; i < loops; ++i) {
+            uint32_t valid = (remaining < VL_FP32 ? remaining : VL_FP32);
+            remaining -= valid;
+            mask = plt_b32(valid, POST_UPDATE);
+            uint32_t offset = static_cast<uint32_t>(i) * VL_FP32;
+            vlds(dyReg, dyPtr + offset, 0, NORM);
+            vlds(gammaReg, gammaPtr + offset, 0, NORM);
+            vlds(xReg, xPtr + offset, 0, NORM);
+            vlds(gxReg, gxPtr + offset, 0, NORM);
+            vmul(tmpReg, dyReg, gammaReg, mask, MODE_ZEROING);
+            vmuls(xReg, xReg, alpha, mask, MODE_ZEROING);
+            vadd(normReg, xReg, gxReg, mask, MODE_ZEROING);
+            vsub(normReg, normReg, meanReg, mask, MODE_ZEROING);
+            vmul(dgxReg, tmpReg, rstdReg, mask, MODE_ZEROING);
+            vmul(normReg, normReg, avgTmpReg, mask, MODE_ZEROING);
+            vadd(dgxReg, dgxReg, normReg, mask, MODE_ZEROING);
+            vadd(dgxReg, dgxReg, avgTmpNormReg, mask, MODE_ZEROING);
+            vmuls(dxReg, dgxReg, alpha, mask, MODE_ZEROING);
+            vsts(dgxReg, dgxPtr + offset, 0, NORM_B32, mask);
+            vsts(dxReg, dxPtr + offset, 0, NORM_B32, mask);
+        }
+    }
+}
+extern "C" __global__ __aicore__ void candidate_kernel(__gm__ uint8_t* input,
+                                                       __gm__ uint8_t* output) {
+    __ubuf__ float* dyPtr = (__ubuf__ float*)get_imm(0);
+    __ubuf__ float* xPtr = (__ubuf__ float*)get_imm(4096);
+    __ubuf__ float* gxPtr = (__ubuf__ float*)get_imm(8192);
+    __ubuf__ float* gammaPtr = (__ubuf__ float*)get_imm(12288);
+    __ubuf__ float* meanPtr = (__ubuf__ float*)get_imm(16384);
+    __ubuf__ float* rstdPtr = (__ubuf__ float*)get_imm(16640);
+    __ubuf__ float* avgTmpPtr = (__ubuf__ float*)get_imm(16896);
+    __ubuf__ float* avgTmpNormPtr = (__ubuf__ float*)get_imm(17152);
+    __ubuf__ float* dgxPtr = (__ubuf__ float*)get_imm(17408);
+    __ubuf__ float* dxPtr = (__ubuf__ float*)get_imm(21504);
+    copy_gm_to_ubuf_align_v2((__ubuf__ uint8_t*)get_imm(0), input, 0, 1, 17408, 0, 0, 0, 0, 0, 0);
+    set_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    wait_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    candidate_vf(dyPtr, xPtr, gxPtr, gammaPtr, meanPtr, rstdPtr, avgTmpPtr, avgTmpNormPtr, dgxPtr,
+                 dxPtr);
+    set_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    wait_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    copy_ubuf_to_gm_align_v2(output + 0, (__ubuf__ uint8_t*)dgxPtr, 0, 1, 4096, 0, 0, 0);
+    copy_ubuf_to_gm_align_v2(output + 4096, (__ubuf__ uint8_t*)dxPtr, 0, 1, 4096, 0, 0, 0);
+}

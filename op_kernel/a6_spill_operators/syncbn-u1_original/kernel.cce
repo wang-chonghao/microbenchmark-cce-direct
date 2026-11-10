@@ -1,0 +1,80 @@
+// MB_KERNEL candidate_kernel
+// MB_TENSOR input input uint8 28672
+// MB_TENSOR output output uint8 4096
+// A6 wrapper migration only; original VF below is unchanged.
+/**
+ * Copyright (c) 2025 Huawei Technologies Co., Ltd.
+ * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+ * CANN Open Software License Agreement Version 2.0 (the "License").
+ * Please refer to the License for details. You may not use this file except in compliance with the License.
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+ * See LICENSE in the root of the software repository for the full text of the License.
+ */
+#include <stdint.h>
+#ifndef __aicore__
+#define __aicore__ [aicore]
+#endif
+#include <cfloat>
+#include <type_traits>
+__aicore__ inline void candidate_vf(__ubuf__ float* dy, __ubuf__ float* x, __ubuf__ float* mean,
+                                    __ubuf__ float* invstd, __ubuf__ float* weight,
+                                    __ubuf__ float* meanDy, __ubuf__ float* meanDyXmu,
+                                    __ubuf__ float* dx) {
+    uint32_t remaining = 1024;
+    uint16_t loops = 16;
+    __VEC_SCOPE__ {
+        vector_bool mask;
+        vector_f32 DY, X, MEAN, INV, W, MD, MDX, T0, T1, T2, T3, T4;
+        uint32_t length = 1024;
+        for (uint16_t i = 0; i < 16; ++i) {
+            mask = plt_b32(length, POST_UPDATE);
+            uint32_t off = i * 64;
+
+            vlds(DY, dy + off, 0, NORM);
+            vlds(X, x + off, 0, NORM);
+            vlds(MEAN, mean + off, 0, NORM);
+            vlds(INV, invstd + off, 0, NORM);
+            vlds(W, weight + off, 0, NORM);
+            vlds(MD, meanDy + off, 0, NORM);
+            vlds(MDX, meanDyXmu + off, 0, NORM);
+            vsub(T0, DY, MD, mask, MODE_ZEROING);
+            vsub(T1, X, MEAN, mask, MODE_ZEROING);
+            vmul(T2, INV, INV, mask, MODE_ZEROING);
+            vmul(T2, MDX, T2, mask, MODE_ZEROING);
+            vmul(T1, T1, T2, mask, MODE_ZEROING);
+            vsub(T3, T0, T1, mask, MODE_ZEROING);
+            vmul(T4, INV, W, mask, MODE_ZEROING);
+            vmul(T3, T3, T4, mask, MODE_ZEROING);
+            vsts(T3, dx + off, 0, NORM_B32, mask);
+        }
+    }
+}
+extern "C" __global__ __aicore__ void candidate_kernel(__gm__ uint8_t* input,
+                                                       __gm__ uint8_t* output) {
+    __ubuf__ float* dy = (__ubuf__ float*)get_imm(0);
+    __ubuf__ float* x = (__ubuf__ float*)get_imm(4096);
+    __ubuf__ float* mean = (__ubuf__ float*)get_imm(8192);
+    __ubuf__ float* invstd = (__ubuf__ float*)get_imm(12288);
+    __ubuf__ float* weight = (__ubuf__ float*)get_imm(16384);
+    __ubuf__ float* meanDy = (__ubuf__ float*)get_imm(20480);
+    __ubuf__ float* meanDyXmu = (__ubuf__ float*)get_imm(24576);
+    __ubuf__ float* dx = (__ubuf__ float*)get_imm(28672);
+    nddma_desc a6_desc(nddma_desc::loop_desc(7168, 1, 1));
+    nddma_out_to_ub((__ubuf__ uint32_t*)get_imm(0), (__gm__ uint32_t*)input, 0, a6_desc, 0, NEAREST_PADDING, 0);
+    set_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    wait_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    candidate_vf(dy, x, mean, invstd, weight, meanDy, meanDyXmu, dx);
+    set_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    wait_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    pipe_barrier(PIPE_ALL);
+    set_flag(PIPE_V, PIPE_S, EVENT_ID1);
+    wait_flag(PIPE_V, PIPE_S, EVENT_ID1);
+    __ubuf__ uint32_t* a6_offsets = (__ubuf__ uint32_t*)get_imm(0);
+    a6_offsets[0] = 0;
+    set_flag(PIPE_S, PIPE_MTE3, EVENT_ID1);
+    wait_flag(PIPE_S, PIPE_MTE3, EVENT_ID1);
+    scatter_ubuf_to_gm((__gm__ uint32_t*)(output + 0), (__ubuf__ uint32_t*)dx, 0, 0, a6_offsets, 0, 4096, 0, 1);
+    set_flag(PIPE_MTE3, PIPE_S, EVENT_ID0);
+    wait_flag(PIPE_MTE3, PIPE_S, EVENT_ID0);
+}

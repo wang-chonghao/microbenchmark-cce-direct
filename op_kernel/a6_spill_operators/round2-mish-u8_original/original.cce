@@ -1,0 +1,361 @@
+/**
+ * Copyright (c) 2026 Huawei Technologies Co., Ltd.
+ * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+ * CANN Open Software License Agreement Version 2.0 (the "License").
+ * Please refer to the License for details. You may not use this file except in compliance with the License.
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+ * See LICENSE in the root of the software repository for the full text of the License.
+ */
+#include "kernel_operator.h"
+#include <cfloat>
+#include <type_traits>
+__aicore__ inline void candidate_vf(__ubuf__ float* srcAddr, __ubuf__ float* dstAddr) {
+    uint32_t count = 3072, vlSize = 64;
+    uint16_t loopNum = 48;
+    constexpr float FP32_ZERO = 0.0f, FP32_ONE = 1.0f, FP32_TWO = 2.0f, FP32_NEG_ONE = -1.0f,
+                    FP32_NEG_TWO = -2.0f;
+    vector_f32 vregInput;
+    vector_f32 vregInputNegNumerator;
+    vector_f32 vregInputNegDenominator;
+    vector_f32 vregInputNumerator;
+    vector_f32 vregInputDenominator;
+
+    vector_f32 vregOutput;
+    vector_bool mask;
+    vector_bool cmpvector_bool;
+
+    vector_f32 vregInput16;
+    vector_f32 vregOutput16;
+    __VEC_SCOPE__ {
+        {
+            vector_bool cmpvector_bool_u0;
+            vector_bool cmpvector_bool_u1;
+            vector_bool cmpvector_bool_u2;
+            vector_bool cmpvector_bool_u3;
+            vector_bool cmpvector_bool_u4;
+            vector_bool cmpvector_bool_u5;
+            vector_bool cmpvector_bool_u6;
+            vector_bool cmpvector_bool_u7;
+            vector_bool mask_u0;
+            vector_bool mask_u1;
+            vector_bool mask_u2;
+            vector_bool mask_u3;
+            vector_bool mask_u4;
+            vector_bool mask_u5;
+            vector_bool mask_u6;
+            vector_bool mask_u7;
+            vector_f32 vregInput_u0;
+            vector_f32 vregInput_u1;
+            vector_f32 vregInput_u2;
+            vector_f32 vregInput_u3;
+            vector_f32 vregInput_u4;
+            vector_f32 vregInput_u5;
+            vector_f32 vregInput_u6;
+            vector_f32 vregInput_u7;
+            vector_f32 vregInputDenominator_u0;
+            vector_f32 vregInputDenominator_u1;
+            vector_f32 vregInputDenominator_u2;
+            vector_f32 vregInputDenominator_u3;
+            vector_f32 vregInputDenominator_u4;
+            vector_f32 vregInputDenominator_u5;
+            vector_f32 vregInputDenominator_u6;
+            vector_f32 vregInputDenominator_u7;
+            vector_f32 vregInputNegDenominator_u0;
+            vector_f32 vregInputNegDenominator_u1;
+            vector_f32 vregInputNegDenominator_u2;
+            vector_f32 vregInputNegDenominator_u3;
+            vector_f32 vregInputNegDenominator_u4;
+            vector_f32 vregInputNegDenominator_u5;
+            vector_f32 vregInputNegDenominator_u6;
+            vector_f32 vregInputNegDenominator_u7;
+            vector_f32 vregInputNegNumerator_u0;
+            vector_f32 vregInputNegNumerator_u1;
+            vector_f32 vregInputNegNumerator_u2;
+            vector_f32 vregInputNegNumerator_u3;
+            vector_f32 vregInputNegNumerator_u4;
+            vector_f32 vregInputNegNumerator_u5;
+            vector_f32 vregInputNegNumerator_u6;
+            vector_f32 vregInputNegNumerator_u7;
+            vector_f32 vregInputNumerator_u0;
+            vector_f32 vregInputNumerator_u1;
+            vector_f32 vregInputNumerator_u2;
+            vector_f32 vregInputNumerator_u3;
+            vector_f32 vregInputNumerator_u4;
+            vector_f32 vregInputNumerator_u5;
+            vector_f32 vregInputNumerator_u6;
+            vector_f32 vregInputNumerator_u7;
+            vector_f32 vregOutput_u0;
+            vector_f32 vregOutput_u1;
+            vector_f32 vregOutput_u2;
+            vector_f32 vregOutput_u3;
+            vector_f32 vregOutput_u4;
+            vector_f32 vregOutput_u5;
+            vector_f32 vregOutput_u6;
+            vector_f32 vregOutput_u7;
+#pragma unroll 1
+            for (uint16_t i = 0; i < 48; i += 8) {
+                mask_u0 = plt_b32(count, POST_UPDATE);
+                mask_u1 = plt_b32(count, POST_UPDATE);
+                mask_u2 = plt_b32(count, POST_UPDATE);
+                mask_u3 = plt_b32(count, POST_UPDATE);
+                mask_u4 = plt_b32(count, POST_UPDATE);
+                mask_u5 = plt_b32(count, POST_UPDATE);
+                mask_u6 = plt_b32(count, POST_UPDATE);
+                mask_u7 = plt_b32(count, POST_UPDATE);
+                vlds(vregInput_u0, (__ubuf__ float*)(srcAddr + (i + 0) * vlSize), 0, NORM);
+                vlds(vregInput_u1, (__ubuf__ float*)(srcAddr + (i + 1) * vlSize), 0, NORM);
+                vlds(vregInput_u2, (__ubuf__ float*)(srcAddr + (i + 2) * vlSize), 0, NORM);
+                vlds(vregInput_u3, (__ubuf__ float*)(srcAddr + (i + 3) * vlSize), 0, NORM);
+                vlds(vregInput_u4, (__ubuf__ float*)(srcAddr + (i + 4) * vlSize), 0, NORM);
+                vlds(vregInput_u5, (__ubuf__ float*)(srcAddr + (i + 5) * vlSize), 0, NORM);
+                vlds(vregInput_u6, (__ubuf__ float*)(srcAddr + (i + 6) * vlSize), 0, NORM);
+                vlds(vregInput_u7, (__ubuf__ float*)(srcAddr + (i + 7) * vlSize), 0, NORM);
+                vmuls(vregInputNegNumerator_u0, vregInput_u0, FP32_NEG_ONE, mask_u0, MODE_ZEROING);
+                vmuls(vregInputNegNumerator_u1, vregInput_u1, FP32_NEG_ONE, mask_u1, MODE_ZEROING);
+                vmuls(vregInputNegNumerator_u2, vregInput_u2, FP32_NEG_ONE, mask_u2, MODE_ZEROING);
+                vmuls(vregInputNegNumerator_u3, vregInput_u3, FP32_NEG_ONE, mask_u3, MODE_ZEROING);
+                vmuls(vregInputNegNumerator_u4, vregInput_u4, FP32_NEG_ONE, mask_u4, MODE_ZEROING);
+                vmuls(vregInputNegNumerator_u5, vregInput_u5, FP32_NEG_ONE, mask_u5, MODE_ZEROING);
+                vmuls(vregInputNegNumerator_u6, vregInput_u6, FP32_NEG_ONE, mask_u6, MODE_ZEROING);
+                vmuls(vregInputNegNumerator_u7, vregInput_u7, FP32_NEG_ONE, mask_u7, MODE_ZEROING);
+                vmuls(vregInputNegDenominator_u0, vregInput_u0, FP32_NEG_TWO, mask_u0,
+                      MODE_ZEROING);
+                vmuls(vregInputNegDenominator_u1, vregInput_u1, FP32_NEG_TWO, mask_u1,
+                      MODE_ZEROING);
+                vmuls(vregInputNegDenominator_u2, vregInput_u2, FP32_NEG_TWO, mask_u2,
+                      MODE_ZEROING);
+                vmuls(vregInputNegDenominator_u3, vregInput_u3, FP32_NEG_TWO, mask_u3,
+                      MODE_ZEROING);
+                vmuls(vregInputNegDenominator_u4, vregInput_u4, FP32_NEG_TWO, mask_u4,
+                      MODE_ZEROING);
+                vmuls(vregInputNegDenominator_u5, vregInput_u5, FP32_NEG_TWO, mask_u5,
+                      MODE_ZEROING);
+                vmuls(vregInputNegDenominator_u6, vregInput_u6, FP32_NEG_TWO, mask_u6,
+                      MODE_ZEROING);
+                vmuls(vregInputNegDenominator_u7, vregInput_u7, FP32_NEG_TWO, mask_u7,
+                      MODE_ZEROING);
+                vexp(vregInputNegNumerator_u0, vregInputNegNumerator_u0, mask_u0, MODE_ZEROING);
+                vexp(vregInputNegNumerator_u1, vregInputNegNumerator_u1, mask_u1, MODE_ZEROING);
+                vexp(vregInputNegNumerator_u2, vregInputNegNumerator_u2, mask_u2, MODE_ZEROING);
+                vexp(vregInputNegNumerator_u3, vregInputNegNumerator_u3, mask_u3, MODE_ZEROING);
+                vexp(vregInputNegNumerator_u4, vregInputNegNumerator_u4, mask_u4, MODE_ZEROING);
+                vexp(vregInputNegNumerator_u5, vregInputNegNumerator_u5, mask_u5, MODE_ZEROING);
+                vexp(vregInputNegNumerator_u6, vregInputNegNumerator_u6, mask_u6, MODE_ZEROING);
+                vexp(vregInputNegNumerator_u7, vregInputNegNumerator_u7, mask_u7, MODE_ZEROING);
+                vexp(vregInputNegDenominator_u0, vregInputNegDenominator_u0, mask_u0, MODE_ZEROING);
+                vexp(vregInputNegDenominator_u1, vregInputNegDenominator_u1, mask_u1, MODE_ZEROING);
+                vexp(vregInputNegDenominator_u2, vregInputNegDenominator_u2, mask_u2, MODE_ZEROING);
+                vexp(vregInputNegDenominator_u3, vregInputNegDenominator_u3, mask_u3, MODE_ZEROING);
+                vexp(vregInputNegDenominator_u4, vregInputNegDenominator_u4, mask_u4, MODE_ZEROING);
+                vexp(vregInputNegDenominator_u5, vregInputNegDenominator_u5, mask_u5, MODE_ZEROING);
+                vexp(vregInputNegDenominator_u6, vregInputNegDenominator_u6, mask_u6, MODE_ZEROING);
+                vexp(vregInputNegDenominator_u7, vregInputNegDenominator_u7, mask_u7, MODE_ZEROING);
+                vmuls(vregInputNegNumerator_u0, vregInputNegNumerator_u0, FP32_TWO, mask_u0,
+                      MODE_ZEROING);
+                vmuls(vregInputNegNumerator_u1, vregInputNegNumerator_u1, FP32_TWO, mask_u1,
+                      MODE_ZEROING);
+                vmuls(vregInputNegNumerator_u2, vregInputNegNumerator_u2, FP32_TWO, mask_u2,
+                      MODE_ZEROING);
+                vmuls(vregInputNegNumerator_u3, vregInputNegNumerator_u3, FP32_TWO, mask_u3,
+                      MODE_ZEROING);
+                vmuls(vregInputNegNumerator_u4, vregInputNegNumerator_u4, FP32_TWO, mask_u4,
+                      MODE_ZEROING);
+                vmuls(vregInputNegNumerator_u5, vregInputNegNumerator_u5, FP32_TWO, mask_u5,
+                      MODE_ZEROING);
+                vmuls(vregInputNegNumerator_u6, vregInputNegNumerator_u6, FP32_TWO, mask_u6,
+                      MODE_ZEROING);
+                vmuls(vregInputNegNumerator_u7, vregInputNegNumerator_u7, FP32_TWO, mask_u7,
+                      MODE_ZEROING);
+                vadds(vregInputNegNumerator_u0, vregInputNegNumerator_u0, FP32_ONE, mask_u0,
+                      MODE_ZEROING);
+                vadds(vregInputNegNumerator_u1, vregInputNegNumerator_u1, FP32_ONE, mask_u1,
+                      MODE_ZEROING);
+                vadds(vregInputNegNumerator_u2, vregInputNegNumerator_u2, FP32_ONE, mask_u2,
+                      MODE_ZEROING);
+                vadds(vregInputNegNumerator_u3, vregInputNegNumerator_u3, FP32_ONE, mask_u3,
+                      MODE_ZEROING);
+                vadds(vregInputNegNumerator_u4, vregInputNegNumerator_u4, FP32_ONE, mask_u4,
+                      MODE_ZEROING);
+                vadds(vregInputNegNumerator_u5, vregInputNegNumerator_u5, FP32_ONE, mask_u5,
+                      MODE_ZEROING);
+                vadds(vregInputNegNumerator_u6, vregInputNegNumerator_u6, FP32_ONE, mask_u6,
+                      MODE_ZEROING);
+                vadds(vregInputNegNumerator_u7, vregInputNegNumerator_u7, FP32_ONE, mask_u7,
+                      MODE_ZEROING);
+                vmuls(vregInputNegDenominator_u0, vregInputNegDenominator_u0, FP32_TWO, mask_u0,
+                      MODE_ZEROING);
+                vmuls(vregInputNegDenominator_u1, vregInputNegDenominator_u1, FP32_TWO, mask_u1,
+                      MODE_ZEROING);
+                vmuls(vregInputNegDenominator_u2, vregInputNegDenominator_u2, FP32_TWO, mask_u2,
+                      MODE_ZEROING);
+                vmuls(vregInputNegDenominator_u3, vregInputNegDenominator_u3, FP32_TWO, mask_u3,
+                      MODE_ZEROING);
+                vmuls(vregInputNegDenominator_u4, vregInputNegDenominator_u4, FP32_TWO, mask_u4,
+                      MODE_ZEROING);
+                vmuls(vregInputNegDenominator_u5, vregInputNegDenominator_u5, FP32_TWO, mask_u5,
+                      MODE_ZEROING);
+                vmuls(vregInputNegDenominator_u6, vregInputNegDenominator_u6, FP32_TWO, mask_u6,
+                      MODE_ZEROING);
+                vmuls(vregInputNegDenominator_u7, vregInputNegDenominator_u7, FP32_TWO, mask_u7,
+                      MODE_ZEROING);
+                vadd(vregInputNegDenominator_u0, vregInputNegNumerator_u0,
+                     vregInputNegDenominator_u0, mask_u0, MODE_ZEROING);
+                vadd(vregInputNegDenominator_u1, vregInputNegNumerator_u1,
+                     vregInputNegDenominator_u1, mask_u1, MODE_ZEROING);
+                vadd(vregInputNegDenominator_u2, vregInputNegNumerator_u2,
+                     vregInputNegDenominator_u2, mask_u2, MODE_ZEROING);
+                vadd(vregInputNegDenominator_u3, vregInputNegNumerator_u3,
+                     vregInputNegDenominator_u3, mask_u3, MODE_ZEROING);
+                vadd(vregInputNegDenominator_u4, vregInputNegNumerator_u4,
+                     vregInputNegDenominator_u4, mask_u4, MODE_ZEROING);
+                vadd(vregInputNegDenominator_u5, vregInputNegNumerator_u5,
+                     vregInputNegDenominator_u5, mask_u5, MODE_ZEROING);
+                vadd(vregInputNegDenominator_u6, vregInputNegNumerator_u6,
+                     vregInputNegDenominator_u6, mask_u6, MODE_ZEROING);
+                vadd(vregInputNegDenominator_u7, vregInputNegNumerator_u7,
+                     vregInputNegDenominator_u7, mask_u7, MODE_ZEROING);
+                vdiv(vregOutput_u0, vregInputNegNumerator_u0, vregInputNegDenominator_u0, mask_u0,
+                     MODE_ZEROING);
+                vdiv(vregOutput_u1, vregInputNegNumerator_u1, vregInputNegDenominator_u1, mask_u1,
+                     MODE_ZEROING);
+                vdiv(vregOutput_u2, vregInputNegNumerator_u2, vregInputNegDenominator_u2, mask_u2,
+                     MODE_ZEROING);
+                vdiv(vregOutput_u3, vregInputNegNumerator_u3, vregInputNegDenominator_u3, mask_u3,
+                     MODE_ZEROING);
+                vdiv(vregOutput_u4, vregInputNegNumerator_u4, vregInputNegDenominator_u4, mask_u4,
+                     MODE_ZEROING);
+                vdiv(vregOutput_u5, vregInputNegNumerator_u5, vregInputNegDenominator_u5, mask_u5,
+                     MODE_ZEROING);
+                vdiv(vregOutput_u6, vregInputNegNumerator_u6, vregInputNegDenominator_u6, mask_u6,
+                     MODE_ZEROING);
+                vdiv(vregOutput_u7, vregInputNegNumerator_u7, vregInputNegDenominator_u7, mask_u7,
+                     MODE_ZEROING);
+                vmuls(vregInputNumerator_u0, vregInput_u0, FP32_TWO, mask_u0, MODE_ZEROING);
+                vmuls(vregInputNumerator_u1, vregInput_u1, FP32_TWO, mask_u1, MODE_ZEROING);
+                vmuls(vregInputNumerator_u2, vregInput_u2, FP32_TWO, mask_u2, MODE_ZEROING);
+                vmuls(vregInputNumerator_u3, vregInput_u3, FP32_TWO, mask_u3, MODE_ZEROING);
+                vmuls(vregInputNumerator_u4, vregInput_u4, FP32_TWO, mask_u4, MODE_ZEROING);
+                vmuls(vregInputNumerator_u5, vregInput_u5, FP32_TWO, mask_u5, MODE_ZEROING);
+                vmuls(vregInputNumerator_u6, vregInput_u6, FP32_TWO, mask_u6, MODE_ZEROING);
+                vmuls(vregInputNumerator_u7, vregInput_u7, FP32_TWO, mask_u7, MODE_ZEROING);
+                vexp(vregInputNumerator_u0, vregInputNumerator_u0, mask_u0, MODE_ZEROING);
+                vexp(vregInputNumerator_u1, vregInputNumerator_u1, mask_u1, MODE_ZEROING);
+                vexp(vregInputNumerator_u2, vregInputNumerator_u2, mask_u2, MODE_ZEROING);
+                vexp(vregInputNumerator_u3, vregInputNumerator_u3, mask_u3, MODE_ZEROING);
+                vexp(vregInputNumerator_u4, vregInputNumerator_u4, mask_u4, MODE_ZEROING);
+                vexp(vregInputNumerator_u5, vregInputNumerator_u5, mask_u5, MODE_ZEROING);
+                vexp(vregInputNumerator_u6, vregInputNumerator_u6, mask_u6, MODE_ZEROING);
+                vexp(vregInputNumerator_u7, vregInputNumerator_u7, mask_u7, MODE_ZEROING);
+                vexp(vregInputDenominator_u0, vregInput_u0, mask_u0, MODE_ZEROING);
+                vexp(vregInputDenominator_u1, vregInput_u1, mask_u1, MODE_ZEROING);
+                vexp(vregInputDenominator_u2, vregInput_u2, mask_u2, MODE_ZEROING);
+                vexp(vregInputDenominator_u3, vregInput_u3, mask_u3, MODE_ZEROING);
+                vexp(vregInputDenominator_u4, vregInput_u4, mask_u4, MODE_ZEROING);
+                vexp(vregInputDenominator_u5, vregInput_u5, mask_u5, MODE_ZEROING);
+                vexp(vregInputDenominator_u6, vregInput_u6, mask_u6, MODE_ZEROING);
+                vexp(vregInputDenominator_u7, vregInput_u7, mask_u7, MODE_ZEROING);
+                vaxpy(vregInputNumerator_u0, vregInputDenominator_u0, FP32_TWO, mask_u0,
+                      MODE_ZEROING);
+                vaxpy(vregInputNumerator_u1, vregInputDenominator_u1, FP32_TWO, mask_u1,
+                      MODE_ZEROING);
+                vaxpy(vregInputNumerator_u2, vregInputDenominator_u2, FP32_TWO, mask_u2,
+                      MODE_ZEROING);
+                vaxpy(vregInputNumerator_u3, vregInputDenominator_u3, FP32_TWO, mask_u3,
+                      MODE_ZEROING);
+                vaxpy(vregInputNumerator_u4, vregInputDenominator_u4, FP32_TWO, mask_u4,
+                      MODE_ZEROING);
+                vaxpy(vregInputNumerator_u5, vregInputDenominator_u5, FP32_TWO, mask_u5,
+                      MODE_ZEROING);
+                vaxpy(vregInputNumerator_u6, vregInputDenominator_u6, FP32_TWO, mask_u6,
+                      MODE_ZEROING);
+                vaxpy(vregInputNumerator_u7, vregInputDenominator_u7, FP32_TWO, mask_u7,
+                      MODE_ZEROING);
+                vadds(vregInputDenominator_u0, vregInputNumerator_u0, FP32_TWO, mask_u0,
+                      MODE_ZEROING);
+                vadds(vregInputDenominator_u1, vregInputNumerator_u1, FP32_TWO, mask_u1,
+                      MODE_ZEROING);
+                vadds(vregInputDenominator_u2, vregInputNumerator_u2, FP32_TWO, mask_u2,
+                      MODE_ZEROING);
+                vadds(vregInputDenominator_u3, vregInputNumerator_u3, FP32_TWO, mask_u3,
+                      MODE_ZEROING);
+                vadds(vregInputDenominator_u4, vregInputNumerator_u4, FP32_TWO, mask_u4,
+                      MODE_ZEROING);
+                vadds(vregInputDenominator_u5, vregInputNumerator_u5, FP32_TWO, mask_u5,
+                      MODE_ZEROING);
+                vadds(vregInputDenominator_u6, vregInputNumerator_u6, FP32_TWO, mask_u6,
+                      MODE_ZEROING);
+                vadds(vregInputDenominator_u7, vregInputNumerator_u7, FP32_TWO, mask_u7,
+                      MODE_ZEROING);
+                vdiv(vregInputNumerator_u0, vregInputNumerator_u0, vregInputDenominator_u0, mask_u0,
+                     MODE_ZEROING);
+                vdiv(vregInputNumerator_u1, vregInputNumerator_u1, vregInputDenominator_u1, mask_u1,
+                     MODE_ZEROING);
+                vdiv(vregInputNumerator_u2, vregInputNumerator_u2, vregInputDenominator_u2, mask_u2,
+                     MODE_ZEROING);
+                vdiv(vregInputNumerator_u3, vregInputNumerator_u3, vregInputDenominator_u3, mask_u3,
+                     MODE_ZEROING);
+                vdiv(vregInputNumerator_u4, vregInputNumerator_u4, vregInputDenominator_u4, mask_u4,
+                     MODE_ZEROING);
+                vdiv(vregInputNumerator_u5, vregInputNumerator_u5, vregInputDenominator_u5, mask_u5,
+                     MODE_ZEROING);
+                vdiv(vregInputNumerator_u6, vregInputNumerator_u6, vregInputDenominator_u6, mask_u6,
+                     MODE_ZEROING);
+                vdiv(vregInputNumerator_u7, vregInputNumerator_u7, vregInputDenominator_u7, mask_u7,
+                     MODE_ZEROING);
+                vcmps_lt(cmpvector_bool_u0, vregInput_u0, FP32_ZERO, mask_u0);
+                vcmps_lt(cmpvector_bool_u1, vregInput_u1, FP32_ZERO, mask_u1);
+                vcmps_lt(cmpvector_bool_u2, vregInput_u2, FP32_ZERO, mask_u2);
+                vcmps_lt(cmpvector_bool_u3, vregInput_u3, FP32_ZERO, mask_u3);
+                vcmps_lt(cmpvector_bool_u4, vregInput_u4, FP32_ZERO, mask_u4);
+                vcmps_lt(cmpvector_bool_u5, vregInput_u5, FP32_ZERO, mask_u5);
+                vcmps_lt(cmpvector_bool_u6, vregInput_u6, FP32_ZERO, mask_u6);
+                vcmps_lt(cmpvector_bool_u7, vregInput_u7, FP32_ZERO, mask_u7);
+                vsel(vregOutput_u0, vregInputNumerator_u0, vregOutput_u0, cmpvector_bool_u0);
+                vsel(vregOutput_u1, vregInputNumerator_u1, vregOutput_u1, cmpvector_bool_u1);
+                vsel(vregOutput_u2, vregInputNumerator_u2, vregOutput_u2, cmpvector_bool_u2);
+                vsel(vregOutput_u3, vregInputNumerator_u3, vregOutput_u3, cmpvector_bool_u3);
+                vsel(vregOutput_u4, vregInputNumerator_u4, vregOutput_u4, cmpvector_bool_u4);
+                vsel(vregOutput_u5, vregInputNumerator_u5, vregOutput_u5, cmpvector_bool_u5);
+                vsel(vregOutput_u6, vregInputNumerator_u6, vregOutput_u6, cmpvector_bool_u6);
+                vsel(vregOutput_u7, vregInputNumerator_u7, vregOutput_u7, cmpvector_bool_u7);
+                vmul(vregOutput_u0, vregOutput_u0, vregInput_u0, mask_u0, MODE_ZEROING);
+                vmul(vregOutput_u1, vregOutput_u1, vregInput_u1, mask_u1, MODE_ZEROING);
+                vmul(vregOutput_u2, vregOutput_u2, vregInput_u2, mask_u2, MODE_ZEROING);
+                vmul(vregOutput_u3, vregOutput_u3, vregInput_u3, mask_u3, MODE_ZEROING);
+                vmul(vregOutput_u4, vregOutput_u4, vregInput_u4, mask_u4, MODE_ZEROING);
+                vmul(vregOutput_u5, vregOutput_u5, vregInput_u5, mask_u5, MODE_ZEROING);
+                vmul(vregOutput_u6, vregOutput_u6, vregInput_u6, mask_u6, MODE_ZEROING);
+                vmul(vregOutput_u7, vregOutput_u7, vregInput_u7, mask_u7, MODE_ZEROING);
+                vsts(vregOutput_u0, (__ubuf__ float*)(dstAddr + (i + 0) * vlSize), 0, NORM_B32,
+                     mask_u0);
+                vsts(vregOutput_u1, (__ubuf__ float*)(dstAddr + (i + 1) * vlSize), 0, NORM_B32,
+                     mask_u1);
+                vsts(vregOutput_u2, (__ubuf__ float*)(dstAddr + (i + 2) * vlSize), 0, NORM_B32,
+                     mask_u2);
+                vsts(vregOutput_u3, (__ubuf__ float*)(dstAddr + (i + 3) * vlSize), 0, NORM_B32,
+                     mask_u3);
+                vsts(vregOutput_u4, (__ubuf__ float*)(dstAddr + (i + 4) * vlSize), 0, NORM_B32,
+                     mask_u4);
+                vsts(vregOutput_u5, (__ubuf__ float*)(dstAddr + (i + 5) * vlSize), 0, NORM_B32,
+                     mask_u5);
+                vsts(vregOutput_u6, (__ubuf__ float*)(dstAddr + (i + 6) * vlSize), 0, NORM_B32,
+                     mask_u6);
+                vsts(vregOutput_u7, (__ubuf__ float*)(dstAddr + (i + 7) * vlSize), 0, NORM_B32,
+                     mask_u7);
+            }
+        }
+    }
+}
+extern "C" __global__ __aicore__ void candidate_kernel(__gm__ uint8_t* input,
+                                                       __gm__ uint8_t* output) {
+    __ubuf__ float* srcAddr = (__ubuf__ float*)get_imm(0);
+    __ubuf__ float* dstAddr = (__ubuf__ float*)get_imm(12288);
+    copy_gm_to_ubuf_align_v2((__ubuf__ uint8_t*)get_imm(0), input, 0, 1, 12288, 0, 0, 0, 0, 0, 0);
+    set_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    wait_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    candidate_vf(srcAddr, dstAddr);
+    set_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    wait_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    copy_ubuf_to_gm_align_v2(output + 0, (__ubuf__ uint8_t*)dstAddr, 0, 1, 12288, 0, 0, 0);
+}

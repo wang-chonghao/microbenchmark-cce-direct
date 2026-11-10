@@ -1,0 +1,96 @@
+/**
+ * Copyright (c) 2026 Huawei Technologies Co., Ltd.
+ * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+ * CANN Open Software License Agreement Version 2.0 (the "License").
+ * Please refer to the License for details. You may not use this file except in compliance with the License.
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+ * See LICENSE in the root of the software repository for the full text of the License.
+ */
+#include "kernel_operator.h"
+#include <cfloat>
+#include <type_traits>
+__aicore__ inline void candidate_vf(__ubuf__ float* dcsUb, __ubuf__ float* ciUb,
+                                    __ubuf__ float* iUb, __ubuf__ float* csPrevUb,
+                                    __ubuf__ float* fUb, __ubuf__ float* diPreUb,
+                                    __ubuf__ float* dciPreUb, __ubuf__ float* dfPreUb) {
+    constexpr uint32_t REP_F32 = 64;
+    uint32_t segElems = 1024;
+    uint16_t repeatTime = 16;
+    __VEC_SCOPE__ {
+        constexpr bool IsFp32 = std::is_same_v<float, float>;
+        vector_f32 dcsReg;
+        vector_f32 ciReg;
+        vector_f32 iReg;
+        vector_f32 cspReg;
+        vector_f32 fReg;
+        vector_f32 t0Reg;
+        vector_f32 t1Reg;
+        vector_f32 oneReg;
+        vector_bool mask;
+        vdup(oneReg, 1.0f, pset_b32(PAT_ALL), MODE_ZEROING);
+        uint32_t remaining = segElems;
+
+        for (uint16_t i = 0; i < repeatTime; ++i) {
+            int32_t off = static_cast<int32_t>(i) * static_cast<int32_t>(REP_F32);
+            mask = plt_b32(remaining, POST_UPDATE);
+
+            vlds(dcsReg, dcsUb + off, 0, NORM);
+
+            vlds(ciReg, reinterpret_cast<__ubuf__ float*>(ciUb) + off, 0, NORM);
+            vlds(iReg, reinterpret_cast<__ubuf__ float*>(iUb) + off, 0, NORM);
+            vlds(cspReg, reinterpret_cast<__ubuf__ float*>(csPrevUb) + off, 0, NORM);
+            vlds(fReg, reinterpret_cast<__ubuf__ float*>(fUb) + off, 0, NORM);
+
+            vsub(t1Reg, oneReg, iReg, mask, MODE_ZEROING);
+
+            vmul(t0Reg, iReg, t1Reg, mask, MODE_ZEROING);
+
+            vmul(t0Reg, t0Reg, dcsReg, mask, MODE_ZEROING);
+
+            vmul(t0Reg, t0Reg, ciReg, mask, MODE_ZEROING);
+
+            vsts(t0Reg, diPreUb + off, 0, NORM_B32, mask);
+
+            vmul(t1Reg, ciReg, ciReg, mask, MODE_ZEROING);
+
+            vsub(t1Reg, oneReg, t1Reg, mask, MODE_ZEROING);
+
+            vmul(t0Reg, t1Reg, dcsReg, mask, MODE_ZEROING);
+
+            vmul(t0Reg, t0Reg, iReg, mask, MODE_ZEROING);
+
+            vsts(t0Reg, dciPreUb + off, 0, NORM_B32, mask);
+
+            vsub(t1Reg, oneReg, fReg, mask, MODE_ZEROING);
+
+            vmul(t1Reg, fReg, t1Reg, mask, MODE_ZEROING);
+
+            vmul(t0Reg, t1Reg, dcsReg, mask, MODE_ZEROING);
+
+            vmul(t0Reg, t0Reg, cspReg, mask, MODE_ZEROING);
+
+            vsts(t0Reg, dfPreUb + off, 0, NORM_B32, mask);
+        }
+    }
+}
+extern "C" __global__ __aicore__ void candidate_kernel(__gm__ uint8_t* input,
+                                                       __gm__ uint8_t* output) {
+    __ubuf__ float* dcsUb = (__ubuf__ float*)get_imm(0);
+    __ubuf__ float* ciUb = (__ubuf__ float*)get_imm(4096);
+    __ubuf__ float* iUb = (__ubuf__ float*)get_imm(8192);
+    __ubuf__ float* csPrevUb = (__ubuf__ float*)get_imm(12288);
+    __ubuf__ float* fUb = (__ubuf__ float*)get_imm(16384);
+    __ubuf__ float* diPreUb = (__ubuf__ float*)get_imm(20480);
+    __ubuf__ float* dciPreUb = (__ubuf__ float*)get_imm(24576);
+    __ubuf__ float* dfPreUb = (__ubuf__ float*)get_imm(28672);
+    copy_gm_to_ubuf_align_v2((__ubuf__ uint8_t*)get_imm(0), input, 0, 1, 20480, 0, 0, 0, 0, 0, 0);
+    set_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    wait_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    candidate_vf(dcsUb, ciUb, iUb, csPrevUb, fUb, diPreUb, dciPreUb, dfPreUb);
+    set_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    wait_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    copy_ubuf_to_gm_align_v2(output + 0, (__ubuf__ uint8_t*)diPreUb, 0, 1, 4096, 0, 0, 0);
+    copy_ubuf_to_gm_align_v2(output + 4096, (__ubuf__ uint8_t*)dciPreUb, 0, 1, 4096, 0, 0, 0);
+    copy_ubuf_to_gm_align_v2(output + 8192, (__ubuf__ uint8_t*)dfPreUb, 0, 1, 4096, 0, 0, 0);
+}

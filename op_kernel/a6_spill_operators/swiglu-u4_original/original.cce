@@ -1,0 +1,522 @@
+/**
+ * Copyright (c) 2026 Huawei Technologies Co., Ltd.
+ * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+ * CANN Open Software License Agreement Version 2.0 (the "License").
+ * Please refer to the License for details. You may not use this file except in compliance with the License.
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+ * See LICENSE in the root of the software repository for the full text of the License.
+ */
+#include "kernel_operator.h"
+#include <cfloat>
+#include <type_traits>
+__simd_callee__ inline void ClampMask(vector_bool& gateInRangeMask, vector_f32& gate,
+                                      float clampLimit, vector_bool& activeMask) {
+    vcmps_lt(gateInRangeMask, gate, clampLimit, activeMask);
+}
+__simd_callee__ inline void SelectMask(vector_f32& floatMask, vector_bool& conditionMask,
+                                       vector_f32& ones, vector_f32& zeros) {
+    vsel(floatMask, ones, zeros, conditionMask);
+}
+__simd_callee__ inline void ClipMask(vector_bool& upBelowUpperMask, vector_bool& upAboveLowerMask,
+                                     vector_f32& negativeUp, vector_f32& up, float clampLimit,
+                                     vector_bool& activeMask) {
+    vcmps_lt(upBelowUpperMask, up, clampLimit, activeMask);
+    vmuls(negativeUp, up, float(-1.0), activeMask, MODE_ZEROING);
+    vcmps_lt(upAboveLowerMask, negativeUp, clampLimit, activeMask);
+}
+__simd_callee__ inline void ClampClip(vector_f32& gate, vector_f32& up, float clampLimit,
+                                      vector_bool& activeMask) {
+    vmins(gate, gate, clampLimit, activeMask, MODE_ZEROING);
+    vmins(up, up, clampLimit, activeMask, MODE_ZEROING);
+    vmaxs(up, up, float(-clampLimit), activeMask, MODE_ZEROING);
+}
+__simd_callee__ inline void Sigmoid(vector_f32& sigmoid, vector_f32& gate, vector_f32& ones,
+                                    vector_bool& activeMask) {
+    vector_f32 negativeGate;
+    vector_f32 expNegativeGate;
+    vector_f32 onePlusExp;
+    vmuls(negativeGate, gate, float(-1.0), activeMask, MODE_ZEROING);
+    vexp(expNegativeGate, negativeGate, activeMask, MODE_ZEROING);
+    vadds(onePlusExp, expNegativeGate, float(1.0), activeMask, MODE_ZEROING);
+    vdiv(sigmoid, ones, onePlusExp, activeMask, MODE_ZEROING);
+}
+__simd_callee__ inline void Silu(vector_f32& gate, vector_f32& sigmoid, vector_f32& zeros,
+                                 vector_bool& activeMask) {
+    vector_bool negInfMask;
+    vector_bool belowPositiveMinMask;
+    vector_bool negativeNormalMask;
+    vector_f32 rawSilu;
+    vector_f32 positiveSideFlushedSilu;
+    vector_f32 flushedSilu;
+    vcmps_eq(negInfMask, gate, -__builtin_inff(), activeMask);
+    vmul(rawSilu, gate, sigmoid, activeMask, MODE_ZEROING);
+
+    vcmps_lt(belowPositiveMinMask, rawSilu, FLT_MIN, activeMask);
+    vsel(positiveSideFlushedSilu, zeros, rawSilu, belowPositiveMinMask);
+    vcmps_le(negativeNormalMask, rawSilu, -FLT_MIN, activeMask);
+    vsel(flushedSilu, rawSilu, positiveSideFlushedSilu, negativeNormalMask);
+    vsel(gate, zeros, flushedSilu, negInfMask);
+}
+__simd_callee__ inline void SiluPrime(vector_f32& siluPrime, vector_f32& siluTimesSigmoid,
+                                      vector_f32& sigmoid, vector_f32& silu, vector_f32& ones,
+                                      vector_bool& activeMask) {
+    vector_bool posInfMask;
+    vector_f32 rawSiluPrime;
+    vcmps_eq(posInfMask, silu, __builtin_inff(), activeMask);
+    vmul(siluTimesSigmoid, silu, sigmoid, activeMask, MODE_ZEROING);
+    vadd(rawSiluPrime, sigmoid, silu, activeMask, MODE_ZEROING);
+    vsub(rawSiluPrime, rawSiluPrime, siluTimesSigmoid, activeMask, MODE_ZEROING);
+    vsel(siluPrime, ones, rawSiluPrime, posInfMask);
+}
+__simd_callee__ inline void ComputeGradGate(vector_f32& gradGate, vector_f32& gradY,
+                                            vector_f32& siluPrime, vector_f32& up,
+                                            vector_f32& weight, vector_f32& gateClampMask,
+                                            float rowMaskValue, vector_bool& activeMask) {
+    vmul(gradGate, gradY, siluPrime, activeMask, MODE_ZEROING);
+    vmul(gradGate, gradGate, up, activeMask, MODE_ZEROING);
+
+    vmul(gradGate, gradGate, weight, activeMask, MODE_ZEROING);
+
+    vmul(gradGate, gradGate, gateClampMask, activeMask, MODE_ZEROING);
+}
+__simd_callee__ inline void ComputeGradUp(vector_f32& gradUp, vector_f32& gradY, vector_f32& silu,
+                                          vector_f32& weight, vector_f32& upClampMask,
+                                          float rowMaskValue, vector_bool& activeMask) {
+    vmul(gradUp, gradY, silu, activeMask, MODE_ZEROING);
+
+    vmul(gradUp, gradUp, weight, activeMask, MODE_ZEROING);
+
+    vmul(gradUp, gradUp, upClampMask, activeMask, MODE_ZEROING);
+}
+__aicore__ inline void candidate_vf(__ubuf__ float* gradYAddress, __ubuf__ float* gateAddress,
+                                    __ubuf__ float* upAddress, __ubuf__ float* weightAddress,
+                                    __ubuf__ float* yOriginAddress, __ubuf__ float* gradGateAddress,
+                                    __ubuf__ float* gradUpAddress,
+                                    __ubuf__ float* gradWeightProductAddress) {
+    constexpr uint32_t FP32_VECTOR_LENGTH = 64;
+    uint32_t elementCount = 1024;
+    float clampLimit = 2.0f, rowMaskValue = 1.0f;
+    __VEC_SCOPE__ {
+        vector_bool activeMask;
+        vector_bool fullMask = pset_b32(PAT_ALL);
+        vector_f32 ones;
+        vector_f32 zeros;
+        vdup(ones, float(1.0), fullMask, MODE_ZEROING);
+        vdup(zeros, float(0.0), fullMask, MODE_ZEROING);
+        vector_f32 weight;
+
+        vlds(weight, weightAddress, 0, BRC_B32);
+
+        vector_f32 gradY;
+        vector_f32 gate;
+        vector_f32 up;
+        vector_f32 sigmoid;
+        vector_f32 siluPrime;
+        vector_f32 siluTimesSigmoid;
+        vector_f32 gradGate;
+        vector_f32 gradUp;
+        vector_f32 gateClampMask;
+        vector_f32 upClampMask;
+        vector_f32 gradWeightProduct;
+        vector_f32 gradGateOutput;
+        vector_f32 gradUpOutput;
+        uint16_t repeatCount =
+            static_cast<uint16_t>((elementCount + FP32_VECTOR_LENGTH - 1) / FP32_VECTOR_LENGTH);
+        {
+            vector_bool activeMask_u0;
+            vector_bool activeMask_u1;
+            vector_bool activeMask_u2;
+            vector_bool activeMask_u3;
+            vector_f32 gate_u0;
+            vector_f32 gate_u1;
+            vector_f32 gate_u2;
+            vector_f32 gate_u3;
+            vector_f32 gateClampMask_u0;
+            vector_f32 gateClampMask_u1;
+            vector_f32 gateClampMask_u2;
+            vector_f32 gateClampMask_u3;
+            vector_bool gateInRangeMask_u0;
+            vector_bool gateInRangeMask_u1;
+            vector_bool gateInRangeMask_u2;
+            vector_bool gateInRangeMask_u3;
+            vector_f32 gradGate_u0;
+            vector_f32 gradGate_u1;
+            vector_f32 gradGate_u2;
+            vector_f32 gradGate_u3;
+            vector_f32 gradUp_u0;
+            vector_f32 gradUp_u1;
+            vector_f32 gradUp_u2;
+            vector_f32 gradUp_u3;
+            vector_f32 gradWeightProduct_u0;
+            vector_f32 gradWeightProduct_u1;
+            vector_f32 gradWeightProduct_u2;
+            vector_f32 gradWeightProduct_u3;
+            vector_f32 gradY_u0;
+            vector_f32 gradY_u1;
+            vector_f32 gradY_u2;
+            vector_f32 gradY_u3;
+            vector_f32 helper_7_expNegativeGate_u0;
+            vector_f32 helper_7_expNegativeGate_u1;
+            vector_f32 helper_7_expNegativeGate_u2;
+            vector_f32 helper_7_expNegativeGate_u3;
+            vector_f32 helper_7_negativeGate_u0;
+            vector_f32 helper_7_negativeGate_u1;
+            vector_f32 helper_7_negativeGate_u2;
+            vector_f32 helper_7_negativeGate_u3;
+            vector_f32 helper_7_onePlusExp_u0;
+            vector_f32 helper_7_onePlusExp_u1;
+            vector_f32 helper_7_onePlusExp_u2;
+            vector_f32 helper_7_onePlusExp_u3;
+            vector_bool helper_8_belowPositiveMinMask_u0;
+            vector_bool helper_8_belowPositiveMinMask_u1;
+            vector_bool helper_8_belowPositiveMinMask_u2;
+            vector_bool helper_8_belowPositiveMinMask_u3;
+            vector_f32 helper_8_flushedSilu_u0;
+            vector_f32 helper_8_flushedSilu_u1;
+            vector_f32 helper_8_flushedSilu_u2;
+            vector_f32 helper_8_flushedSilu_u3;
+            vector_bool helper_8_negInfMask_u0;
+            vector_bool helper_8_negInfMask_u1;
+            vector_bool helper_8_negInfMask_u2;
+            vector_bool helper_8_negInfMask_u3;
+            vector_bool helper_8_negativeNormalMask_u0;
+            vector_bool helper_8_negativeNormalMask_u1;
+            vector_bool helper_8_negativeNormalMask_u2;
+            vector_bool helper_8_negativeNormalMask_u3;
+            vector_f32 helper_8_positiveSideFlushedSilu_u0;
+            vector_f32 helper_8_positiveSideFlushedSilu_u1;
+            vector_f32 helper_8_positiveSideFlushedSilu_u2;
+            vector_f32 helper_8_positiveSideFlushedSilu_u3;
+            vector_f32 helper_8_rawSilu_u0;
+            vector_f32 helper_8_rawSilu_u1;
+            vector_f32 helper_8_rawSilu_u2;
+            vector_f32 helper_8_rawSilu_u3;
+            vector_bool helper_9_posInfMask_u0;
+            vector_bool helper_9_posInfMask_u1;
+            vector_bool helper_9_posInfMask_u2;
+            vector_bool helper_9_posInfMask_u3;
+            vector_f32 helper_9_rawSiluPrime_u0;
+            vector_f32 helper_9_rawSiluPrime_u1;
+            vector_f32 helper_9_rawSiluPrime_u2;
+            vector_f32 helper_9_rawSiluPrime_u3;
+            vector_f32 lowerBoundMask_u0;
+            vector_f32 lowerBoundMask_u1;
+            vector_f32 lowerBoundMask_u2;
+            vector_f32 lowerBoundMask_u3;
+            vector_f32 negativeUp_u0;
+            vector_f32 negativeUp_u1;
+            vector_f32 negativeUp_u2;
+            vector_f32 negativeUp_u3;
+            vector_f32 sigmoid_u0;
+            vector_f32 sigmoid_u1;
+            vector_f32 sigmoid_u2;
+            vector_f32 sigmoid_u3;
+            vector_f32 siluPrime_u0;
+            vector_f32 siluPrime_u1;
+            vector_f32 siluPrime_u2;
+            vector_f32 siluPrime_u3;
+            vector_f32 siluTimesSigmoid_u0;
+            vector_f32 siluTimesSigmoid_u1;
+            vector_f32 siluTimesSigmoid_u2;
+            vector_f32 siluTimesSigmoid_u3;
+            vector_f32 up_u0;
+            vector_f32 up_u1;
+            vector_f32 up_u2;
+            vector_f32 up_u3;
+            vector_bool upAboveLowerMask_u0;
+            vector_bool upAboveLowerMask_u1;
+            vector_bool upAboveLowerMask_u2;
+            vector_bool upAboveLowerMask_u3;
+            vector_bool upBelowUpperMask_u0;
+            vector_bool upBelowUpperMask_u1;
+            vector_bool upBelowUpperMask_u2;
+            vector_bool upBelowUpperMask_u3;
+            vector_f32 upClampMask_u0;
+            vector_f32 upClampMask_u1;
+            vector_f32 upClampMask_u2;
+            vector_f32 upClampMask_u3;
+            vector_f32 upperBoundMask_u0;
+            vector_f32 upperBoundMask_u1;
+            vector_f32 upperBoundMask_u2;
+            vector_f32 upperBoundMask_u3;
+#pragma unroll 1
+            for (uint16_t repeatIndex = 0; repeatIndex < 16; repeatIndex += 4) {
+                uint32_t offset_u0 = (repeatIndex + 0) * FP32_VECTOR_LENGTH;
+                uint32_t offset_u1 = (repeatIndex + 1) * FP32_VECTOR_LENGTH;
+                uint32_t offset_u2 = (repeatIndex + 2) * FP32_VECTOR_LENGTH;
+                uint32_t offset_u3 = (repeatIndex + 3) * FP32_VECTOR_LENGTH;
+                uint32_t currentElementCount_u0 = (elementCount - offset_u0 > FP32_VECTOR_LENGTH)
+                                                      ? FP32_VECTOR_LENGTH
+                                                      : (elementCount - offset_u0);
+                uint32_t currentElementCount_u1 = (elementCount - offset_u1 > FP32_VECTOR_LENGTH)
+                                                      ? FP32_VECTOR_LENGTH
+                                                      : (elementCount - offset_u1);
+                uint32_t currentElementCount_u2 = (elementCount - offset_u2 > FP32_VECTOR_LENGTH)
+                                                      ? FP32_VECTOR_LENGTH
+                                                      : (elementCount - offset_u2);
+                uint32_t currentElementCount_u3 = (elementCount - offset_u3 > FP32_VECTOR_LENGTH)
+                                                      ? FP32_VECTOR_LENGTH
+                                                      : (elementCount - offset_u3);
+                if (currentElementCount_u0 == FP32_VECTOR_LENGTH) {
+                    activeMask_u0 = fullMask;
+                } else {
+                    activeMask_u0 = plt_b32(currentElementCount_u0, POST_UPDATE);
+                }
+                if (currentElementCount_u1 == FP32_VECTOR_LENGTH) {
+                    activeMask_u1 = fullMask;
+                } else {
+                    activeMask_u1 = plt_b32(currentElementCount_u1, POST_UPDATE);
+                }
+                if (currentElementCount_u2 == FP32_VECTOR_LENGTH) {
+                    activeMask_u2 = fullMask;
+                } else {
+                    activeMask_u2 = plt_b32(currentElementCount_u2, POST_UPDATE);
+                }
+                if (currentElementCount_u3 == FP32_VECTOR_LENGTH) {
+                    activeMask_u3 = fullMask;
+                } else {
+                    activeMask_u3 = plt_b32(currentElementCount_u3, POST_UPDATE);
+                }
+                vlds(gradY_u0, gradYAddress + offset_u0, 0, NORM);
+                vlds(gradY_u1, gradYAddress + offset_u1, 0, NORM);
+                vlds(gradY_u2, gradYAddress + offset_u2, 0, NORM);
+                vlds(gradY_u3, gradYAddress + offset_u3, 0, NORM);
+                vlds(gate_u0, gateAddress + offset_u0, 0, NORM);
+                vlds(gate_u1, gateAddress + offset_u1, 0, NORM);
+                vlds(gate_u2, gateAddress + offset_u2, 0, NORM);
+                vlds(gate_u3, gateAddress + offset_u3, 0, NORM);
+                vlds(up_u0, upAddress + offset_u0, 0, NORM);
+                vlds(up_u1, upAddress + offset_u1, 0, NORM);
+                vlds(up_u2, upAddress + offset_u2, 0, NORM);
+                vlds(up_u3, upAddress + offset_u3, 0, NORM);
+                vcmps_lt(gateInRangeMask_u0, gate_u0, clampLimit, activeMask_u0);
+                vcmps_lt(gateInRangeMask_u1, gate_u1, clampLimit, activeMask_u1);
+                vcmps_lt(gateInRangeMask_u2, gate_u2, clampLimit, activeMask_u2);
+                vcmps_lt(gateInRangeMask_u3, gate_u3, clampLimit, activeMask_u3);
+                vsel(gateClampMask_u0, ones, zeros, gateInRangeMask_u0);
+                vsel(gateClampMask_u1, ones, zeros, gateInRangeMask_u1);
+                vsel(gateClampMask_u2, ones, zeros, gateInRangeMask_u2);
+                vsel(gateClampMask_u3, ones, zeros, gateInRangeMask_u3);
+                vcmps_lt(upBelowUpperMask_u0, up_u0, clampLimit, activeMask_u0);
+                vcmps_lt(upBelowUpperMask_u1, up_u1, clampLimit, activeMask_u1);
+                vcmps_lt(upBelowUpperMask_u2, up_u2, clampLimit, activeMask_u2);
+                vcmps_lt(upBelowUpperMask_u3, up_u3, clampLimit, activeMask_u3);
+                vmuls(negativeUp_u0, up_u0, float(-1.0), activeMask_u0, MODE_ZEROING);
+                vmuls(negativeUp_u1, up_u1, float(-1.0), activeMask_u1, MODE_ZEROING);
+                vmuls(negativeUp_u2, up_u2, float(-1.0), activeMask_u2, MODE_ZEROING);
+                vmuls(negativeUp_u3, up_u3, float(-1.0), activeMask_u3, MODE_ZEROING);
+                vcmps_lt(upAboveLowerMask_u0, negativeUp_u0, clampLimit, activeMask_u0);
+                vcmps_lt(upAboveLowerMask_u1, negativeUp_u1, clampLimit, activeMask_u1);
+                vcmps_lt(upAboveLowerMask_u2, negativeUp_u2, clampLimit, activeMask_u2);
+                vcmps_lt(upAboveLowerMask_u3, negativeUp_u3, clampLimit, activeMask_u3);
+                vsel(upperBoundMask_u0, ones, zeros, upBelowUpperMask_u0);
+                vsel(upperBoundMask_u1, ones, zeros, upBelowUpperMask_u1);
+                vsel(upperBoundMask_u2, ones, zeros, upBelowUpperMask_u2);
+                vsel(upperBoundMask_u3, ones, zeros, upBelowUpperMask_u3);
+                vsel(lowerBoundMask_u0, ones, zeros, upAboveLowerMask_u0);
+                vsel(lowerBoundMask_u1, ones, zeros, upAboveLowerMask_u1);
+                vsel(lowerBoundMask_u2, ones, zeros, upAboveLowerMask_u2);
+                vsel(lowerBoundMask_u3, ones, zeros, upAboveLowerMask_u3);
+                vmul(upClampMask_u0, upperBoundMask_u0, lowerBoundMask_u0, activeMask_u0,
+                     MODE_ZEROING);
+                vmul(upClampMask_u1, upperBoundMask_u1, lowerBoundMask_u1, activeMask_u1,
+                     MODE_ZEROING);
+                vmul(upClampMask_u2, upperBoundMask_u2, lowerBoundMask_u2, activeMask_u2,
+                     MODE_ZEROING);
+                vmul(upClampMask_u3, upperBoundMask_u3, lowerBoundMask_u3, activeMask_u3,
+                     MODE_ZEROING);
+                vmins(gate_u0, gate_u0, clampLimit, activeMask_u0, MODE_ZEROING);
+                vmins(gate_u1, gate_u1, clampLimit, activeMask_u1, MODE_ZEROING);
+                vmins(gate_u2, gate_u2, clampLimit, activeMask_u2, MODE_ZEROING);
+                vmins(gate_u3, gate_u3, clampLimit, activeMask_u3, MODE_ZEROING);
+                vmins(up_u0, up_u0, clampLimit, activeMask_u0, MODE_ZEROING);
+                vmins(up_u1, up_u1, clampLimit, activeMask_u1, MODE_ZEROING);
+                vmins(up_u2, up_u2, clampLimit, activeMask_u2, MODE_ZEROING);
+                vmins(up_u3, up_u3, clampLimit, activeMask_u3, MODE_ZEROING);
+                vmaxs(up_u0, up_u0, float(-clampLimit), activeMask_u0, MODE_ZEROING);
+                vmaxs(up_u1, up_u1, float(-clampLimit), activeMask_u1, MODE_ZEROING);
+                vmaxs(up_u2, up_u2, float(-clampLimit), activeMask_u2, MODE_ZEROING);
+                vmaxs(up_u3, up_u3, float(-clampLimit), activeMask_u3, MODE_ZEROING);
+                vmuls(helper_7_negativeGate_u0, gate_u0, float(-1.0), activeMask_u0, MODE_ZEROING);
+                vmuls(helper_7_negativeGate_u1, gate_u1, float(-1.0), activeMask_u1, MODE_ZEROING);
+                vmuls(helper_7_negativeGate_u2, gate_u2, float(-1.0), activeMask_u2, MODE_ZEROING);
+                vmuls(helper_7_negativeGate_u3, gate_u3, float(-1.0), activeMask_u3, MODE_ZEROING);
+                vexp(helper_7_expNegativeGate_u0, helper_7_negativeGate_u0, activeMask_u0,
+                     MODE_ZEROING);
+                vexp(helper_7_expNegativeGate_u1, helper_7_negativeGate_u1, activeMask_u1,
+                     MODE_ZEROING);
+                vexp(helper_7_expNegativeGate_u2, helper_7_negativeGate_u2, activeMask_u2,
+                     MODE_ZEROING);
+                vexp(helper_7_expNegativeGate_u3, helper_7_negativeGate_u3, activeMask_u3,
+                     MODE_ZEROING);
+                vadds(helper_7_onePlusExp_u0, helper_7_expNegativeGate_u0, float(1.0),
+                      activeMask_u0, MODE_ZEROING);
+                vadds(helper_7_onePlusExp_u1, helper_7_expNegativeGate_u1, float(1.0),
+                      activeMask_u1, MODE_ZEROING);
+                vadds(helper_7_onePlusExp_u2, helper_7_expNegativeGate_u2, float(1.0),
+                      activeMask_u2, MODE_ZEROING);
+                vadds(helper_7_onePlusExp_u3, helper_7_expNegativeGate_u3, float(1.0),
+                      activeMask_u3, MODE_ZEROING);
+                vdiv(sigmoid_u0, ones, helper_7_onePlusExp_u0, activeMask_u0, MODE_ZEROING);
+                vdiv(sigmoid_u1, ones, helper_7_onePlusExp_u1, activeMask_u1, MODE_ZEROING);
+                vdiv(sigmoid_u2, ones, helper_7_onePlusExp_u2, activeMask_u2, MODE_ZEROING);
+                vdiv(sigmoid_u3, ones, helper_7_onePlusExp_u3, activeMask_u3, MODE_ZEROING);
+                vcmps_eq(helper_8_negInfMask_u0, gate_u0, -__builtin_inff(), activeMask_u0);
+                vcmps_eq(helper_8_negInfMask_u1, gate_u1, -__builtin_inff(), activeMask_u1);
+                vcmps_eq(helper_8_negInfMask_u2, gate_u2, -__builtin_inff(), activeMask_u2);
+                vcmps_eq(helper_8_negInfMask_u3, gate_u3, -__builtin_inff(), activeMask_u3);
+                vmul(helper_8_rawSilu_u0, gate_u0, sigmoid_u0, activeMask_u0, MODE_ZEROING);
+                vmul(helper_8_rawSilu_u1, gate_u1, sigmoid_u1, activeMask_u1, MODE_ZEROING);
+                vmul(helper_8_rawSilu_u2, gate_u2, sigmoid_u2, activeMask_u2, MODE_ZEROING);
+                vmul(helper_8_rawSilu_u3, gate_u3, sigmoid_u3, activeMask_u3, MODE_ZEROING);
+                vcmps_lt(helper_8_belowPositiveMinMask_u0, helper_8_rawSilu_u0, FLT_MIN,
+                         activeMask_u0);
+                vcmps_lt(helper_8_belowPositiveMinMask_u1, helper_8_rawSilu_u1, FLT_MIN,
+                         activeMask_u1);
+                vcmps_lt(helper_8_belowPositiveMinMask_u2, helper_8_rawSilu_u2, FLT_MIN,
+                         activeMask_u2);
+                vcmps_lt(helper_8_belowPositiveMinMask_u3, helper_8_rawSilu_u3, FLT_MIN,
+                         activeMask_u3);
+                vsel(helper_8_positiveSideFlushedSilu_u0, zeros, helper_8_rawSilu_u0,
+                     helper_8_belowPositiveMinMask_u0);
+                vsel(helper_8_positiveSideFlushedSilu_u1, zeros, helper_8_rawSilu_u1,
+                     helper_8_belowPositiveMinMask_u1);
+                vsel(helper_8_positiveSideFlushedSilu_u2, zeros, helper_8_rawSilu_u2,
+                     helper_8_belowPositiveMinMask_u2);
+                vsel(helper_8_positiveSideFlushedSilu_u3, zeros, helper_8_rawSilu_u3,
+                     helper_8_belowPositiveMinMask_u3);
+                vcmps_le(helper_8_negativeNormalMask_u0, helper_8_rawSilu_u0, -FLT_MIN,
+                         activeMask_u0);
+                vcmps_le(helper_8_negativeNormalMask_u1, helper_8_rawSilu_u1, -FLT_MIN,
+                         activeMask_u1);
+                vcmps_le(helper_8_negativeNormalMask_u2, helper_8_rawSilu_u2, -FLT_MIN,
+                         activeMask_u2);
+                vcmps_le(helper_8_negativeNormalMask_u3, helper_8_rawSilu_u3, -FLT_MIN,
+                         activeMask_u3);
+                vsel(helper_8_flushedSilu_u0, helper_8_rawSilu_u0,
+                     helper_8_positiveSideFlushedSilu_u0, helper_8_negativeNormalMask_u0);
+                vsel(helper_8_flushedSilu_u1, helper_8_rawSilu_u1,
+                     helper_8_positiveSideFlushedSilu_u1, helper_8_negativeNormalMask_u1);
+                vsel(helper_8_flushedSilu_u2, helper_8_rawSilu_u2,
+                     helper_8_positiveSideFlushedSilu_u2, helper_8_negativeNormalMask_u2);
+                vsel(helper_8_flushedSilu_u3, helper_8_rawSilu_u3,
+                     helper_8_positiveSideFlushedSilu_u3, helper_8_negativeNormalMask_u3);
+                vsel(gate_u0, zeros, helper_8_flushedSilu_u0, helper_8_negInfMask_u0);
+                vsel(gate_u1, zeros, helper_8_flushedSilu_u1, helper_8_negInfMask_u1);
+                vsel(gate_u2, zeros, helper_8_flushedSilu_u2, helper_8_negInfMask_u2);
+                vsel(gate_u3, zeros, helper_8_flushedSilu_u3, helper_8_negInfMask_u3);
+                vmul(gradWeightProduct_u0, gradY_u0, gate_u0, activeMask_u0, MODE_ZEROING);
+                vmul(gradWeightProduct_u1, gradY_u1, gate_u1, activeMask_u1, MODE_ZEROING);
+                vmul(gradWeightProduct_u2, gradY_u2, gate_u2, activeMask_u2, MODE_ZEROING);
+                vmul(gradWeightProduct_u3, gradY_u3, gate_u3, activeMask_u3, MODE_ZEROING);
+                vmul(gradWeightProduct_u0, gradWeightProduct_u0, up_u0, activeMask_u0,
+                     MODE_ZEROING);
+                vmul(gradWeightProduct_u1, gradWeightProduct_u1, up_u1, activeMask_u1,
+                     MODE_ZEROING);
+                vmul(gradWeightProduct_u2, gradWeightProduct_u2, up_u2, activeMask_u2,
+                     MODE_ZEROING);
+                vmul(gradWeightProduct_u3, gradWeightProduct_u3, up_u3, activeMask_u3,
+                     MODE_ZEROING);
+                vsts(gradWeightProduct_u0, gradWeightProductAddress + offset_u0, 0, NORM_B32,
+                     activeMask_u0);
+                vsts(gradWeightProduct_u1, gradWeightProductAddress + offset_u1, 0, NORM_B32,
+                     activeMask_u1);
+                vsts(gradWeightProduct_u2, gradWeightProductAddress + offset_u2, 0, NORM_B32,
+                     activeMask_u2);
+                vsts(gradWeightProduct_u3, gradWeightProductAddress + offset_u3, 0, NORM_B32,
+                     activeMask_u3);
+                vcmps_eq(helper_9_posInfMask_u0, gate_u0, __builtin_inff(), activeMask_u0);
+                vcmps_eq(helper_9_posInfMask_u1, gate_u1, __builtin_inff(), activeMask_u1);
+                vcmps_eq(helper_9_posInfMask_u2, gate_u2, __builtin_inff(), activeMask_u2);
+                vcmps_eq(helper_9_posInfMask_u3, gate_u3, __builtin_inff(), activeMask_u3);
+                vmul(siluTimesSigmoid_u0, gate_u0, sigmoid_u0, activeMask_u0, MODE_ZEROING);
+                vmul(siluTimesSigmoid_u1, gate_u1, sigmoid_u1, activeMask_u1, MODE_ZEROING);
+                vmul(siluTimesSigmoid_u2, gate_u2, sigmoid_u2, activeMask_u2, MODE_ZEROING);
+                vmul(siluTimesSigmoid_u3, gate_u3, sigmoid_u3, activeMask_u3, MODE_ZEROING);
+                vadd(helper_9_rawSiluPrime_u0, sigmoid_u0, gate_u0, activeMask_u0, MODE_ZEROING);
+                vadd(helper_9_rawSiluPrime_u1, sigmoid_u1, gate_u1, activeMask_u1, MODE_ZEROING);
+                vadd(helper_9_rawSiluPrime_u2, sigmoid_u2, gate_u2, activeMask_u2, MODE_ZEROING);
+                vadd(helper_9_rawSiluPrime_u3, sigmoid_u3, gate_u3, activeMask_u3, MODE_ZEROING);
+                vsub(helper_9_rawSiluPrime_u0, helper_9_rawSiluPrime_u0, siluTimesSigmoid_u0,
+                     activeMask_u0, MODE_ZEROING);
+                vsub(helper_9_rawSiluPrime_u1, helper_9_rawSiluPrime_u1, siluTimesSigmoid_u1,
+                     activeMask_u1, MODE_ZEROING);
+                vsub(helper_9_rawSiluPrime_u2, helper_9_rawSiluPrime_u2, siluTimesSigmoid_u2,
+                     activeMask_u2, MODE_ZEROING);
+                vsub(helper_9_rawSiluPrime_u3, helper_9_rawSiluPrime_u3, siluTimesSigmoid_u3,
+                     activeMask_u3, MODE_ZEROING);
+                vsel(siluPrime_u0, ones, helper_9_rawSiluPrime_u0, helper_9_posInfMask_u0);
+                vsel(siluPrime_u1, ones, helper_9_rawSiluPrime_u1, helper_9_posInfMask_u1);
+                vsel(siluPrime_u2, ones, helper_9_rawSiluPrime_u2, helper_9_posInfMask_u2);
+                vsel(siluPrime_u3, ones, helper_9_rawSiluPrime_u3, helper_9_posInfMask_u3);
+                vmul(gradGate_u0, gradY_u0, siluPrime_u0, activeMask_u0, MODE_ZEROING);
+                vmul(gradGate_u1, gradY_u1, siluPrime_u1, activeMask_u1, MODE_ZEROING);
+                vmul(gradGate_u2, gradY_u2, siluPrime_u2, activeMask_u2, MODE_ZEROING);
+                vmul(gradGate_u3, gradY_u3, siluPrime_u3, activeMask_u3, MODE_ZEROING);
+                vmul(gradGate_u0, gradGate_u0, up_u0, activeMask_u0, MODE_ZEROING);
+                vmul(gradGate_u1, gradGate_u1, up_u1, activeMask_u1, MODE_ZEROING);
+                vmul(gradGate_u2, gradGate_u2, up_u2, activeMask_u2, MODE_ZEROING);
+                vmul(gradGate_u3, gradGate_u3, up_u3, activeMask_u3, MODE_ZEROING);
+                vmul(gradGate_u0, gradGate_u0, weight, activeMask_u0, MODE_ZEROING);
+                vmul(gradGate_u1, gradGate_u1, weight, activeMask_u1, MODE_ZEROING);
+                vmul(gradGate_u2, gradGate_u2, weight, activeMask_u2, MODE_ZEROING);
+                vmul(gradGate_u3, gradGate_u3, weight, activeMask_u3, MODE_ZEROING);
+                vmul(gradGate_u0, gradGate_u0, gateClampMask_u0, activeMask_u0, MODE_ZEROING);
+                vmul(gradGate_u1, gradGate_u1, gateClampMask_u1, activeMask_u1, MODE_ZEROING);
+                vmul(gradGate_u2, gradGate_u2, gateClampMask_u2, activeMask_u2, MODE_ZEROING);
+                vmul(gradGate_u3, gradGate_u3, gateClampMask_u3, activeMask_u3, MODE_ZEROING);
+                vsts(gradGate_u0, (__ubuf__ float*)gradGateAddress + offset_u0, 0, NORM_B32,
+                     activeMask_u0);
+                vsts(gradGate_u1, (__ubuf__ float*)gradGateAddress + offset_u1, 0, NORM_B32,
+                     activeMask_u1);
+                vsts(gradGate_u2, (__ubuf__ float*)gradGateAddress + offset_u2, 0, NORM_B32,
+                     activeMask_u2);
+                vsts(gradGate_u3, (__ubuf__ float*)gradGateAddress + offset_u3, 0, NORM_B32,
+                     activeMask_u3);
+                vmul(gradUp_u0, gradY_u0, gate_u0, activeMask_u0, MODE_ZEROING);
+                vmul(gradUp_u1, gradY_u1, gate_u1, activeMask_u1, MODE_ZEROING);
+                vmul(gradUp_u2, gradY_u2, gate_u2, activeMask_u2, MODE_ZEROING);
+                vmul(gradUp_u3, gradY_u3, gate_u3, activeMask_u3, MODE_ZEROING);
+                vmul(gradUp_u0, gradUp_u0, weight, activeMask_u0, MODE_ZEROING);
+                vmul(gradUp_u1, gradUp_u1, weight, activeMask_u1, MODE_ZEROING);
+                vmul(gradUp_u2, gradUp_u2, weight, activeMask_u2, MODE_ZEROING);
+                vmul(gradUp_u3, gradUp_u3, weight, activeMask_u3, MODE_ZEROING);
+                vmul(gradUp_u0, gradUp_u0, upClampMask_u0, activeMask_u0, MODE_ZEROING);
+                vmul(gradUp_u1, gradUp_u1, upClampMask_u1, activeMask_u1, MODE_ZEROING);
+                vmul(gradUp_u2, gradUp_u2, upClampMask_u2, activeMask_u2, MODE_ZEROING);
+                vmul(gradUp_u3, gradUp_u3, upClampMask_u3, activeMask_u3, MODE_ZEROING);
+                vsts(gradUp_u0, (__ubuf__ float*)gradUpAddress + offset_u0, 0, NORM_B32,
+                     activeMask_u0);
+                vsts(gradUp_u1, (__ubuf__ float*)gradUpAddress + offset_u1, 0, NORM_B32,
+                     activeMask_u1);
+                vsts(gradUp_u2, (__ubuf__ float*)gradUpAddress + offset_u2, 0, NORM_B32,
+                     activeMask_u2);
+                vsts(gradUp_u3, (__ubuf__ float*)gradUpAddress + offset_u3, 0, NORM_B32,
+                     activeMask_u3);
+            }
+        }
+    }
+}
+extern "C" __global__ __aicore__ void candidate_kernel(__gm__ uint8_t* input,
+                                                       __gm__ uint8_t* output) {
+    __ubuf__ float* gradYAddress = (__ubuf__ float*)get_imm(0);
+    __ubuf__ float* gateAddress = (__ubuf__ float*)get_imm(4096);
+    __ubuf__ float* upAddress = (__ubuf__ float*)get_imm(8192);
+    __ubuf__ float* weightAddress = (__ubuf__ float*)get_imm(12288);
+    __ubuf__ float* yOriginAddress = (__ubuf__ float*)get_imm(12544);
+    __ubuf__ float* gradGateAddress = (__ubuf__ float*)get_imm(12800);
+    __ubuf__ float* gradUpAddress = (__ubuf__ float*)get_imm(16896);
+    __ubuf__ float* gradWeightProductAddress = (__ubuf__ float*)get_imm(20992);
+    copy_gm_to_ubuf_align_v2((__ubuf__ uint8_t*)get_imm(0), input, 0, 1, 12800, 0, 0, 0, 0, 0, 0);
+    set_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    wait_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    candidate_vf(gradYAddress, gateAddress, upAddress, weightAddress, yOriginAddress,
+                 gradGateAddress, gradUpAddress, gradWeightProductAddress);
+    set_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    wait_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    copy_ubuf_to_gm_align_v2(output + 0, (__ubuf__ uint8_t*)gradGateAddress, 0, 1, 4096, 0, 0, 0);
+    copy_ubuf_to_gm_align_v2(output + 4096, (__ubuf__ uint8_t*)gradUpAddress, 0, 1, 4096, 0, 0, 0);
+    copy_ubuf_to_gm_align_v2(output + 8192, (__ubuf__ uint8_t*)gradWeightProductAddress, 0, 1, 4096,
+                             0, 0, 0);
+}

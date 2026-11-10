@@ -1,0 +1,74 @@
+/**
+ * Copyright (c) 2026 Huawei Technologies Co., Ltd.
+ * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+ * CANN Open Software License Agreement Version 2.0 (the "License").
+ * Please refer to the License for details. You may not use this file except in compliance with the License.
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+ * See LICENSE in the root of the software repository for the full text of the License.
+ */
+#include "kernel_operator.h"
+#include <cfloat>
+#include <type_traits>
+__aicore__ inline void candidate_vf(__ubuf__ float* srcAddr, __ubuf__ float* dstAddr) {
+    uint32_t count = 3072, vlSize = 64;
+    uint16_t loopNum = 48;
+    constexpr float FP32_ZERO = 0.0f, FP32_ONE = 1.0f, FP32_TWO = 2.0f, FP32_NEG_ONE = -1.0f,
+                    FP32_NEG_TWO = -2.0f;
+    vector_f32 vregInput;
+    vector_f32 vregInputNegNumerator;
+    vector_f32 vregInputNegDenominator;
+    vector_f32 vregInputNumerator;
+    vector_f32 vregInputDenominator;
+
+    vector_f32 vregOutput;
+    vector_bool mask;
+    vector_bool cmpvector_bool;
+
+    vector_f32 vregInput16;
+    vector_f32 vregOutput16;
+    __VEC_SCOPE__ {
+#pragma unroll 1
+        for (uint16_t i = 0; i < loopNum; i++) {
+            mask = plt_b32(count, POST_UPDATE);
+
+            vlds(vregInput, (__ubuf__ float*)(srcAddr + i * vlSize), 0, NORM);
+
+            vmuls(vregInputNegNumerator, vregInput, FP32_NEG_ONE, mask, MODE_ZEROING);
+            vmuls(vregInputNegDenominator, vregInput, FP32_NEG_TWO, mask, MODE_ZEROING);
+            vexp(vregInputNegNumerator, vregInputNegNumerator, mask, MODE_ZEROING);
+            vexp(vregInputNegDenominator, vregInputNegDenominator, mask, MODE_ZEROING);
+            vmuls(vregInputNegNumerator, vregInputNegNumerator, FP32_TWO, mask, MODE_ZEROING);
+            vadds(vregInputNegNumerator, vregInputNegNumerator, FP32_ONE, mask, MODE_ZEROING);
+            vmuls(vregInputNegDenominator, vregInputNegDenominator, FP32_TWO, mask, MODE_ZEROING);
+            vadd(vregInputNegDenominator, vregInputNegNumerator, vregInputNegDenominator, mask,
+                 MODE_ZEROING);
+            vdiv(vregOutput, vregInputNegNumerator, vregInputNegDenominator, mask, MODE_ZEROING);
+
+            vmuls(vregInputNumerator, vregInput, FP32_TWO, mask, MODE_ZEROING);
+            vexp(vregInputNumerator, vregInputNumerator, mask, MODE_ZEROING);
+            vexp(vregInputDenominator, vregInput, mask, MODE_ZEROING);
+            vaxpy(vregInputNumerator, vregInputDenominator, FP32_TWO, mask, MODE_ZEROING);
+            vadds(vregInputDenominator, vregInputNumerator, FP32_TWO, mask, MODE_ZEROING);
+            vdiv(vregInputNumerator, vregInputNumerator, vregInputDenominator, mask, MODE_ZEROING);
+
+            vcmps_lt(cmpvector_bool, vregInput, FP32_ZERO, mask);
+            vsel(vregOutput, vregInputNumerator, vregOutput, cmpvector_bool);
+            vmul(vregOutput, vregOutput, vregInput, mask, MODE_ZEROING);
+
+            vsts(vregOutput, (__ubuf__ float*)(dstAddr + i * vlSize), 0, NORM_B32, mask);
+        }
+    }
+}
+extern "C" __global__ __aicore__ void candidate_kernel(__gm__ uint8_t* input,
+                                                       __gm__ uint8_t* output) {
+    __ubuf__ float* srcAddr = (__ubuf__ float*)get_imm(0);
+    __ubuf__ float* dstAddr = (__ubuf__ float*)get_imm(12288);
+    copy_gm_to_ubuf_align_v2((__ubuf__ uint8_t*)get_imm(0), input, 0, 1, 12288, 0, 0, 0, 0, 0, 0);
+    set_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    wait_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    candidate_vf(srcAddr, dstAddr);
+    set_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    wait_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    copy_ubuf_to_gm_align_v2(output + 0, (__ubuf__ uint8_t*)dstAddr, 0, 1, 12288, 0, 0, 0);
+}

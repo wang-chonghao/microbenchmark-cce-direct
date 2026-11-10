@@ -1,0 +1,138 @@
+/**
+ * Copyright (c) 2026 Huawei Technologies Co., Ltd.
+ * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+ * CANN Open Software License Agreement Version 2.0 (the "License").
+ * Please refer to the License for details. You may not use this file except in compliance with the License.
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+ * See LICENSE in the root of the software repository for the full text of the License.
+ */
+#include "kernel_operator.h"
+#include <cfloat>
+#include <type_traits>
+__aicore__ inline void candidate_vf(__ubuf__ half* actAddr, __ubuf__ half* gateAddr,
+                                    __ubuf__ half* gradYAddr, __ubuf__ float* weightAddr,
+                                    __ubuf__ half* gradXAddr) {
+    constexpr uint32_t VF_LEN_FP32 = 64, DIGIT_TWO = 2;
+    uint32_t oneBlockCountB16_ = 16;
+    uint16_t dataLenAB = 1024, blockCount = 1;
+    uint32_t rowWidth = 2048;
+    float alpha_ = 1.702f, limit_ = 2.0f, bias_ = 1.0f;
+
+    const uint32_t alignDim1In =
+        ((dataLenAB + oneBlockCountB16_ - 1) / oneBlockCountB16_) * oneBlockCountB16_;
+    const uint16_t dim1VfTimes = static_cast<uint16_t>(dataLenAB / VF_LEN_FP32);
+    const uint32_t dim1Tail = dataLenAB % VF_LEN_FP32;
+    const uint16_t dim1TailTimes = dim1Tail > 0 ? 1 : 0;
+    const uint32_t validRowWidth = dataLenAB * DIGIT_TWO;
+    uint32_t paddingLen = rowWidth - validRowWidth;
+
+    __VEC_SCOPE__ {
+        vector_f16 regHalf;
+        vector_f32 regA;
+        vector_f32 regB;
+        vector_f32 regGrad;
+        vector_f32 regWeight;
+        vector_f32 regWeightInput;
+        vector_f32 regSig;
+        vector_f32 regTmp;
+        vector_f32 regDa;
+        vector_f32 regDb;
+        vector_f32 regOne;
+        vector_f32 regLimit;
+        vector_f32 regNegLimit;
+        vector_f32 regZero;
+        vector_bool mask;
+        vector_bool maskA;
+        vector_bool maskB;
+        vector_bool maskBn;
+
+        vdup(regLimit, limit_, pset_b32(PAT_ALL), MODE_ZEROING);
+        vdup(regNegLimit, -limit_, pset_b32(PAT_ALL), MODE_ZEROING);
+        vdup(regZero, 0.0f, pset_b32(PAT_ALL), MODE_ZEROING);
+
+        const uint16_t dim1LoopCount = static_cast<uint16_t>(dim1VfTimes + dim1TailTimes);
+        for (uint16_t row = 0; row < blockCount; ++row) {
+
+            vlds(regWeight, weightAddr + row, 0, BRC_B32);
+
+            uint32_t length = dataLenAB;
+            for (uint16_t col = 0; col < dim1LoopCount; ++col) {
+                mask = plt_b32(length, POST_UPDATE);
+                uint32_t inOffset = ((row) * (alignDim1In) + (col) * (VF_LEN_FP32));
+                vlds(regHalf, actAddr, inOffset, UNPK_B16);
+                vcvt(regA, regHalf, mask, PART_EVEN, MODE_ZEROING);
+                vlds(regHalf, gateAddr, inOffset, UNPK_B16);
+                vcvt(regB, regHalf, mask, PART_EVEN, MODE_ZEROING);
+                vlds(regHalf, gradYAddr, inOffset, UNPK_B16);
+                vcvt(regGrad, regHalf, mask, PART_EVEN, MODE_ZEROING);
+
+                vmul(regGrad, regGrad, regWeight, mask, MODE_ZEROING);
+
+                vcmp_le(maskA, regA, regLimit, mask);
+                vcmp_le(maskB, regB, regLimit, mask);
+                vcmp_ge(maskBn, regB, regNegLimit, mask);
+                vmins(regA, regA, limit_, mask, MODE_ZEROING);
+
+                vmuls(regSig, regA, -alpha_, mask, MODE_ZEROING);
+                vexp(regSig, regSig, mask, MODE_ZEROING);
+                vadds(regSig, regSig, 1.0f, mask, MODE_ZEROING);
+                vdup(regOne, 1.0f, mask, MODE_ZEROING);
+                vdiv(regSig, regOne, regSig, mask, MODE_ZEROING);
+
+                vmins(regB, regB, limit_, mask, MODE_ZEROING);
+                vmaxs(regB, regB, -limit_, mask, MODE_ZEROING);
+
+                vadds(regB, regB, bias_, mask, MODE_ZEROING);
+
+                vmul(regDb, regGrad, regA, mask, MODE_ZEROING);
+                vmul(regDb, regDb, regSig, mask, MODE_ZEROING);
+
+                vsel(regDb, regDb, regZero, maskB);
+                vsel(regDb, regDb, regZero, maskBn);
+
+                vmuls(regTmp, regSig, -1.0f, mask, MODE_ZEROING);
+                vadds(regTmp, regTmp, 1.0f, mask, MODE_ZEROING);
+                vmul(regTmp, regTmp, regA, mask, MODE_ZEROING);
+                vmuls(regTmp, regTmp, alpha_, mask, MODE_ZEROING);
+                vadds(regTmp, regTmp, 1.0f, mask, MODE_ZEROING);
+
+                vmul(regTmp, regTmp, regSig, mask, MODE_ZEROING);
+                vmul(regTmp, regTmp, regB, mask, MODE_ZEROING);
+                vmul(regDa, regTmp, regGrad, mask, MODE_ZEROING);
+
+                vsel(regDa, regDa, regZero, maskA);
+
+                uint32_t outOffset = ((row) * (rowWidth) + (col) * (VF_LEN_FP32));
+                vcvt(regHalf, regDa, mask, ROUND_R, RS_DISABLE, PART_EVEN, MODE_ZEROING);
+                vsts(regHalf, gradXAddr, outOffset, PK_B32, mask);
+                vcvt(regHalf, regDb, mask, ROUND_R, RS_DISABLE, PART_EVEN, MODE_ZEROING);
+                vsts(regHalf, gradXAddr + dataLenAB, outOffset, PK_B32, mask);
+            }
+        }
+
+        if (paddingLen > 0) {
+            vdup(regHalf, static_cast<half>(0), pset_b32(PAT_ALL), MODE_ZEROING);
+            mask = plt_b32(paddingLen, POST_UPDATE);
+            for (uint16_t row = 0; row < blockCount; ++row) {
+                uint32_t paddingOffset = ((row) * (rowWidth));
+                vsts(regHalf, gradXAddr + validRowWidth, paddingOffset, NORM_B32, mask);
+            }
+        }
+    }
+}
+extern "C" __global__ __aicore__ void candidate_kernel(__gm__ uint8_t* input,
+                                                       __gm__ uint8_t* output) {
+    __ubuf__ half* actAddr = (__ubuf__ half*)get_imm(0);
+    __ubuf__ half* gateAddr = (__ubuf__ half*)get_imm(2048);
+    __ubuf__ half* gradYAddr = (__ubuf__ half*)get_imm(4096);
+    __ubuf__ float* weightAddr = (__ubuf__ float*)get_imm(6144);
+    __ubuf__ half* gradXAddr = (__ubuf__ half*)get_imm(6400);
+    copy_gm_to_ubuf_align_v2((__ubuf__ uint8_t*)get_imm(0), input, 0, 1, 6400, 0, 0, 0, 0, 0, 0);
+    set_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    wait_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    candidate_vf(actAddr, gateAddr, gradYAddr, weightAddr, gradXAddr);
+    set_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    wait_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    copy_ubuf_to_gm_align_v2(output + 0, (__ubuf__ uint8_t*)gradXAddr, 0, 1, 4096, 0, 0, 0);
+}

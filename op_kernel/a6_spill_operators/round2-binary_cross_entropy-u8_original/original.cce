@@ -1,0 +1,319 @@
+/**
+ * Copyright (c) 2026 Huawei Technologies Co., Ltd.
+ * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+ * CANN Open Software License Agreement Version 2.0 (the "License").
+ * Please refer to the License for details. You may not use this file except in compliance with the License.
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+ * See LICENSE in the root of the software repository for the full text of the License.
+ */
+#include "kernel_operator.h"
+#include <cfloat>
+#include <type_traits>
+__simd_callee__ inline void CalcYLogX(vector_f32& regYLogX, vector_f32& regX, vector_f32& regY,
+                                      vector_bool& pregUp) {
+    vector_f32 regLogX;
+    vector_f32 regClipLogX;
+    vln(regLogX, regX, pregUp, MODE_ZEROING);
+    vmaxs(regClipLogX, regLogX, (float)-100.0, pregUp, MODE_ZEROING);
+    vmul(regYLogX, regClipLogX, regY, pregUp, MODE_ZEROING);
+}
+__aicore__ inline void candidate_vf(__ubuf__ float* xAddr, __ubuf__ float* yAddr,
+                                    __ubuf__ float* yLogXTAddr) {
+    uint32_t totalLen = 3072, oneRepeat = 64, repeatTimes = 48;
+    __VEC_SCOPE__ {
+        vector_bool pregUp;
+        vector_f32 regX;
+        vector_f32 regY;
+        vector_f32 regTensorOne;
+        vector_f32 regOneSubX;
+        vector_f32 regOneSubY;
+        vector_f32 regOneSubYLogX;
+        vector_f32 regYLogX;
+        vector_f32 regDataSum;
+        vector_f32 regBinaryYLogX;
+
+        {
+            vector_f32 helper_1_regClipLogX_u0;
+            vector_f32 helper_1_regClipLogX_u1;
+            vector_f32 helper_1_regClipLogX_u2;
+            vector_f32 helper_1_regClipLogX_u3;
+            vector_f32 helper_1_regClipLogX_u4;
+            vector_f32 helper_1_regClipLogX_u5;
+            vector_f32 helper_1_regClipLogX_u6;
+            vector_f32 helper_1_regClipLogX_u7;
+            vector_f32 helper_1_regLogX_u0;
+            vector_f32 helper_1_regLogX_u1;
+            vector_f32 helper_1_regLogX_u2;
+            vector_f32 helper_1_regLogX_u3;
+            vector_f32 helper_1_regLogX_u4;
+            vector_f32 helper_1_regLogX_u5;
+            vector_f32 helper_1_regLogX_u6;
+            vector_f32 helper_1_regLogX_u7;
+            vector_f32 helper_2_regClipLogX_u0;
+            vector_f32 helper_2_regClipLogX_u1;
+            vector_f32 helper_2_regClipLogX_u2;
+            vector_f32 helper_2_regClipLogX_u3;
+            vector_f32 helper_2_regClipLogX_u4;
+            vector_f32 helper_2_regClipLogX_u5;
+            vector_f32 helper_2_regClipLogX_u6;
+            vector_f32 helper_2_regClipLogX_u7;
+            vector_f32 helper_2_regLogX_u0;
+            vector_f32 helper_2_regLogX_u1;
+            vector_f32 helper_2_regLogX_u2;
+            vector_f32 helper_2_regLogX_u3;
+            vector_f32 helper_2_regLogX_u4;
+            vector_f32 helper_2_regLogX_u5;
+            vector_f32 helper_2_regLogX_u6;
+            vector_f32 helper_2_regLogX_u7;
+            vector_bool pregUp_u0;
+            vector_bool pregUp_u1;
+            vector_bool pregUp_u2;
+            vector_bool pregUp_u3;
+            vector_bool pregUp_u4;
+            vector_bool pregUp_u5;
+            vector_bool pregUp_u6;
+            vector_bool pregUp_u7;
+            vector_f32 regBinaryYLogX_u0;
+            vector_f32 regBinaryYLogX_u1;
+            vector_f32 regBinaryYLogX_u2;
+            vector_f32 regBinaryYLogX_u3;
+            vector_f32 regBinaryYLogX_u4;
+            vector_f32 regBinaryYLogX_u5;
+            vector_f32 regBinaryYLogX_u6;
+            vector_f32 regBinaryYLogX_u7;
+            vector_f32 regDataSum_u0;
+            vector_f32 regDataSum_u1;
+            vector_f32 regDataSum_u2;
+            vector_f32 regDataSum_u3;
+            vector_f32 regDataSum_u4;
+            vector_f32 regDataSum_u5;
+            vector_f32 regDataSum_u6;
+            vector_f32 regDataSum_u7;
+            vector_f32 regOneSubX_u0;
+            vector_f32 regOneSubX_u1;
+            vector_f32 regOneSubX_u2;
+            vector_f32 regOneSubX_u3;
+            vector_f32 regOneSubX_u4;
+            vector_f32 regOneSubX_u5;
+            vector_f32 regOneSubX_u6;
+            vector_f32 regOneSubX_u7;
+            vector_f32 regOneSubY_u0;
+            vector_f32 regOneSubY_u1;
+            vector_f32 regOneSubY_u2;
+            vector_f32 regOneSubY_u3;
+            vector_f32 regOneSubY_u4;
+            vector_f32 regOneSubY_u5;
+            vector_f32 regOneSubY_u6;
+            vector_f32 regOneSubY_u7;
+            vector_f32 regOneSubYLogX_u0;
+            vector_f32 regOneSubYLogX_u1;
+            vector_f32 regOneSubYLogX_u2;
+            vector_f32 regOneSubYLogX_u3;
+            vector_f32 regOneSubYLogX_u4;
+            vector_f32 regOneSubYLogX_u5;
+            vector_f32 regOneSubYLogX_u6;
+            vector_f32 regOneSubYLogX_u7;
+            vector_f32 regTensorOne_u0;
+            vector_f32 regTensorOne_u1;
+            vector_f32 regTensorOne_u2;
+            vector_f32 regTensorOne_u3;
+            vector_f32 regTensorOne_u4;
+            vector_f32 regTensorOne_u5;
+            vector_f32 regTensorOne_u6;
+            vector_f32 regTensorOne_u7;
+            vector_f32 regX_u0;
+            vector_f32 regX_u1;
+            vector_f32 regX_u2;
+            vector_f32 regX_u3;
+            vector_f32 regX_u4;
+            vector_f32 regX_u5;
+            vector_f32 regX_u6;
+            vector_f32 regX_u7;
+            vector_f32 regY_u0;
+            vector_f32 regY_u1;
+            vector_f32 regY_u2;
+            vector_f32 regY_u3;
+            vector_f32 regY_u4;
+            vector_f32 regY_u5;
+            vector_f32 regY_u6;
+            vector_f32 regY_u7;
+            vector_f32 regYLogX_u0;
+            vector_f32 regYLogX_u1;
+            vector_f32 regYLogX_u2;
+            vector_f32 regYLogX_u3;
+            vector_f32 regYLogX_u4;
+            vector_f32 regYLogX_u5;
+            vector_f32 regYLogX_u6;
+            vector_f32 regYLogX_u7;
+#pragma unroll 1
+            for (uint16_t i = 0; i < 48; i += 8) {
+                pregUp_u0 = plt_b32(totalLen, POST_UPDATE);
+                pregUp_u1 = plt_b32(totalLen, POST_UPDATE);
+                pregUp_u2 = plt_b32(totalLen, POST_UPDATE);
+                pregUp_u3 = plt_b32(totalLen, POST_UPDATE);
+                pregUp_u4 = plt_b32(totalLen, POST_UPDATE);
+                pregUp_u5 = plt_b32(totalLen, POST_UPDATE);
+                pregUp_u6 = plt_b32(totalLen, POST_UPDATE);
+                pregUp_u7 = plt_b32(totalLen, POST_UPDATE);
+                vlds(regX_u0, xAddr, (int32_t)oneRepeat, NORM, POST_UPDATE);
+                vlds(regX_u1, xAddr, (int32_t)oneRepeat, NORM, POST_UPDATE);
+                vlds(regX_u2, xAddr, (int32_t)oneRepeat, NORM, POST_UPDATE);
+                vlds(regX_u3, xAddr, (int32_t)oneRepeat, NORM, POST_UPDATE);
+                vlds(regX_u4, xAddr, (int32_t)oneRepeat, NORM, POST_UPDATE);
+                vlds(regX_u5, xAddr, (int32_t)oneRepeat, NORM, POST_UPDATE);
+                vlds(regX_u6, xAddr, (int32_t)oneRepeat, NORM, POST_UPDATE);
+                vlds(regX_u7, xAddr, (int32_t)oneRepeat, NORM, POST_UPDATE);
+                vlds(regY_u0, yAddr, (int32_t)oneRepeat, NORM, POST_UPDATE);
+                vlds(regY_u1, yAddr, (int32_t)oneRepeat, NORM, POST_UPDATE);
+                vlds(regY_u2, yAddr, (int32_t)oneRepeat, NORM, POST_UPDATE);
+                vlds(regY_u3, yAddr, (int32_t)oneRepeat, NORM, POST_UPDATE);
+                vlds(regY_u4, yAddr, (int32_t)oneRepeat, NORM, POST_UPDATE);
+                vlds(regY_u5, yAddr, (int32_t)oneRepeat, NORM, POST_UPDATE);
+                vlds(regY_u6, yAddr, (int32_t)oneRepeat, NORM, POST_UPDATE);
+                vlds(regY_u7, yAddr, (int32_t)oneRepeat, NORM, POST_UPDATE);
+                vln(helper_1_regLogX_u0, regX_u0, pregUp_u0, MODE_ZEROING);
+                vln(helper_1_regLogX_u1, regX_u1, pregUp_u1, MODE_ZEROING);
+                vln(helper_1_regLogX_u2, regX_u2, pregUp_u2, MODE_ZEROING);
+                vln(helper_1_regLogX_u3, regX_u3, pregUp_u3, MODE_ZEROING);
+                vln(helper_1_regLogX_u4, regX_u4, pregUp_u4, MODE_ZEROING);
+                vln(helper_1_regLogX_u5, regX_u5, pregUp_u5, MODE_ZEROING);
+                vln(helper_1_regLogX_u6, regX_u6, pregUp_u6, MODE_ZEROING);
+                vln(helper_1_regLogX_u7, regX_u7, pregUp_u7, MODE_ZEROING);
+                vmaxs(helper_1_regClipLogX_u0, helper_1_regLogX_u0, (float)-100.0, pregUp_u0,
+                      MODE_ZEROING);
+                vmaxs(helper_1_regClipLogX_u1, helper_1_regLogX_u1, (float)-100.0, pregUp_u1,
+                      MODE_ZEROING);
+                vmaxs(helper_1_regClipLogX_u2, helper_1_regLogX_u2, (float)-100.0, pregUp_u2,
+                      MODE_ZEROING);
+                vmaxs(helper_1_regClipLogX_u3, helper_1_regLogX_u3, (float)-100.0, pregUp_u3,
+                      MODE_ZEROING);
+                vmaxs(helper_1_regClipLogX_u4, helper_1_regLogX_u4, (float)-100.0, pregUp_u4,
+                      MODE_ZEROING);
+                vmaxs(helper_1_regClipLogX_u5, helper_1_regLogX_u5, (float)-100.0, pregUp_u5,
+                      MODE_ZEROING);
+                vmaxs(helper_1_regClipLogX_u6, helper_1_regLogX_u6, (float)-100.0, pregUp_u6,
+                      MODE_ZEROING);
+                vmaxs(helper_1_regClipLogX_u7, helper_1_regLogX_u7, (float)-100.0, pregUp_u7,
+                      MODE_ZEROING);
+                vmul(regYLogX_u0, helper_1_regClipLogX_u0, regY_u0, pregUp_u0, MODE_ZEROING);
+                vmul(regYLogX_u1, helper_1_regClipLogX_u1, regY_u1, pregUp_u1, MODE_ZEROING);
+                vmul(regYLogX_u2, helper_1_regClipLogX_u2, regY_u2, pregUp_u2, MODE_ZEROING);
+                vmul(regYLogX_u3, helper_1_regClipLogX_u3, regY_u3, pregUp_u3, MODE_ZEROING);
+                vmul(regYLogX_u4, helper_1_regClipLogX_u4, regY_u4, pregUp_u4, MODE_ZEROING);
+                vmul(regYLogX_u5, helper_1_regClipLogX_u5, regY_u5, pregUp_u5, MODE_ZEROING);
+                vmul(regYLogX_u6, helper_1_regClipLogX_u6, regY_u6, pregUp_u6, MODE_ZEROING);
+                vmul(regYLogX_u7, helper_1_regClipLogX_u7, regY_u7, pregUp_u7, MODE_ZEROING);
+                vdup(regTensorOne_u0, (float)1.0f, pregUp_u0, MODE_ZEROING);
+                vdup(regTensorOne_u1, (float)1.0f, pregUp_u1, MODE_ZEROING);
+                vdup(regTensorOne_u2, (float)1.0f, pregUp_u2, MODE_ZEROING);
+                vdup(regTensorOne_u3, (float)1.0f, pregUp_u3, MODE_ZEROING);
+                vdup(regTensorOne_u4, (float)1.0f, pregUp_u4, MODE_ZEROING);
+                vdup(regTensorOne_u5, (float)1.0f, pregUp_u5, MODE_ZEROING);
+                vdup(regTensorOne_u6, (float)1.0f, pregUp_u6, MODE_ZEROING);
+                vdup(regTensorOne_u7, (float)1.0f, pregUp_u7, MODE_ZEROING);
+                vsub(regOneSubX_u0, regTensorOne_u0, regX_u0, pregUp_u0, MODE_ZEROING);
+                vsub(regOneSubX_u1, regTensorOne_u1, regX_u1, pregUp_u1, MODE_ZEROING);
+                vsub(regOneSubX_u2, regTensorOne_u2, regX_u2, pregUp_u2, MODE_ZEROING);
+                vsub(regOneSubX_u3, regTensorOne_u3, regX_u3, pregUp_u3, MODE_ZEROING);
+                vsub(regOneSubX_u4, regTensorOne_u4, regX_u4, pregUp_u4, MODE_ZEROING);
+                vsub(regOneSubX_u5, regTensorOne_u5, regX_u5, pregUp_u5, MODE_ZEROING);
+                vsub(regOneSubX_u6, regTensorOne_u6, regX_u6, pregUp_u6, MODE_ZEROING);
+                vsub(regOneSubX_u7, regTensorOne_u7, regX_u7, pregUp_u7, MODE_ZEROING);
+                vsub(regOneSubY_u0, regTensorOne_u0, regY_u0, pregUp_u0, MODE_ZEROING);
+                vsub(regOneSubY_u1, regTensorOne_u1, regY_u1, pregUp_u1, MODE_ZEROING);
+                vsub(regOneSubY_u2, regTensorOne_u2, regY_u2, pregUp_u2, MODE_ZEROING);
+                vsub(regOneSubY_u3, regTensorOne_u3, regY_u3, pregUp_u3, MODE_ZEROING);
+                vsub(regOneSubY_u4, regTensorOne_u4, regY_u4, pregUp_u4, MODE_ZEROING);
+                vsub(regOneSubY_u5, regTensorOne_u5, regY_u5, pregUp_u5, MODE_ZEROING);
+                vsub(regOneSubY_u6, regTensorOne_u6, regY_u6, pregUp_u6, MODE_ZEROING);
+                vsub(regOneSubY_u7, regTensorOne_u7, regY_u7, pregUp_u7, MODE_ZEROING);
+                vln(helper_2_regLogX_u0, regOneSubX_u0, pregUp_u0, MODE_ZEROING);
+                vln(helper_2_regLogX_u1, regOneSubX_u1, pregUp_u1, MODE_ZEROING);
+                vln(helper_2_regLogX_u2, regOneSubX_u2, pregUp_u2, MODE_ZEROING);
+                vln(helper_2_regLogX_u3, regOneSubX_u3, pregUp_u3, MODE_ZEROING);
+                vln(helper_2_regLogX_u4, regOneSubX_u4, pregUp_u4, MODE_ZEROING);
+                vln(helper_2_regLogX_u5, regOneSubX_u5, pregUp_u5, MODE_ZEROING);
+                vln(helper_2_regLogX_u6, regOneSubX_u6, pregUp_u6, MODE_ZEROING);
+                vln(helper_2_regLogX_u7, regOneSubX_u7, pregUp_u7, MODE_ZEROING);
+                vmaxs(helper_2_regClipLogX_u0, helper_2_regLogX_u0, (float)-100.0, pregUp_u0,
+                      MODE_ZEROING);
+                vmaxs(helper_2_regClipLogX_u1, helper_2_regLogX_u1, (float)-100.0, pregUp_u1,
+                      MODE_ZEROING);
+                vmaxs(helper_2_regClipLogX_u2, helper_2_regLogX_u2, (float)-100.0, pregUp_u2,
+                      MODE_ZEROING);
+                vmaxs(helper_2_regClipLogX_u3, helper_2_regLogX_u3, (float)-100.0, pregUp_u3,
+                      MODE_ZEROING);
+                vmaxs(helper_2_regClipLogX_u4, helper_2_regLogX_u4, (float)-100.0, pregUp_u4,
+                      MODE_ZEROING);
+                vmaxs(helper_2_regClipLogX_u5, helper_2_regLogX_u5, (float)-100.0, pregUp_u5,
+                      MODE_ZEROING);
+                vmaxs(helper_2_regClipLogX_u6, helper_2_regLogX_u6, (float)-100.0, pregUp_u6,
+                      MODE_ZEROING);
+                vmaxs(helper_2_regClipLogX_u7, helper_2_regLogX_u7, (float)-100.0, pregUp_u7,
+                      MODE_ZEROING);
+                vmul(regOneSubYLogX_u0, helper_2_regClipLogX_u0, regOneSubY_u0, pregUp_u0,
+                     MODE_ZEROING);
+                vmul(regOneSubYLogX_u1, helper_2_regClipLogX_u1, regOneSubY_u1, pregUp_u1,
+                     MODE_ZEROING);
+                vmul(regOneSubYLogX_u2, helper_2_regClipLogX_u2, regOneSubY_u2, pregUp_u2,
+                     MODE_ZEROING);
+                vmul(regOneSubYLogX_u3, helper_2_regClipLogX_u3, regOneSubY_u3, pregUp_u3,
+                     MODE_ZEROING);
+                vmul(regOneSubYLogX_u4, helper_2_regClipLogX_u4, regOneSubY_u4, pregUp_u4,
+                     MODE_ZEROING);
+                vmul(regOneSubYLogX_u5, helper_2_regClipLogX_u5, regOneSubY_u5, pregUp_u5,
+                     MODE_ZEROING);
+                vmul(regOneSubYLogX_u6, helper_2_regClipLogX_u6, regOneSubY_u6, pregUp_u6,
+                     MODE_ZEROING);
+                vmul(regOneSubYLogX_u7, helper_2_regClipLogX_u7, regOneSubY_u7, pregUp_u7,
+                     MODE_ZEROING);
+                vadd(regDataSum_u0, regYLogX_u0, regOneSubYLogX_u0, pregUp_u0, MODE_ZEROING);
+                vadd(regDataSum_u1, regYLogX_u1, regOneSubYLogX_u1, pregUp_u1, MODE_ZEROING);
+                vadd(regDataSum_u2, regYLogX_u2, regOneSubYLogX_u2, pregUp_u2, MODE_ZEROING);
+                vadd(regDataSum_u3, regYLogX_u3, regOneSubYLogX_u3, pregUp_u3, MODE_ZEROING);
+                vadd(regDataSum_u4, regYLogX_u4, regOneSubYLogX_u4, pregUp_u4, MODE_ZEROING);
+                vadd(regDataSum_u5, regYLogX_u5, regOneSubYLogX_u5, pregUp_u5, MODE_ZEROING);
+                vadd(regDataSum_u6, regYLogX_u6, regOneSubYLogX_u6, pregUp_u6, MODE_ZEROING);
+                vadd(regDataSum_u7, regYLogX_u7, regOneSubYLogX_u7, pregUp_u7, MODE_ZEROING);
+                vmuls(regBinaryYLogX_u0, regDataSum_u0, (float)-1.0f, pregUp_u0, MODE_ZEROING);
+                vmuls(regBinaryYLogX_u1, regDataSum_u1, (float)-1.0f, pregUp_u1, MODE_ZEROING);
+                vmuls(regBinaryYLogX_u2, regDataSum_u2, (float)-1.0f, pregUp_u2, MODE_ZEROING);
+                vmuls(regBinaryYLogX_u3, regDataSum_u3, (float)-1.0f, pregUp_u3, MODE_ZEROING);
+                vmuls(regBinaryYLogX_u4, regDataSum_u4, (float)-1.0f, pregUp_u4, MODE_ZEROING);
+                vmuls(regBinaryYLogX_u5, regDataSum_u5, (float)-1.0f, pregUp_u5, MODE_ZEROING);
+                vmuls(regBinaryYLogX_u6, regDataSum_u6, (float)-1.0f, pregUp_u6, MODE_ZEROING);
+                vmuls(regBinaryYLogX_u7, regDataSum_u7, (float)-1.0f, pregUp_u7, MODE_ZEROING);
+                vsts(regBinaryYLogX_u0, yLogXTAddr, (int32_t)oneRepeat, NORM_B32, pregUp_u0,
+                     POST_UPDATE);
+                vsts(regBinaryYLogX_u1, yLogXTAddr, (int32_t)oneRepeat, NORM_B32, pregUp_u1,
+                     POST_UPDATE);
+                vsts(regBinaryYLogX_u2, yLogXTAddr, (int32_t)oneRepeat, NORM_B32, pregUp_u2,
+                     POST_UPDATE);
+                vsts(regBinaryYLogX_u3, yLogXTAddr, (int32_t)oneRepeat, NORM_B32, pregUp_u3,
+                     POST_UPDATE);
+                vsts(regBinaryYLogX_u4, yLogXTAddr, (int32_t)oneRepeat, NORM_B32, pregUp_u4,
+                     POST_UPDATE);
+                vsts(regBinaryYLogX_u5, yLogXTAddr, (int32_t)oneRepeat, NORM_B32, pregUp_u5,
+                     POST_UPDATE);
+                vsts(regBinaryYLogX_u6, yLogXTAddr, (int32_t)oneRepeat, NORM_B32, pregUp_u6,
+                     POST_UPDATE);
+                vsts(regBinaryYLogX_u7, yLogXTAddr, (int32_t)oneRepeat, NORM_B32, pregUp_u7,
+                     POST_UPDATE);
+            }
+        }
+    }
+}
+extern "C" __global__ __aicore__ void candidate_kernel(__gm__ uint8_t* input,
+                                                       __gm__ uint8_t* output) {
+    __ubuf__ float* xAddr = (__ubuf__ float*)get_imm(0);
+    __ubuf__ float* yAddr = (__ubuf__ float*)get_imm(12288);
+    __ubuf__ float* yLogXTAddr = (__ubuf__ float*)get_imm(24576);
+    copy_gm_to_ubuf_align_v2((__ubuf__ uint8_t*)get_imm(0), input, 0, 1, 24576, 0, 0, 0, 0, 0, 0);
+    set_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    wait_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    candidate_vf(xAddr, yAddr, yLogXTAddr);
+    set_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    wait_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    copy_ubuf_to_gm_align_v2(output + 0, (__ubuf__ uint8_t*)yLogXTAddr, 0, 1, 12288, 0, 0, 0);
+}

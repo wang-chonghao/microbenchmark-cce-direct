@@ -1,0 +1,73 @@
+// MB_KERNEL candidate_kernel
+// MB_TENSOR input input uint8 37376
+// MB_TENSOR output output uint8 12288
+// A6 wrapper migration only; original VF below is unchanged.
+/**
+ * Copyright (c) 2025 Huawei Technologies Co., Ltd.
+ * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+ * CANN Open Software License Agreement Version 2.0 (the "License").
+ * Please refer to the License for details. You may not use this file except in compliance with the License.
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+ * See LICENSE in the root of the software repository for the full text of the License.
+ */
+#include <stdint.h>
+#ifndef __aicore__
+#define __aicore__ [aicore]
+#endif
+#include <cfloat>
+#include <type_traits>
+__aicore__ inline void candidate_vf(__ubuf__ float* gammaAddr, __ubuf__ float* dyAddr,
+                                    __ubuf__ float* xAddr, __ubuf__ float* rstdAddr,
+                                    __ubuf__ float* meanAddr, __ubuf__ float* dxAddr) {
+    uint32_t sreg = 3072;
+    constexpr uint32_t oneRepeat = 64;
+    uint16_t repeatCount = 48;
+    __VEC_SCOPE__ {
+        vector_f32 gammaReg, dyReg, xReg, rstdReg, meanReg, dxReg, mulReg0, mulReg2, mulReg4,
+            subReg;
+        vector_bool maskReg;
+        vlds(rstdReg, rstdAddr, 0, BRC_B32);
+        vlds(meanReg, meanAddr, 0, BRC_B32);
+#pragma unroll 1
+        for (uint16_t i = 0; i < repeatCount; i++) {
+            maskReg = plt_b32(sreg, POST_UPDATE);
+            vlds(gammaReg, gammaAddr + (i * oneRepeat), 0, NORM);
+            vlds(dyReg, dyAddr + (i * oneRepeat), 0, NORM);
+            vmul(mulReg2, dyReg, gammaReg, maskReg, MODE_ZEROING);
+            vlds(xReg, xAddr + (i * oneRepeat), 0, NORM);
+            vmul(mulReg0, xReg, rstdReg, maskReg, MODE_ZEROING);
+            vmul(mulReg4, mulReg0, meanReg, maskReg, MODE_ZEROING);
+            vsub(subReg, mulReg2, mulReg4, maskReg, MODE_ZEROING);
+            vmul(dxReg, subReg, rstdReg, maskReg, MODE_ZEROING);
+
+            vsts(dxReg, dxAddr + static_cast<uint32_t>(i * oneRepeat), 0, NORM_B32, maskReg);
+        }
+    }
+}
+extern "C" __global__ __aicore__ void candidate_kernel(__gm__ uint8_t* input,
+                                                       __gm__ uint8_t* output) {
+    __ubuf__ float* gammaAddr = (__ubuf__ float*)get_imm(0);
+    __ubuf__ float* dyAddr = (__ubuf__ float*)get_imm(12288);
+    __ubuf__ float* xAddr = (__ubuf__ float*)get_imm(24576);
+    __ubuf__ float* rstdAddr = (__ubuf__ float*)get_imm(36864);
+    __ubuf__ float* meanAddr = (__ubuf__ float*)get_imm(37120);
+    __ubuf__ float* dxAddr = (__ubuf__ float*)get_imm(37376);
+    nddma_desc a6_desc(nddma_desc::loop_desc(9344, 1, 1));
+    nddma_out_to_ub((__ubuf__ uint32_t*)get_imm(0), (__gm__ uint32_t*)input, 0, a6_desc, 0, NEAREST_PADDING, 0);
+    set_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    wait_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    candidate_vf(gammaAddr, dyAddr, xAddr, rstdAddr, meanAddr, dxAddr);
+    set_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    wait_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    pipe_barrier(PIPE_ALL);
+    set_flag(PIPE_V, PIPE_S, EVENT_ID1);
+    wait_flag(PIPE_V, PIPE_S, EVENT_ID1);
+    __ubuf__ uint32_t* a6_offsets = (__ubuf__ uint32_t*)get_imm(0);
+    a6_offsets[0] = 0;
+    set_flag(PIPE_S, PIPE_MTE3, EVENT_ID1);
+    wait_flag(PIPE_S, PIPE_MTE3, EVENT_ID1);
+    scatter_ubuf_to_gm((__gm__ uint32_t*)(output + 0), (__ubuf__ uint32_t*)dxAddr, 0, 0, a6_offsets, 0, 12288, 0, 1);
+    set_flag(PIPE_MTE3, PIPE_S, EVENT_ID0);
+    wait_flag(PIPE_MTE3, PIPE_S, EVENT_ID0);
+}

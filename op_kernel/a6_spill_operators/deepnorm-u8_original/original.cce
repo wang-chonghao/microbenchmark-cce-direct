@@ -1,0 +1,293 @@
+/**
+ * Copyright (c) 2026 Huawei Technologies Co., Ltd.
+ * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+ * CANN Open Software License Agreement Version 2.0 (the "License").
+ * Please refer to the License for details. You may not use this file except in compliance with the License.
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+ * See LICENSE in the root of the software repository for the full text of the License.
+ */
+#include "kernel_operator.h"
+#include <cfloat>
+#include <type_traits>
+__aicore__ inline void candidate_vf(__ubuf__ float* dyPtr, __ubuf__ float* xPtr,
+                                    __ubuf__ float* gxPtr, __ubuf__ float* gammaPtr,
+                                    __ubuf__ float* meanPtr, __ubuf__ float* rstdPtr,
+                                    __ubuf__ float* avgTmpPtr, __ubuf__ float* avgTmpNormPtr,
+                                    __ubuf__ float* dgxPtr, __ubuf__ float* dxPtr) {
+    constexpr uint32_t VL_FP32 = 64;
+    uint16_t loops = 16;
+    uint32_t remaining = 1024;
+    float alpha = 0.5f;
+    __VEC_SCOPE__ {
+        mem_bar(VST_VLD);
+        vector_f32 dyReg;
+        vector_f32 xReg;
+        vector_f32 gxReg;
+        vector_f32 gammaReg;
+        vector_f32 meanReg;
+        vector_f32 rstdReg;
+        vector_f32 avgTmpReg;
+        vector_f32 avgTmpNormReg;
+        vector_f32 tmpReg;
+        vector_f32 normReg;
+        vector_f32 dgxReg;
+        vector_f32 dxReg;
+        vector_bool mask;
+        vlds(meanReg, meanPtr, 0, BRC_B32);
+        vlds(rstdReg, rstdPtr, 0, BRC_B32);
+        vlds(avgTmpReg, avgTmpPtr, 0, BRC_B32);
+        vlds(avgTmpNormReg, avgTmpNormPtr, 0, BRC_B32);
+        {
+            vector_f32 dgxReg_u0;
+            vector_f32 dgxReg_u1;
+            vector_f32 dgxReg_u2;
+            vector_f32 dgxReg_u3;
+            vector_f32 dgxReg_u4;
+            vector_f32 dgxReg_u5;
+            vector_f32 dgxReg_u6;
+            vector_f32 dgxReg_u7;
+            vector_f32 dxReg_u0;
+            vector_f32 dxReg_u1;
+            vector_f32 dxReg_u2;
+            vector_f32 dxReg_u3;
+            vector_f32 dxReg_u4;
+            vector_f32 dxReg_u5;
+            vector_f32 dxReg_u6;
+            vector_f32 dxReg_u7;
+            vector_f32 dyReg_u0;
+            vector_f32 dyReg_u1;
+            vector_f32 dyReg_u2;
+            vector_f32 dyReg_u3;
+            vector_f32 dyReg_u4;
+            vector_f32 dyReg_u5;
+            vector_f32 dyReg_u6;
+            vector_f32 dyReg_u7;
+            vector_f32 gammaReg_u0;
+            vector_f32 gammaReg_u1;
+            vector_f32 gammaReg_u2;
+            vector_f32 gammaReg_u3;
+            vector_f32 gammaReg_u4;
+            vector_f32 gammaReg_u5;
+            vector_f32 gammaReg_u6;
+            vector_f32 gammaReg_u7;
+            vector_f32 gxReg_u0;
+            vector_f32 gxReg_u1;
+            vector_f32 gxReg_u2;
+            vector_f32 gxReg_u3;
+            vector_f32 gxReg_u4;
+            vector_f32 gxReg_u5;
+            vector_f32 gxReg_u6;
+            vector_f32 gxReg_u7;
+            vector_bool mask_u0;
+            vector_bool mask_u1;
+            vector_bool mask_u2;
+            vector_bool mask_u3;
+            vector_bool mask_u4;
+            vector_bool mask_u5;
+            vector_bool mask_u6;
+            vector_bool mask_u7;
+            vector_f32 normReg_u0;
+            vector_f32 normReg_u1;
+            vector_f32 normReg_u2;
+            vector_f32 normReg_u3;
+            vector_f32 normReg_u4;
+            vector_f32 normReg_u5;
+            vector_f32 normReg_u6;
+            vector_f32 normReg_u7;
+            vector_f32 tmpReg_u0;
+            vector_f32 tmpReg_u1;
+            vector_f32 tmpReg_u2;
+            vector_f32 tmpReg_u3;
+            vector_f32 tmpReg_u4;
+            vector_f32 tmpReg_u5;
+            vector_f32 tmpReg_u6;
+            vector_f32 tmpReg_u7;
+            vector_f32 xReg_u0;
+            vector_f32 xReg_u1;
+            vector_f32 xReg_u2;
+            vector_f32 xReg_u3;
+            vector_f32 xReg_u4;
+            vector_f32 xReg_u5;
+            vector_f32 xReg_u6;
+            vector_f32 xReg_u7;
+#pragma unroll 1
+            for (uint16_t i = 0; i < 16; i += 8) {
+                uint32_t valid_u0 = (remaining < VL_FP32 ? remaining : VL_FP32);
+                uint32_t valid_u1 = (remaining < VL_FP32 ? remaining : VL_FP32);
+                uint32_t valid_u2 = (remaining < VL_FP32 ? remaining : VL_FP32);
+                uint32_t valid_u3 = (remaining < VL_FP32 ? remaining : VL_FP32);
+                uint32_t valid_u4 = (remaining < VL_FP32 ? remaining : VL_FP32);
+                uint32_t valid_u5 = (remaining < VL_FP32 ? remaining : VL_FP32);
+                uint32_t valid_u6 = (remaining < VL_FP32 ? remaining : VL_FP32);
+                uint32_t valid_u7 = (remaining < VL_FP32 ? remaining : VL_FP32);
+                remaining -= valid_u0;
+                remaining -= valid_u1;
+                remaining -= valid_u2;
+                remaining -= valid_u3;
+                remaining -= valid_u4;
+                remaining -= valid_u5;
+                remaining -= valid_u6;
+                remaining -= valid_u7;
+                mask_u0 = plt_b32(valid_u0, POST_UPDATE);
+                mask_u1 = plt_b32(valid_u1, POST_UPDATE);
+                mask_u2 = plt_b32(valid_u2, POST_UPDATE);
+                mask_u3 = plt_b32(valid_u3, POST_UPDATE);
+                mask_u4 = plt_b32(valid_u4, POST_UPDATE);
+                mask_u5 = plt_b32(valid_u5, POST_UPDATE);
+                mask_u6 = plt_b32(valid_u6, POST_UPDATE);
+                mask_u7 = plt_b32(valid_u7, POST_UPDATE);
+                uint32_t offset_u0 = static_cast<uint32_t>((i + 0)) * VL_FP32;
+                uint32_t offset_u1 = static_cast<uint32_t>((i + 1)) * VL_FP32;
+                uint32_t offset_u2 = static_cast<uint32_t>((i + 2)) * VL_FP32;
+                uint32_t offset_u3 = static_cast<uint32_t>((i + 3)) * VL_FP32;
+                uint32_t offset_u4 = static_cast<uint32_t>((i + 4)) * VL_FP32;
+                uint32_t offset_u5 = static_cast<uint32_t>((i + 5)) * VL_FP32;
+                uint32_t offset_u6 = static_cast<uint32_t>((i + 6)) * VL_FP32;
+                uint32_t offset_u7 = static_cast<uint32_t>((i + 7)) * VL_FP32;
+                vlds(dyReg_u0, dyPtr + offset_u0, 0, NORM);
+                vlds(dyReg_u1, dyPtr + offset_u1, 0, NORM);
+                vlds(dyReg_u2, dyPtr + offset_u2, 0, NORM);
+                vlds(dyReg_u3, dyPtr + offset_u3, 0, NORM);
+                vlds(dyReg_u4, dyPtr + offset_u4, 0, NORM);
+                vlds(dyReg_u5, dyPtr + offset_u5, 0, NORM);
+                vlds(dyReg_u6, dyPtr + offset_u6, 0, NORM);
+                vlds(dyReg_u7, dyPtr + offset_u7, 0, NORM);
+                vlds(gammaReg_u0, gammaPtr + offset_u0, 0, NORM);
+                vlds(gammaReg_u1, gammaPtr + offset_u1, 0, NORM);
+                vlds(gammaReg_u2, gammaPtr + offset_u2, 0, NORM);
+                vlds(gammaReg_u3, gammaPtr + offset_u3, 0, NORM);
+                vlds(gammaReg_u4, gammaPtr + offset_u4, 0, NORM);
+                vlds(gammaReg_u5, gammaPtr + offset_u5, 0, NORM);
+                vlds(gammaReg_u6, gammaPtr + offset_u6, 0, NORM);
+                vlds(gammaReg_u7, gammaPtr + offset_u7, 0, NORM);
+                vlds(xReg_u0, xPtr + offset_u0, 0, NORM);
+                vlds(xReg_u1, xPtr + offset_u1, 0, NORM);
+                vlds(xReg_u2, xPtr + offset_u2, 0, NORM);
+                vlds(xReg_u3, xPtr + offset_u3, 0, NORM);
+                vlds(xReg_u4, xPtr + offset_u4, 0, NORM);
+                vlds(xReg_u5, xPtr + offset_u5, 0, NORM);
+                vlds(xReg_u6, xPtr + offset_u6, 0, NORM);
+                vlds(xReg_u7, xPtr + offset_u7, 0, NORM);
+                vlds(gxReg_u0, gxPtr + offset_u0, 0, NORM);
+                vlds(gxReg_u1, gxPtr + offset_u1, 0, NORM);
+                vlds(gxReg_u2, gxPtr + offset_u2, 0, NORM);
+                vlds(gxReg_u3, gxPtr + offset_u3, 0, NORM);
+                vlds(gxReg_u4, gxPtr + offset_u4, 0, NORM);
+                vlds(gxReg_u5, gxPtr + offset_u5, 0, NORM);
+                vlds(gxReg_u6, gxPtr + offset_u6, 0, NORM);
+                vlds(gxReg_u7, gxPtr + offset_u7, 0, NORM);
+                vmul(tmpReg_u0, dyReg_u0, gammaReg_u0, mask_u0, MODE_ZEROING);
+                vmul(tmpReg_u1, dyReg_u1, gammaReg_u1, mask_u1, MODE_ZEROING);
+                vmul(tmpReg_u2, dyReg_u2, gammaReg_u2, mask_u2, MODE_ZEROING);
+                vmul(tmpReg_u3, dyReg_u3, gammaReg_u3, mask_u3, MODE_ZEROING);
+                vmul(tmpReg_u4, dyReg_u4, gammaReg_u4, mask_u4, MODE_ZEROING);
+                vmul(tmpReg_u5, dyReg_u5, gammaReg_u5, mask_u5, MODE_ZEROING);
+                vmul(tmpReg_u6, dyReg_u6, gammaReg_u6, mask_u6, MODE_ZEROING);
+                vmul(tmpReg_u7, dyReg_u7, gammaReg_u7, mask_u7, MODE_ZEROING);
+                vmuls(xReg_u0, xReg_u0, alpha, mask_u0, MODE_ZEROING);
+                vmuls(xReg_u1, xReg_u1, alpha, mask_u1, MODE_ZEROING);
+                vmuls(xReg_u2, xReg_u2, alpha, mask_u2, MODE_ZEROING);
+                vmuls(xReg_u3, xReg_u3, alpha, mask_u3, MODE_ZEROING);
+                vmuls(xReg_u4, xReg_u4, alpha, mask_u4, MODE_ZEROING);
+                vmuls(xReg_u5, xReg_u5, alpha, mask_u5, MODE_ZEROING);
+                vmuls(xReg_u6, xReg_u6, alpha, mask_u6, MODE_ZEROING);
+                vmuls(xReg_u7, xReg_u7, alpha, mask_u7, MODE_ZEROING);
+                vadd(normReg_u0, xReg_u0, gxReg_u0, mask_u0, MODE_ZEROING);
+                vadd(normReg_u1, xReg_u1, gxReg_u1, mask_u1, MODE_ZEROING);
+                vadd(normReg_u2, xReg_u2, gxReg_u2, mask_u2, MODE_ZEROING);
+                vadd(normReg_u3, xReg_u3, gxReg_u3, mask_u3, MODE_ZEROING);
+                vadd(normReg_u4, xReg_u4, gxReg_u4, mask_u4, MODE_ZEROING);
+                vadd(normReg_u5, xReg_u5, gxReg_u5, mask_u5, MODE_ZEROING);
+                vadd(normReg_u6, xReg_u6, gxReg_u6, mask_u6, MODE_ZEROING);
+                vadd(normReg_u7, xReg_u7, gxReg_u7, mask_u7, MODE_ZEROING);
+                vsub(normReg_u0, normReg_u0, meanReg, mask_u0, MODE_ZEROING);
+                vsub(normReg_u1, normReg_u1, meanReg, mask_u1, MODE_ZEROING);
+                vsub(normReg_u2, normReg_u2, meanReg, mask_u2, MODE_ZEROING);
+                vsub(normReg_u3, normReg_u3, meanReg, mask_u3, MODE_ZEROING);
+                vsub(normReg_u4, normReg_u4, meanReg, mask_u4, MODE_ZEROING);
+                vsub(normReg_u5, normReg_u5, meanReg, mask_u5, MODE_ZEROING);
+                vsub(normReg_u6, normReg_u6, meanReg, mask_u6, MODE_ZEROING);
+                vsub(normReg_u7, normReg_u7, meanReg, mask_u7, MODE_ZEROING);
+                vmul(dgxReg_u0, tmpReg_u0, rstdReg, mask_u0, MODE_ZEROING);
+                vmul(dgxReg_u1, tmpReg_u1, rstdReg, mask_u1, MODE_ZEROING);
+                vmul(dgxReg_u2, tmpReg_u2, rstdReg, mask_u2, MODE_ZEROING);
+                vmul(dgxReg_u3, tmpReg_u3, rstdReg, mask_u3, MODE_ZEROING);
+                vmul(dgxReg_u4, tmpReg_u4, rstdReg, mask_u4, MODE_ZEROING);
+                vmul(dgxReg_u5, tmpReg_u5, rstdReg, mask_u5, MODE_ZEROING);
+                vmul(dgxReg_u6, tmpReg_u6, rstdReg, mask_u6, MODE_ZEROING);
+                vmul(dgxReg_u7, tmpReg_u7, rstdReg, mask_u7, MODE_ZEROING);
+                vmul(normReg_u0, normReg_u0, avgTmpReg, mask_u0, MODE_ZEROING);
+                vmul(normReg_u1, normReg_u1, avgTmpReg, mask_u1, MODE_ZEROING);
+                vmul(normReg_u2, normReg_u2, avgTmpReg, mask_u2, MODE_ZEROING);
+                vmul(normReg_u3, normReg_u3, avgTmpReg, mask_u3, MODE_ZEROING);
+                vmul(normReg_u4, normReg_u4, avgTmpReg, mask_u4, MODE_ZEROING);
+                vmul(normReg_u5, normReg_u5, avgTmpReg, mask_u5, MODE_ZEROING);
+                vmul(normReg_u6, normReg_u6, avgTmpReg, mask_u6, MODE_ZEROING);
+                vmul(normReg_u7, normReg_u7, avgTmpReg, mask_u7, MODE_ZEROING);
+                vadd(dgxReg_u0, dgxReg_u0, normReg_u0, mask_u0, MODE_ZEROING);
+                vadd(dgxReg_u1, dgxReg_u1, normReg_u1, mask_u1, MODE_ZEROING);
+                vadd(dgxReg_u2, dgxReg_u2, normReg_u2, mask_u2, MODE_ZEROING);
+                vadd(dgxReg_u3, dgxReg_u3, normReg_u3, mask_u3, MODE_ZEROING);
+                vadd(dgxReg_u4, dgxReg_u4, normReg_u4, mask_u4, MODE_ZEROING);
+                vadd(dgxReg_u5, dgxReg_u5, normReg_u5, mask_u5, MODE_ZEROING);
+                vadd(dgxReg_u6, dgxReg_u6, normReg_u6, mask_u6, MODE_ZEROING);
+                vadd(dgxReg_u7, dgxReg_u7, normReg_u7, mask_u7, MODE_ZEROING);
+                vadd(dgxReg_u0, dgxReg_u0, avgTmpNormReg, mask_u0, MODE_ZEROING);
+                vadd(dgxReg_u1, dgxReg_u1, avgTmpNormReg, mask_u1, MODE_ZEROING);
+                vadd(dgxReg_u2, dgxReg_u2, avgTmpNormReg, mask_u2, MODE_ZEROING);
+                vadd(dgxReg_u3, dgxReg_u3, avgTmpNormReg, mask_u3, MODE_ZEROING);
+                vadd(dgxReg_u4, dgxReg_u4, avgTmpNormReg, mask_u4, MODE_ZEROING);
+                vadd(dgxReg_u5, dgxReg_u5, avgTmpNormReg, mask_u5, MODE_ZEROING);
+                vadd(dgxReg_u6, dgxReg_u6, avgTmpNormReg, mask_u6, MODE_ZEROING);
+                vadd(dgxReg_u7, dgxReg_u7, avgTmpNormReg, mask_u7, MODE_ZEROING);
+                vmuls(dxReg_u0, dgxReg_u0, alpha, mask_u0, MODE_ZEROING);
+                vmuls(dxReg_u1, dgxReg_u1, alpha, mask_u1, MODE_ZEROING);
+                vmuls(dxReg_u2, dgxReg_u2, alpha, mask_u2, MODE_ZEROING);
+                vmuls(dxReg_u3, dgxReg_u3, alpha, mask_u3, MODE_ZEROING);
+                vmuls(dxReg_u4, dgxReg_u4, alpha, mask_u4, MODE_ZEROING);
+                vmuls(dxReg_u5, dgxReg_u5, alpha, mask_u5, MODE_ZEROING);
+                vmuls(dxReg_u6, dgxReg_u6, alpha, mask_u6, MODE_ZEROING);
+                vmuls(dxReg_u7, dgxReg_u7, alpha, mask_u7, MODE_ZEROING);
+                vsts(dgxReg_u0, dgxPtr + offset_u0, 0, NORM_B32, mask_u0);
+                vsts(dgxReg_u1, dgxPtr + offset_u1, 0, NORM_B32, mask_u1);
+                vsts(dgxReg_u2, dgxPtr + offset_u2, 0, NORM_B32, mask_u2);
+                vsts(dgxReg_u3, dgxPtr + offset_u3, 0, NORM_B32, mask_u3);
+                vsts(dgxReg_u4, dgxPtr + offset_u4, 0, NORM_B32, mask_u4);
+                vsts(dgxReg_u5, dgxPtr + offset_u5, 0, NORM_B32, mask_u5);
+                vsts(dgxReg_u6, dgxPtr + offset_u6, 0, NORM_B32, mask_u6);
+                vsts(dgxReg_u7, dgxPtr + offset_u7, 0, NORM_B32, mask_u7);
+                vsts(dxReg_u0, dxPtr + offset_u0, 0, NORM_B32, mask_u0);
+                vsts(dxReg_u1, dxPtr + offset_u1, 0, NORM_B32, mask_u1);
+                vsts(dxReg_u2, dxPtr + offset_u2, 0, NORM_B32, mask_u2);
+                vsts(dxReg_u3, dxPtr + offset_u3, 0, NORM_B32, mask_u3);
+                vsts(dxReg_u4, dxPtr + offset_u4, 0, NORM_B32, mask_u4);
+                vsts(dxReg_u5, dxPtr + offset_u5, 0, NORM_B32, mask_u5);
+                vsts(dxReg_u6, dxPtr + offset_u6, 0, NORM_B32, mask_u6);
+                vsts(dxReg_u7, dxPtr + offset_u7, 0, NORM_B32, mask_u7);
+            }
+        }
+    }
+}
+extern "C" __global__ __aicore__ void candidate_kernel(__gm__ uint8_t* input,
+                                                       __gm__ uint8_t* output) {
+    __ubuf__ float* dyPtr = (__ubuf__ float*)get_imm(0);
+    __ubuf__ float* xPtr = (__ubuf__ float*)get_imm(4096);
+    __ubuf__ float* gxPtr = (__ubuf__ float*)get_imm(8192);
+    __ubuf__ float* gammaPtr = (__ubuf__ float*)get_imm(12288);
+    __ubuf__ float* meanPtr = (__ubuf__ float*)get_imm(16384);
+    __ubuf__ float* rstdPtr = (__ubuf__ float*)get_imm(16640);
+    __ubuf__ float* avgTmpPtr = (__ubuf__ float*)get_imm(16896);
+    __ubuf__ float* avgTmpNormPtr = (__ubuf__ float*)get_imm(17152);
+    __ubuf__ float* dgxPtr = (__ubuf__ float*)get_imm(17408);
+    __ubuf__ float* dxPtr = (__ubuf__ float*)get_imm(21504);
+    copy_gm_to_ubuf_align_v2((__ubuf__ uint8_t*)get_imm(0), input, 0, 1, 17408, 0, 0, 0, 0, 0, 0);
+    set_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    wait_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    candidate_vf(dyPtr, xPtr, gxPtr, gammaPtr, meanPtr, rstdPtr, avgTmpPtr, avgTmpNormPtr, dgxPtr,
+                 dxPtr);
+    set_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    wait_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    copy_ubuf_to_gm_align_v2(output + 0, (__ubuf__ uint8_t*)dgxPtr, 0, 1, 4096, 0, 0, 0);
+    copy_ubuf_to_gm_align_v2(output + 4096, (__ubuf__ uint8_t*)dxPtr, 0, 1, 4096, 0, 0, 0);
+}

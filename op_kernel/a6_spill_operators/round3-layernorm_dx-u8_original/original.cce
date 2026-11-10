@@ -1,0 +1,301 @@
+/**
+ * Copyright (c) 2025 Huawei Technologies Co., Ltd.
+ * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+ * CANN Open Software License Agreement Version 2.0 (the "License").
+ * Please refer to the License for details. You may not use this file except in compliance with the License.
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+ * See LICENSE in the root of the software repository for the full text of the License.
+ */
+#include "kernel_operator.h"
+#include <cfloat>
+#include <type_traits>
+__aicore__ inline void candidate_vf(__ubuf__ float* dy, __ubuf__ float* x, __ubuf__ float* gamma,
+                                    __ubuf__ float* sum1, __ubuf__ float* sum2,
+                                    __ubuf__ float* rstd, __ubuf__ float* dst) {
+    uint16_t outerLoopTimes = 48;
+    uint32_t colSize = 64, outerLoopStride = 64, innerLoopStride = 64;
+    float floatN = 64.0f, reciprocalN = 0.015625f;
+    __VEC_SCOPE__ {
+
+        uint32_t count;
+
+        vector_f32 xReg, dyReg, dxReg;
+        vector_f32 sum1Reg, sum2Reg, rstdReg;
+        vector_f32 gammaReg;
+        vector_f32 Reg0, Reg1, Reg2, Reg3, Reg4, Reg5;
+        vector_bool pMask;
+        count = static_cast<uint32_t>(colSize);
+        pMask = plt_b32(count, POST_UPDATE);
+        {
+            vector_f32 Reg0_u0;
+            vector_f32 Reg0_u1;
+            vector_f32 Reg0_u2;
+            vector_f32 Reg0_u3;
+            vector_f32 Reg0_u4;
+            vector_f32 Reg0_u5;
+            vector_f32 Reg0_u6;
+            vector_f32 Reg0_u7;
+            vector_f32 Reg1_u0;
+            vector_f32 Reg1_u1;
+            vector_f32 Reg1_u2;
+            vector_f32 Reg1_u3;
+            vector_f32 Reg1_u4;
+            vector_f32 Reg1_u5;
+            vector_f32 Reg1_u6;
+            vector_f32 Reg1_u7;
+            vector_f32 Reg2_u0;
+            vector_f32 Reg2_u1;
+            vector_f32 Reg2_u2;
+            vector_f32 Reg2_u3;
+            vector_f32 Reg2_u4;
+            vector_f32 Reg2_u5;
+            vector_f32 Reg2_u6;
+            vector_f32 Reg2_u7;
+            vector_f32 Reg3_u0;
+            vector_f32 Reg3_u1;
+            vector_f32 Reg3_u2;
+            vector_f32 Reg3_u3;
+            vector_f32 Reg3_u4;
+            vector_f32 Reg3_u5;
+            vector_f32 Reg3_u6;
+            vector_f32 Reg3_u7;
+            vector_f32 Reg4_u0;
+            vector_f32 Reg4_u1;
+            vector_f32 Reg4_u2;
+            vector_f32 Reg4_u3;
+            vector_f32 Reg4_u4;
+            vector_f32 Reg4_u5;
+            vector_f32 Reg4_u6;
+            vector_f32 Reg4_u7;
+            vector_f32 Reg5_u0;
+            vector_f32 Reg5_u1;
+            vector_f32 Reg5_u2;
+            vector_f32 Reg5_u3;
+            vector_f32 Reg5_u4;
+            vector_f32 Reg5_u5;
+            vector_f32 Reg5_u6;
+            vector_f32 Reg5_u7;
+            vector_f32 dxReg_u0;
+            vector_f32 dxReg_u1;
+            vector_f32 dxReg_u2;
+            vector_f32 dxReg_u3;
+            vector_f32 dxReg_u4;
+            vector_f32 dxReg_u5;
+            vector_f32 dxReg_u6;
+            vector_f32 dxReg_u7;
+            vector_f32 dyReg_u0;
+            vector_f32 dyReg_u1;
+            vector_f32 dyReg_u2;
+            vector_f32 dyReg_u3;
+            vector_f32 dyReg_u4;
+            vector_f32 dyReg_u5;
+            vector_f32 dyReg_u6;
+            vector_f32 dyReg_u7;
+            vector_f32 gammaReg_u0;
+            vector_f32 gammaReg_u1;
+            vector_f32 gammaReg_u2;
+            vector_f32 gammaReg_u3;
+            vector_f32 gammaReg_u4;
+            vector_f32 gammaReg_u5;
+            vector_f32 gammaReg_u6;
+            vector_f32 gammaReg_u7;
+            vector_f32 rstdReg_u0;
+            vector_f32 rstdReg_u1;
+            vector_f32 rstdReg_u2;
+            vector_f32 rstdReg_u3;
+            vector_f32 rstdReg_u4;
+            vector_f32 rstdReg_u5;
+            vector_f32 rstdReg_u6;
+            vector_f32 rstdReg_u7;
+            vector_f32 sum1Reg_u0;
+            vector_f32 sum1Reg_u1;
+            vector_f32 sum1Reg_u2;
+            vector_f32 sum1Reg_u3;
+            vector_f32 sum1Reg_u4;
+            vector_f32 sum1Reg_u5;
+            vector_f32 sum1Reg_u6;
+            vector_f32 sum1Reg_u7;
+            vector_f32 sum2Reg_u0;
+            vector_f32 sum2Reg_u1;
+            vector_f32 sum2Reg_u2;
+            vector_f32 sum2Reg_u3;
+            vector_f32 sum2Reg_u4;
+            vector_f32 sum2Reg_u5;
+            vector_f32 sum2Reg_u6;
+            vector_f32 sum2Reg_u7;
+            vector_f32 xReg_u0;
+            vector_f32 xReg_u1;
+            vector_f32 xReg_u2;
+            vector_f32 xReg_u3;
+            vector_f32 xReg_u4;
+            vector_f32 xReg_u5;
+            vector_f32 xReg_u6;
+            vector_f32 xReg_u7;
+#pragma unroll 1
+            for (uint32_t i = 0; i < 48; i += 8) {
+                vlds(sum1Reg_u0, (__local_mem__ float*)sum1 + (i + 0), 0, BRC_B32);
+                vlds(sum1Reg_u1, (__local_mem__ float*)sum1 + (i + 1), 0, BRC_B32);
+                vlds(sum1Reg_u2, (__local_mem__ float*)sum1 + (i + 2), 0, BRC_B32);
+                vlds(sum1Reg_u3, (__local_mem__ float*)sum1 + (i + 3), 0, BRC_B32);
+                vlds(sum1Reg_u4, (__local_mem__ float*)sum1 + (i + 4), 0, BRC_B32);
+                vlds(sum1Reg_u5, (__local_mem__ float*)sum1 + (i + 5), 0, BRC_B32);
+                vlds(sum1Reg_u6, (__local_mem__ float*)sum1 + (i + 6), 0, BRC_B32);
+                vlds(sum1Reg_u7, (__local_mem__ float*)sum1 + (i + 7), 0, BRC_B32);
+                vlds(sum2Reg_u0, (__local_mem__ float*)sum2 + (i + 0), 0, BRC_B32);
+                vlds(sum2Reg_u1, (__local_mem__ float*)sum2 + (i + 1), 0, BRC_B32);
+                vlds(sum2Reg_u2, (__local_mem__ float*)sum2 + (i + 2), 0, BRC_B32);
+                vlds(sum2Reg_u3, (__local_mem__ float*)sum2 + (i + 3), 0, BRC_B32);
+                vlds(sum2Reg_u4, (__local_mem__ float*)sum2 + (i + 4), 0, BRC_B32);
+                vlds(sum2Reg_u5, (__local_mem__ float*)sum2 + (i + 5), 0, BRC_B32);
+                vlds(sum2Reg_u6, (__local_mem__ float*)sum2 + (i + 6), 0, BRC_B32);
+                vlds(sum2Reg_u7, (__local_mem__ float*)sum2 + (i + 7), 0, BRC_B32);
+                vlds(rstdReg_u0, (__local_mem__ float*)rstd + (i + 0), 0, BRC_B32);
+                vlds(rstdReg_u1, (__local_mem__ float*)rstd + (i + 1), 0, BRC_B32);
+                vlds(rstdReg_u2, (__local_mem__ float*)rstd + (i + 2), 0, BRC_B32);
+                vlds(rstdReg_u3, (__local_mem__ float*)rstd + (i + 3), 0, BRC_B32);
+                vlds(rstdReg_u4, (__local_mem__ float*)rstd + (i + 4), 0, BRC_B32);
+                vlds(rstdReg_u5, (__local_mem__ float*)rstd + (i + 5), 0, BRC_B32);
+                vlds(rstdReg_u6, (__local_mem__ float*)rstd + (i + 6), 0, BRC_B32);
+                vlds(rstdReg_u7, (__local_mem__ float*)rstd + (i + 7), 0, BRC_B32);
+                vlds(dyReg_u0,
+                     (__local_mem__ float*)dy + (i + 0) * outerLoopStride + 0 * innerLoopStride, 0,
+                     NORM);
+                vlds(dyReg_u1,
+                     (__local_mem__ float*)dy + (i + 1) * outerLoopStride + 0 * innerLoopStride, 0,
+                     NORM);
+                vlds(dyReg_u2,
+                     (__local_mem__ float*)dy + (i + 2) * outerLoopStride + 0 * innerLoopStride, 0,
+                     NORM);
+                vlds(dyReg_u3,
+                     (__local_mem__ float*)dy + (i + 3) * outerLoopStride + 0 * innerLoopStride, 0,
+                     NORM);
+                vlds(dyReg_u4,
+                     (__local_mem__ float*)dy + (i + 4) * outerLoopStride + 0 * innerLoopStride, 0,
+                     NORM);
+                vlds(dyReg_u5,
+                     (__local_mem__ float*)dy + (i + 5) * outerLoopStride + 0 * innerLoopStride, 0,
+                     NORM);
+                vlds(dyReg_u6,
+                     (__local_mem__ float*)dy + (i + 6) * outerLoopStride + 0 * innerLoopStride, 0,
+                     NORM);
+                vlds(dyReg_u7,
+                     (__local_mem__ float*)dy + (i + 7) * outerLoopStride + 0 * innerLoopStride, 0,
+                     NORM);
+                vlds(xReg_u0,
+                     (__local_mem__ float*)x + (i + 0) * outerLoopStride + 0 * innerLoopStride, 0,
+                     NORM);
+                vlds(xReg_u1,
+                     (__local_mem__ float*)x + (i + 1) * outerLoopStride + 0 * innerLoopStride, 0,
+                     NORM);
+                vlds(xReg_u2,
+                     (__local_mem__ float*)x + (i + 2) * outerLoopStride + 0 * innerLoopStride, 0,
+                     NORM);
+                vlds(xReg_u3,
+                     (__local_mem__ float*)x + (i + 3) * outerLoopStride + 0 * innerLoopStride, 0,
+                     NORM);
+                vlds(xReg_u4,
+                     (__local_mem__ float*)x + (i + 4) * outerLoopStride + 0 * innerLoopStride, 0,
+                     NORM);
+                vlds(xReg_u5,
+                     (__local_mem__ float*)x + (i + 5) * outerLoopStride + 0 * innerLoopStride, 0,
+                     NORM);
+                vlds(xReg_u6,
+                     (__local_mem__ float*)x + (i + 6) * outerLoopStride + 0 * innerLoopStride, 0,
+                     NORM);
+                vlds(xReg_u7,
+                     (__local_mem__ float*)x + (i + 7) * outerLoopStride + 0 * innerLoopStride, 0,
+                     NORM);
+                vlds(gammaReg_u0, (__local_mem__ float*)gamma + 0 * innerLoopStride, 0, NORM);
+                vlds(gammaReg_u1, (__local_mem__ float*)gamma + 0 * innerLoopStride, 0, NORM);
+                vlds(gammaReg_u2, (__local_mem__ float*)gamma + 0 * innerLoopStride, 0, NORM);
+                vlds(gammaReg_u3, (__local_mem__ float*)gamma + 0 * innerLoopStride, 0, NORM);
+                vlds(gammaReg_u4, (__local_mem__ float*)gamma + 0 * innerLoopStride, 0, NORM);
+                vlds(gammaReg_u5, (__local_mem__ float*)gamma + 0 * innerLoopStride, 0, NORM);
+                vlds(gammaReg_u6, (__local_mem__ float*)gamma + 0 * innerLoopStride, 0, NORM);
+                vlds(gammaReg_u7, (__local_mem__ float*)gamma + 0 * innerLoopStride, 0, NORM);
+                vmul(Reg0_u0, dyReg_u0, gammaReg_u0, pMask, MODE_ZEROING);
+                vmul(Reg0_u1, dyReg_u1, gammaReg_u1, pMask, MODE_ZEROING);
+                vmul(Reg0_u2, dyReg_u2, gammaReg_u2, pMask, MODE_ZEROING);
+                vmul(Reg0_u3, dyReg_u3, gammaReg_u3, pMask, MODE_ZEROING);
+                vmul(Reg0_u4, dyReg_u4, gammaReg_u4, pMask, MODE_ZEROING);
+                vmul(Reg0_u5, dyReg_u5, gammaReg_u5, pMask, MODE_ZEROING);
+                vmul(Reg0_u6, dyReg_u6, gammaReg_u6, pMask, MODE_ZEROING);
+                vmul(Reg0_u7, dyReg_u7, gammaReg_u7, pMask, MODE_ZEROING);
+                vmuls(Reg1_u0, Reg0_u0, floatN, pMask, MODE_ZEROING);
+                vmuls(Reg1_u1, Reg0_u1, floatN, pMask, MODE_ZEROING);
+                vmuls(Reg1_u2, Reg0_u2, floatN, pMask, MODE_ZEROING);
+                vmuls(Reg1_u3, Reg0_u3, floatN, pMask, MODE_ZEROING);
+                vmuls(Reg1_u4, Reg0_u4, floatN, pMask, MODE_ZEROING);
+                vmuls(Reg1_u5, Reg0_u5, floatN, pMask, MODE_ZEROING);
+                vmuls(Reg1_u6, Reg0_u6, floatN, pMask, MODE_ZEROING);
+                vmuls(Reg1_u7, Reg0_u7, floatN, pMask, MODE_ZEROING);
+                vsub(Reg2_u0, Reg1_u0, sum1Reg_u0, pMask, MODE_ZEROING);
+                vsub(Reg2_u1, Reg1_u1, sum1Reg_u1, pMask, MODE_ZEROING);
+                vsub(Reg2_u2, Reg1_u2, sum1Reg_u2, pMask, MODE_ZEROING);
+                vsub(Reg2_u3, Reg1_u3, sum1Reg_u3, pMask, MODE_ZEROING);
+                vsub(Reg2_u4, Reg1_u4, sum1Reg_u4, pMask, MODE_ZEROING);
+                vsub(Reg2_u5, Reg1_u5, sum1Reg_u5, pMask, MODE_ZEROING);
+                vsub(Reg2_u6, Reg1_u6, sum1Reg_u6, pMask, MODE_ZEROING);
+                vsub(Reg2_u7, Reg1_u7, sum1Reg_u7, pMask, MODE_ZEROING);
+                vmul(Reg3_u0, xReg_u0, sum2Reg_u0, pMask, MODE_ZEROING);
+                vmul(Reg3_u1, xReg_u1, sum2Reg_u1, pMask, MODE_ZEROING);
+                vmul(Reg3_u2, xReg_u2, sum2Reg_u2, pMask, MODE_ZEROING);
+                vmul(Reg3_u3, xReg_u3, sum2Reg_u3, pMask, MODE_ZEROING);
+                vmul(Reg3_u4, xReg_u4, sum2Reg_u4, pMask, MODE_ZEROING);
+                vmul(Reg3_u5, xReg_u5, sum2Reg_u5, pMask, MODE_ZEROING);
+                vmul(Reg3_u6, xReg_u6, sum2Reg_u6, pMask, MODE_ZEROING);
+                vmul(Reg3_u7, xReg_u7, sum2Reg_u7, pMask, MODE_ZEROING);
+                vsub(Reg4_u0, Reg2_u0, Reg3_u0, pMask, MODE_ZEROING);
+                vsub(Reg4_u1, Reg2_u1, Reg3_u1, pMask, MODE_ZEROING);
+                vsub(Reg4_u2, Reg2_u2, Reg3_u2, pMask, MODE_ZEROING);
+                vsub(Reg4_u3, Reg2_u3, Reg3_u3, pMask, MODE_ZEROING);
+                vsub(Reg4_u4, Reg2_u4, Reg3_u4, pMask, MODE_ZEROING);
+                vsub(Reg4_u5, Reg2_u5, Reg3_u5, pMask, MODE_ZEROING);
+                vsub(Reg4_u6, Reg2_u6, Reg3_u6, pMask, MODE_ZEROING);
+                vsub(Reg4_u7, Reg2_u7, Reg3_u7, pMask, MODE_ZEROING);
+                vmuls(Reg5_u0, Reg4_u0, reciprocalN, pMask, MODE_ZEROING);
+                vmuls(Reg5_u1, Reg4_u1, reciprocalN, pMask, MODE_ZEROING);
+                vmuls(Reg5_u2, Reg4_u2, reciprocalN, pMask, MODE_ZEROING);
+                vmuls(Reg5_u3, Reg4_u3, reciprocalN, pMask, MODE_ZEROING);
+                vmuls(Reg5_u4, Reg4_u4, reciprocalN, pMask, MODE_ZEROING);
+                vmuls(Reg5_u5, Reg4_u5, reciprocalN, pMask, MODE_ZEROING);
+                vmuls(Reg5_u6, Reg4_u6, reciprocalN, pMask, MODE_ZEROING);
+                vmuls(Reg5_u7, Reg4_u7, reciprocalN, pMask, MODE_ZEROING);
+                vmul(dxReg_u0, Reg5_u0, rstdReg_u0, pMask, MODE_ZEROING);
+                vmul(dxReg_u1, Reg5_u1, rstdReg_u1, pMask, MODE_ZEROING);
+                vmul(dxReg_u2, Reg5_u2, rstdReg_u2, pMask, MODE_ZEROING);
+                vmul(dxReg_u3, Reg5_u3, rstdReg_u3, pMask, MODE_ZEROING);
+                vmul(dxReg_u4, Reg5_u4, rstdReg_u4, pMask, MODE_ZEROING);
+                vmul(dxReg_u5, Reg5_u5, rstdReg_u5, pMask, MODE_ZEROING);
+                vmul(dxReg_u6, Reg5_u6, rstdReg_u6, pMask, MODE_ZEROING);
+                vmul(dxReg_u7, Reg5_u7, rstdReg_u7, pMask, MODE_ZEROING);
+                vsts(dxReg_u0, dst + ((i + 0) * outerLoopStride), 0, NORM_B32, pMask);
+                vsts(dxReg_u1, dst + ((i + 1) * outerLoopStride), 0, NORM_B32, pMask);
+                vsts(dxReg_u2, dst + ((i + 2) * outerLoopStride), 0, NORM_B32, pMask);
+                vsts(dxReg_u3, dst + ((i + 3) * outerLoopStride), 0, NORM_B32, pMask);
+                vsts(dxReg_u4, dst + ((i + 4) * outerLoopStride), 0, NORM_B32, pMask);
+                vsts(dxReg_u5, dst + ((i + 5) * outerLoopStride), 0, NORM_B32, pMask);
+                vsts(dxReg_u6, dst + ((i + 6) * outerLoopStride), 0, NORM_B32, pMask);
+                vsts(dxReg_u7, dst + ((i + 7) * outerLoopStride), 0, NORM_B32, pMask);
+            }
+        }
+    }
+}
+extern "C" __global__ __aicore__ void candidate_kernel(__gm__ uint8_t* input,
+                                                       __gm__ uint8_t* output) {
+    __ubuf__ float* dy = (__ubuf__ float*)get_imm(0);
+    __ubuf__ float* x = (__ubuf__ float*)get_imm(12288);
+    __ubuf__ float* gamma = (__ubuf__ float*)get_imm(24576);
+    __ubuf__ float* sum1 = (__ubuf__ float*)get_imm(24832);
+    __ubuf__ float* sum2 = (__ubuf__ float*)get_imm(25088);
+    __ubuf__ float* rstd = (__ubuf__ float*)get_imm(25344);
+    __ubuf__ float* dst = (__ubuf__ float*)get_imm(25600);
+    copy_gm_to_ubuf_align_v2((__ubuf__ uint8_t*)get_imm(0), input, 0, 1, 25600, 0, 0, 0, 0, 0, 0);
+    set_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    wait_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    candidate_vf(dy, x, gamma, sum1, sum2, rstd, dst);
+    set_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    wait_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    copy_ubuf_to_gm_align_v2(output + 0, (__ubuf__ uint8_t*)dst, 0, 1, 12288, 0, 0, 0);
+}

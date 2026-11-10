@@ -1,0 +1,66 @@
+/**
+ * Copyright (c) 2026 Huawei Technologies Co., Ltd.
+ * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+ * CANN Open Software License Agreement Version 2.0 (the "License").
+ * Please refer to the License for details. You may not use this file except in compliance with the License.
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+ * See LICENSE in the root of the software repository for the full text of the License.
+ */
+#include "kernel_operator.h"
+#include <cfloat>
+#include <type_traits>
+__aicore__ inline void candidate_vf(__ubuf__ float* src0Addr, __ubuf__ float* src1Addr,
+                                    __ubuf__ float* dstAddr) {
+    uint32_t count = 3072, vlSize = 64;
+    uint16_t loopNum = 48;
+    vector_f32 DataOne;
+    vector_f32 DataZero;
+    vector_f32 vregInputGradOut;
+    vector_f32 vregInputSelf;
+    vector_f32 SelfAbs;
+    vector_f32 SelfAbsNeg;
+    vector_f32 SelfAbsNegExp;
+    vector_f32 SelfAbsNegExpAdd;
+    vector_f32 vregSelect;
+    vector_f32 Answer;
+    vector_f32 LastAnswer;
+    vector_bool mask, cmpMask;
+
+    __VEC_SCOPE__ {
+        vdup(DataOne, (float)1.0, pset_b32(PAT_ALL), MODE_ZEROING);
+        vdup(DataZero, (float)0.0, pset_b32(PAT_ALL), MODE_ZEROING);
+#pragma unroll 1
+        for (uint16_t i = 0; i < loopNum; i++) {
+            mask = plt_b32(count, POST_UPDATE);
+
+            vlds(vregInputGradOut, (__ubuf__ float*)(src0Addr + i * vlSize), 0, NORM);
+            vlds(vregInputSelf, (__ubuf__ float*)(src1Addr + i * vlSize), 0, NORM);
+
+            vabs(SelfAbs, vregInputSelf, mask, MODE_ZEROING);
+            vmuls(SelfAbsNeg, SelfAbs, (float)-1.0, mask, MODE_ZEROING);
+            vexp(SelfAbsNegExp, SelfAbsNeg, mask, MODE_ZEROING);
+            vadds(SelfAbsNegExpAdd, SelfAbsNegExp, (float)1.0, mask, MODE_ZEROING);
+
+            vcmp_lt(cmpMask, vregInputSelf, DataZero, mask);
+            vsel(vregSelect, DataOne, SelfAbsNegExp, cmpMask);
+            vdiv(Answer, vregSelect, SelfAbsNegExpAdd, mask, MODE_ZEROING);
+            vmul(LastAnswer, Answer, vregInputGradOut, mask, MODE_ZEROING);
+
+            vsts(LastAnswer, (__ubuf__ float*)(dstAddr + i * vlSize), 0, NORM_B32, mask);
+        }
+    }
+}
+extern "C" __global__ __aicore__ void candidate_kernel(__gm__ uint8_t* input,
+                                                       __gm__ uint8_t* output) {
+    __ubuf__ float* src0Addr = (__ubuf__ float*)get_imm(0);
+    __ubuf__ float* src1Addr = (__ubuf__ float*)get_imm(12288);
+    __ubuf__ float* dstAddr = (__ubuf__ float*)get_imm(24576);
+    copy_gm_to_ubuf_align_v2((__ubuf__ uint8_t*)get_imm(0), input, 0, 1, 24576, 0, 0, 0, 0, 0, 0);
+    set_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    wait_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    candidate_vf(src0Addr, src1Addr, dstAddr);
+    set_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    wait_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    copy_ubuf_to_gm_align_v2(output + 0, (__ubuf__ uint8_t*)dstAddr, 0, 1, 12288, 0, 0, 0);
+}

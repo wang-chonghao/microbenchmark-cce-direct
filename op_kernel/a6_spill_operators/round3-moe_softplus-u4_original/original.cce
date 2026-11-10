@@ -1,0 +1,211 @@
+/**
+ * Copyright (c) 2026 Huawei Technologies Co., Ltd.
+ * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+ * CANN Open Software License Agreement Version 2.0 (the "License").
+ * Please refer to the License for details. You may not use this file except in compliance with the License.
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+ * See LICENSE in the root of the software repository for the full text of the License.
+ */
+#include "kernel_operator.h"
+#include <cfloat>
+#include <type_traits>
+__aicore__ inline void candidate_vf(__ubuf__ float* inputAddr, __ubuf__ float* outputAddr,
+                                    __ubuf__ int32_t* expertIdxAddr, __ubuf__ float* outAddr) {
+    uint32_t rowsInBatchU32 = 3072;
+    uint16_t vfLoopNum = 48;
+    constexpr uint32_t VL_FLOAT_SIZE = 64;
+    constexpr float LOG1P_TAYLOR_THRESHOLD = 0.00390625f;
+    float eps_ = 9.999999747378752e-05f, routedScalingFactor_ = 1.25f;
+    __VEC_SCOPE__ {
+        vector_f32 vregIn;
+        vector_f32 vregNorm;
+        vector_f32 vregOut;
+        vector_f32 vregSumBcast;
+        vector_f32 vregAbsX;
+        vector_f32 vregApprox;
+        vector_f32 vregHalfT;
+        vector_f32 vregOneMinusHalfT;
+        vector_f32 vregOne;
+        vector_f32 vregZero;
+        vector_f32 vregTmp1;
+        vector_f32 vregTmp2;
+        vector_f32 vregTmp3;
+        vector_s32 vregZeroIdx;
+        vector_bool preg0 = pset_b32(PAT_ALL);
+        vector_bool pregCmp = pset_b32(PAT_ALL);
+        vdup(vregOne, static_cast<float>(1), preg0, MODE_ZEROING);
+        vdup(vregZero, static_cast<float>(0), preg0, MODE_ZEROING);
+
+        {
+            vector_bool preg0_u0;
+            vector_bool preg0_u1;
+            vector_bool preg0_u2;
+            vector_bool preg0_u3;
+            vector_bool pregCmp_u0;
+            vector_bool pregCmp_u1;
+            vector_bool pregCmp_u2;
+            vector_bool pregCmp_u3;
+            vector_f32 vregAbsX_u0;
+            vector_f32 vregAbsX_u1;
+            vector_f32 vregAbsX_u2;
+            vector_f32 vregAbsX_u3;
+            vector_f32 vregApprox_u0;
+            vector_f32 vregApprox_u1;
+            vector_f32 vregApprox_u2;
+            vector_f32 vregApprox_u3;
+            vector_f32 vregHalfT_u0;
+            vector_f32 vregHalfT_u1;
+            vector_f32 vregHalfT_u2;
+            vector_f32 vregHalfT_u3;
+            vector_f32 vregIn_u0;
+            vector_f32 vregIn_u1;
+            vector_f32 vregIn_u2;
+            vector_f32 vregIn_u3;
+            vector_f32 vregNorm_u0;
+            vector_f32 vregNorm_u1;
+            vector_f32 vregNorm_u2;
+            vector_f32 vregNorm_u3;
+            vector_f32 vregOneMinusHalfT_u0;
+            vector_f32 vregOneMinusHalfT_u1;
+            vector_f32 vregOneMinusHalfT_u2;
+            vector_f32 vregOneMinusHalfT_u3;
+            vector_f32 vregOut_u0;
+            vector_f32 vregOut_u1;
+            vector_f32 vregOut_u2;
+            vector_f32 vregOut_u3;
+            vector_f32 vregSumBcast_u0;
+            vector_f32 vregSumBcast_u1;
+            vector_f32 vregSumBcast_u2;
+            vector_f32 vregSumBcast_u3;
+            vector_f32 vregTmp1_u0;
+            vector_f32 vregTmp1_u1;
+            vector_f32 vregTmp1_u2;
+            vector_f32 vregTmp1_u3;
+            vector_f32 vregTmp2_u0;
+            vector_f32 vregTmp2_u1;
+            vector_f32 vregTmp2_u2;
+            vector_f32 vregTmp2_u3;
+            vector_f32 vregTmp3_u0;
+            vector_f32 vregTmp3_u1;
+            vector_f32 vregTmp3_u2;
+            vector_f32 vregTmp3_u3;
+            vector_s32 vregZeroIdx_u0;
+            vector_s32 vregZeroIdx_u1;
+            vector_s32 vregZeroIdx_u2;
+            vector_s32 vregZeroIdx_u3;
+#pragma unroll 1
+            for (uint32_t i = 0; i < 48; i += 4) {
+                preg0_u0 = plt_b32(rowsInBatchU32, POST_UPDATE);
+                preg0_u1 = plt_b32(rowsInBatchU32, POST_UPDATE);
+                preg0_u2 = plt_b32(rowsInBatchU32, POST_UPDATE);
+                preg0_u3 = plt_b32(rowsInBatchU32, POST_UPDATE);
+                vlds(vregIn_u0, inputAddr + ((i + 0) * VL_FLOAT_SIZE), 0, NORM);
+                vlds(vregIn_u1, inputAddr + ((i + 1) * VL_FLOAT_SIZE), 0, NORM);
+                vlds(vregIn_u2, inputAddr + ((i + 2) * VL_FLOAT_SIZE), 0, NORM);
+                vlds(vregIn_u3, inputAddr + ((i + 3) * VL_FLOAT_SIZE), 0, NORM);
+                vabs(vregAbsX_u0, vregIn_u0, preg0_u0, MODE_ZEROING);
+                vabs(vregAbsX_u1, vregIn_u1, preg0_u1, MODE_ZEROING);
+                vabs(vregAbsX_u2, vregIn_u2, preg0_u2, MODE_ZEROING);
+                vabs(vregAbsX_u3, vregIn_u3, preg0_u3, MODE_ZEROING);
+                vmuls(vregTmp1_u0, vregAbsX_u0, static_cast<float>(-1), preg0_u0, MODE_ZEROING);
+                vmuls(vregTmp1_u1, vregAbsX_u1, static_cast<float>(-1), preg0_u1, MODE_ZEROING);
+                vmuls(vregTmp1_u2, vregAbsX_u2, static_cast<float>(-1), preg0_u2, MODE_ZEROING);
+                vmuls(vregTmp1_u3, vregAbsX_u3, static_cast<float>(-1), preg0_u3, MODE_ZEROING);
+                vexp(vregTmp1_u0, vregTmp1_u0, preg0_u0, MODE_ZEROING);
+                vexp(vregTmp1_u1, vregTmp1_u1, preg0_u1, MODE_ZEROING);
+                vexp(vregTmp1_u2, vregTmp1_u2, preg0_u2, MODE_ZEROING);
+                vexp(vregTmp1_u3, vregTmp1_u3, preg0_u3, MODE_ZEROING);
+                vcmps_lt(pregCmp_u0, vregTmp1_u0, LOG1P_TAYLOR_THRESHOLD, preg0_u0);
+                vcmps_lt(pregCmp_u1, vregTmp1_u1, LOG1P_TAYLOR_THRESHOLD, preg0_u1);
+                vcmps_lt(pregCmp_u2, vregTmp1_u2, LOG1P_TAYLOR_THRESHOLD, preg0_u2);
+                vcmps_lt(pregCmp_u3, vregTmp1_u3, LOG1P_TAYLOR_THRESHOLD, preg0_u3);
+                vmuls(vregHalfT_u0, vregTmp1_u0, static_cast<float>(0.5), preg0_u0, MODE_ZEROING);
+                vmuls(vregHalfT_u1, vregTmp1_u1, static_cast<float>(0.5), preg0_u1, MODE_ZEROING);
+                vmuls(vregHalfT_u2, vregTmp1_u2, static_cast<float>(0.5), preg0_u2, MODE_ZEROING);
+                vmuls(vregHalfT_u3, vregTmp1_u3, static_cast<float>(0.5), preg0_u3, MODE_ZEROING);
+                vsub(vregOneMinusHalfT_u0, vregOne, vregHalfT_u0, preg0_u0, MODE_ZEROING);
+                vsub(vregOneMinusHalfT_u1, vregOne, vregHalfT_u1, preg0_u1, MODE_ZEROING);
+                vsub(vregOneMinusHalfT_u2, vregOne, vregHalfT_u2, preg0_u2, MODE_ZEROING);
+                vsub(vregOneMinusHalfT_u3, vregOne, vregHalfT_u3, preg0_u3, MODE_ZEROING);
+                vmul(vregApprox_u0, vregTmp1_u0, vregOneMinusHalfT_u0, preg0_u0, MODE_ZEROING);
+                vmul(vregApprox_u1, vregTmp1_u1, vregOneMinusHalfT_u1, preg0_u1, MODE_ZEROING);
+                vmul(vregApprox_u2, vregTmp1_u2, vregOneMinusHalfT_u2, preg0_u2, MODE_ZEROING);
+                vmul(vregApprox_u3, vregTmp1_u3, vregOneMinusHalfT_u3, preg0_u3, MODE_ZEROING);
+                vadds(vregTmp2_u0, vregTmp1_u0, static_cast<float>(1), preg0_u0, MODE_ZEROING);
+                vadds(vregTmp2_u1, vregTmp1_u1, static_cast<float>(1), preg0_u1, MODE_ZEROING);
+                vadds(vregTmp2_u2, vregTmp1_u2, static_cast<float>(1), preg0_u2, MODE_ZEROING);
+                vadds(vregTmp2_u3, vregTmp1_u3, static_cast<float>(1), preg0_u3, MODE_ZEROING);
+                vln(vregTmp3_u0, vregTmp2_u0, preg0_u0, MODE_ZEROING);
+                vln(vregTmp3_u1, vregTmp2_u1, preg0_u1, MODE_ZEROING);
+                vln(vregTmp3_u2, vregTmp2_u2, preg0_u2, MODE_ZEROING);
+                vln(vregTmp3_u3, vregTmp2_u3, preg0_u3, MODE_ZEROING);
+                vsel(vregTmp3_u0, vregApprox_u0, vregTmp3_u0, pregCmp_u0);
+                vsel(vregTmp3_u1, vregApprox_u1, vregTmp3_u1, pregCmp_u1);
+                vsel(vregTmp3_u2, vregApprox_u2, vregTmp3_u2, pregCmp_u2);
+                vsel(vregTmp3_u3, vregApprox_u3, vregTmp3_u3, pregCmp_u3);
+                vmax(vregTmp1_u0, vregIn_u0, vregZero, preg0_u0, MODE_ZEROING);
+                vmax(vregTmp1_u1, vregIn_u1, vregZero, preg0_u1, MODE_ZEROING);
+                vmax(vregTmp1_u2, vregIn_u2, vregZero, preg0_u2, MODE_ZEROING);
+                vmax(vregTmp1_u3, vregIn_u3, vregZero, preg0_u3, MODE_ZEROING);
+                vadd(vregNorm_u0, vregTmp1_u0, vregTmp3_u0, preg0_u0, MODE_ZEROING);
+                vadd(vregNorm_u1, vregTmp1_u1, vregTmp3_u1, preg0_u1, MODE_ZEROING);
+                vadd(vregNorm_u2, vregTmp1_u2, vregTmp3_u2, preg0_u2, MODE_ZEROING);
+                vadd(vregNorm_u3, vregTmp1_u3, vregTmp3_u3, preg0_u3, MODE_ZEROING);
+                vsqrt(vregNorm_u0, vregNorm_u0, preg0_u0, MODE_ZEROING);
+                vsqrt(vregNorm_u1, vregNorm_u1, preg0_u1, MODE_ZEROING);
+                vsqrt(vregNorm_u2, vregNorm_u2, preg0_u2, MODE_ZEROING);
+                vsqrt(vregNorm_u3, vregNorm_u3, preg0_u3, MODE_ZEROING);
+                vadds(vregSumBcast_u0, vregNorm_u0, eps_, preg0_u0, MODE_ZEROING);
+                vadds(vregSumBcast_u1, vregNorm_u1, eps_, preg0_u1, MODE_ZEROING);
+                vadds(vregSumBcast_u2, vregNorm_u2, eps_, preg0_u2, MODE_ZEROING);
+                vadds(vregSumBcast_u3, vregNorm_u3, eps_, preg0_u3, MODE_ZEROING);
+                vdiv(vregOut_u0, vregNorm_u0, vregSumBcast_u0, preg0_u0, MODE_ZEROING);
+                vdiv(vregOut_u1, vregNorm_u1, vregSumBcast_u1, preg0_u1, MODE_ZEROING);
+                vdiv(vregOut_u2, vregNorm_u2, vregSumBcast_u2, preg0_u2, MODE_ZEROING);
+                vdiv(vregOut_u3, vregNorm_u3, vregSumBcast_u3, preg0_u3, MODE_ZEROING);
+                vmuls(vregOut_u0, vregOut_u0, routedScalingFactor_, preg0_u0, MODE_ZEROING);
+                vmuls(vregOut_u1, vregOut_u1, routedScalingFactor_, preg0_u1, MODE_ZEROING);
+                vmuls(vregOut_u2, vregOut_u2, routedScalingFactor_, preg0_u2, MODE_ZEROING);
+                vmuls(vregOut_u3, vregOut_u3, routedScalingFactor_, preg0_u3, MODE_ZEROING);
+                vdup(vregZeroIdx_u0, static_cast<int32_t>(0), preg0_u0, MODE_ZEROING);
+                vdup(vregZeroIdx_u1, static_cast<int32_t>(0), preg0_u1, MODE_ZEROING);
+                vdup(vregZeroIdx_u2, static_cast<int32_t>(0), preg0_u2, MODE_ZEROING);
+                vdup(vregZeroIdx_u3, static_cast<int32_t>(0), preg0_u3, MODE_ZEROING);
+                vsts(vregOut_u0, outputAddr + ((i + 0) * VL_FLOAT_SIZE), 0, NORM_B32, preg0_u0);
+                vsts(vregOut_u1, outputAddr + ((i + 1) * VL_FLOAT_SIZE), 0, NORM_B32, preg0_u1);
+                vsts(vregOut_u2, outputAddr + ((i + 2) * VL_FLOAT_SIZE), 0, NORM_B32, preg0_u2);
+                vsts(vregOut_u3, outputAddr + ((i + 3) * VL_FLOAT_SIZE), 0, NORM_B32, preg0_u3);
+                vsts(vregZeroIdx_u0, expertIdxAddr + (i + 0) * VL_FLOAT_SIZE, 0, NORM_B32,
+                     preg0_u0);
+                vsts(vregZeroIdx_u1, expertIdxAddr + (i + 1) * VL_FLOAT_SIZE, 0, NORM_B32,
+                     preg0_u1);
+                vsts(vregZeroIdx_u2, expertIdxAddr + (i + 2) * VL_FLOAT_SIZE, 0, NORM_B32,
+                     preg0_u2);
+                vsts(vregZeroIdx_u3, expertIdxAddr + (i + 3) * VL_FLOAT_SIZE, 0, NORM_B32,
+                     preg0_u3);
+                vsts(vregNorm_u0, outAddr + (i + 0) * VL_FLOAT_SIZE, 0, NORM_B32, preg0_u0);
+                vsts(vregNorm_u1, outAddr + (i + 1) * VL_FLOAT_SIZE, 0, NORM_B32, preg0_u1);
+                vsts(vregNorm_u2, outAddr + (i + 2) * VL_FLOAT_SIZE, 0, NORM_B32, preg0_u2);
+                vsts(vregNorm_u3, outAddr + (i + 3) * VL_FLOAT_SIZE, 0, NORM_B32, preg0_u3);
+            }
+        }
+    }
+}
+extern "C" __global__ __aicore__ void candidate_kernel(__gm__ uint8_t* input,
+                                                       __gm__ uint8_t* output) {
+    __ubuf__ float* inputAddr = (__ubuf__ float*)get_imm(0);
+    __ubuf__ float* outputAddr = (__ubuf__ float*)get_imm(12288);
+    __ubuf__ int32_t* expertIdxAddr = (__ubuf__ int32_t*)get_imm(24576);
+    __ubuf__ float* outAddr = (__ubuf__ float*)get_imm(36864);
+    copy_gm_to_ubuf_align_v2((__ubuf__ uint8_t*)get_imm(0), input, 0, 1, 12288, 0, 0, 0, 0, 0, 0);
+    set_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    wait_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    candidate_vf(inputAddr, outputAddr, expertIdxAddr, outAddr);
+    set_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    wait_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    copy_ubuf_to_gm_align_v2(output + 0, (__ubuf__ uint8_t*)outputAddr, 0, 1, 12288, 0, 0, 0);
+    copy_ubuf_to_gm_align_v2(output + 12288, (__ubuf__ uint8_t*)expertIdxAddr, 0, 1, 12288, 0, 0,
+                             0);
+    copy_ubuf_to_gm_align_v2(output + 24576, (__ubuf__ uint8_t*)outAddr, 0, 1, 12288, 0, 0, 0);
+}

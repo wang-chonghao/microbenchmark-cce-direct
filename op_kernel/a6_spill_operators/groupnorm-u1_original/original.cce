@@ -1,0 +1,87 @@
+/**
+ * Copyright (c) 2025 Huawei Technologies Co., Ltd.
+ * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+ * CANN Open Software License Agreement Version 2.0 (the "License").
+ * Please refer to the License for details. You may not use this file except in compliance with the License.
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+ * See LICENSE in the root of the software repository for the full text of the License.
+ */
+#include "kernel_operator.h"
+#include <cfloat>
+#include <type_traits>
+__simd_callee__ inline void normalize(vector_f32& x, vector_f32& mean, vector_f32& rstd,
+                                      vector_f32& gamma, vector_f32& beta, vector_f32& y,
+                                      vector_bool& preg) {
+    vsub(x, x, mean, preg, MODE_ZEROING);
+    vmul(x, x, rstd, preg, MODE_ZEROING);
+
+    vmul(x, x, gamma, preg, MODE_ZEROING);
+
+    vadd(x, x, beta, preg, MODE_ZEROING);
+
+    vmuls(y, x, float(-1.0), preg, MODE_ZEROING);
+    vexp(y, y, preg, MODE_ZEROING);
+    vadds(y, y, float(1.0), preg, MODE_ZEROING);
+    vdiv(y, x, y, preg, MODE_ZEROING);
+}
+__aicore__ inline void candidate_vf(__ubuf__ float* xLocal, __ubuf__ float* gammaLocal,
+                                    __ubuf__ float* betaLocal, __ubuf__ float* meanLocal,
+                                    __ubuf__ float* rstdLocal, __ubuf__ float* yLocal) {
+    constexpr uint32_t VL_FP32 = 64;
+    uint16_t groupNums = 1, rowsCount = 1;
+    int32_t reduceCount = 1024;
+
+    uint16_t loopCount = (reduceCount + 63) / 64;
+    uint32_t reduceCountAlign = reduceCount;
+    __VEC_SCOPE__ {
+        vector_f32 x;
+        vector_f32 gamma;
+        vector_f32 beta;
+        vector_f32 mean;
+        vector_f32 rstd;
+        vector_f32 y;
+        vector_bool pregLoop;
+        for (uint16_t i = 0; i < groupNums; i++) {
+            for (uint16_t j = 0; j < rowsCount; j++) {
+                vlds(rstd, rstdLocal + i * rowsCount + j, 0, BRC_B32);
+                vlds(mean, meanLocal + i * rowsCount + j, 0, BRC_B32);
+                uint32_t sreg0 = reduceCount;
+                for (uint16_t k = 0; k < loopCount; k++) {
+                    pregLoop = plt_b32(sreg0, POST_UPDATE);
+                    vlds(x,
+                         xLocal + (i * rowsCount * reduceCountAlign + j * reduceCountAlign +
+                                   k * VL_FP32),
+                         0, NORM);
+
+                    vlds(gamma, gammaLocal + (j * reduceCountAlign + k * VL_FP32), 0, NORM);
+
+                    vlds(beta, betaLocal + (j * reduceCountAlign + k * VL_FP32), 0, NORM);
+
+                    normalize(x, mean, rstd, gamma, beta, y, pregLoop);
+
+                    vsts(y,
+                         yLocal + (i * rowsCount * reduceCountAlign + j * reduceCountAlign +
+                                   k * VL_FP32),
+                         0, NORM_B32, pregLoop);
+                }
+            }
+        }
+    }
+}
+extern "C" __global__ __aicore__ void candidate_kernel(__gm__ uint8_t* input,
+                                                       __gm__ uint8_t* output) {
+    __ubuf__ float* xLocal = (__ubuf__ float*)get_imm(0);
+    __ubuf__ float* gammaLocal = (__ubuf__ float*)get_imm(4096);
+    __ubuf__ float* betaLocal = (__ubuf__ float*)get_imm(8192);
+    __ubuf__ float* meanLocal = (__ubuf__ float*)get_imm(12288);
+    __ubuf__ float* rstdLocal = (__ubuf__ float*)get_imm(12544);
+    __ubuf__ float* yLocal = (__ubuf__ float*)get_imm(12800);
+    copy_gm_to_ubuf_align_v2((__ubuf__ uint8_t*)get_imm(0), input, 0, 1, 12800, 0, 0, 0, 0, 0, 0);
+    set_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    wait_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    candidate_vf(xLocal, gammaLocal, betaLocal, meanLocal, rstdLocal, yLocal);
+    set_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    wait_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    copy_ubuf_to_gm_align_v2(output + 0, (__ubuf__ uint8_t*)yLocal, 0, 1, 4096, 0, 0, 0);
+}

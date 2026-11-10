@@ -1,0 +1,63 @@
+/**
+ * Copyright (c) 2025 Huawei Technologies Co., Ltd.
+ * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+ * CANN Open Software License Agreement Version 2.0 (the "License").
+ * Please refer to the License for details. You may not use this file except in compliance with the License.
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+ * See LICENSE in the root of the software repository for the full text of the License.
+ */
+#include "kernel_operator.h"
+#include <cfloat>
+#include <type_traits>
+__aicore__ inline void candidate_vf(__ubuf__ float* dy, __ubuf__ float* x, __ubuf__ float* mean,
+                                    __ubuf__ float* invstd, __ubuf__ float* weight,
+                                    __ubuf__ float* meanDy, __ubuf__ float* meanDyXmu,
+                                    __ubuf__ float* dx) {
+    uint32_t remaining = 1024;
+    uint16_t loops = 16;
+    __VEC_SCOPE__ {
+        vector_bool mask;
+        vector_f32 DY, X, MEAN, INV, W, MD, MDX, T0, T1, T2, T3, T4;
+        uint32_t length = 1024;
+        for (uint16_t i = 0; i < 16; ++i) {
+            mask = plt_b32(length, POST_UPDATE);
+            uint32_t off = i * 64;
+
+            vlds(DY, dy + off, 0, NORM);
+            vlds(X, x + off, 0, NORM);
+            vlds(MEAN, mean + off, 0, NORM);
+            vlds(INV, invstd + off, 0, NORM);
+            vlds(W, weight + off, 0, NORM);
+            vlds(MD, meanDy + off, 0, NORM);
+            vlds(MDX, meanDyXmu + off, 0, NORM);
+            vsub(T0, DY, MD, mask, MODE_ZEROING);
+            vsub(T1, X, MEAN, mask, MODE_ZEROING);
+            vmul(T2, INV, INV, mask, MODE_ZEROING);
+            vmul(T2, MDX, T2, mask, MODE_ZEROING);
+            vmul(T1, T1, T2, mask, MODE_ZEROING);
+            vsub(T3, T0, T1, mask, MODE_ZEROING);
+            vmul(T4, INV, W, mask, MODE_ZEROING);
+            vmul(T3, T3, T4, mask, MODE_ZEROING);
+            vsts(T3, dx + off, 0, NORM_B32, mask);
+        }
+    }
+}
+extern "C" __global__ __aicore__ void candidate_kernel(__gm__ uint8_t* input,
+                                                       __gm__ uint8_t* output) {
+    __ubuf__ float* dy = (__ubuf__ float*)get_imm(0);
+    __ubuf__ float* x = (__ubuf__ float*)get_imm(4096);
+    __ubuf__ float* mean = (__ubuf__ float*)get_imm(8192);
+    __ubuf__ float* invstd = (__ubuf__ float*)get_imm(12288);
+    __ubuf__ float* weight = (__ubuf__ float*)get_imm(16384);
+    __ubuf__ float* meanDy = (__ubuf__ float*)get_imm(20480);
+    __ubuf__ float* meanDyXmu = (__ubuf__ float*)get_imm(24576);
+    __ubuf__ float* dx = (__ubuf__ float*)get_imm(28672);
+    copy_gm_to_ubuf_align_v2((__ubuf__ uint8_t*)get_imm(0), input, 0, 1, 28672, 0, 0, 0, 0, 0, 0);
+    set_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    wait_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    candidate_vf(dy, x, mean, invstd, weight, meanDy, meanDyXmu, dx);
+    set_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    wait_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    copy_ubuf_to_gm_align_v2(output + 0, (__ubuf__ uint8_t*)dx, 0, 1, 4096, 0, 0, 0);
+}

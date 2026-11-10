@@ -1,0 +1,225 @@
+/**
+ * Copyright (c) 2025 Huawei Technologies Co., Ltd.
+ * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+ * CANN Open Software License Agreement Version 2.0 (the "License").
+ * Please refer to the License for details. You may not use this file except in compliance with the License.
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+ * See LICENSE in the root of the software repository for the full text of the License.
+ */
+#include "kernel_operator.h"
+#include <cfloat>
+#include <type_traits>
+__aicore__ inline void candidate_vf(__ubuf__ float* dy, __ubuf__ float* x, __ubuf__ float* mean,
+                                    __ubuf__ float* invstd, __ubuf__ float* weight,
+                                    __ubuf__ float* meanDy, __ubuf__ float* meanDyXmu,
+                                    __ubuf__ float* dx) {
+    uint32_t remaining = 1024;
+    uint16_t loops = 16;
+    __VEC_SCOPE__ {
+        vector_bool mask;
+        vector_f32 DY, X, MEAN, INV, W, MD, MDX, T0, T1, T2, T3, T4;
+        uint32_t length = 1024;
+        {
+            vector_f32 DY_u0;
+            vector_f32 DY_u1;
+            vector_f32 DY_u2;
+            vector_f32 DY_u3;
+            vector_f32 DY_u4;
+            vector_f32 INV_u0;
+            vector_f32 INV_u1;
+            vector_f32 INV_u2;
+            vector_f32 INV_u3;
+            vector_f32 INV_u4;
+            vector_f32 MD_u0;
+            vector_f32 MD_u1;
+            vector_f32 MD_u2;
+            vector_f32 MD_u3;
+            vector_f32 MD_u4;
+            vector_f32 MDX_u0;
+            vector_f32 MDX_u1;
+            vector_f32 MDX_u2;
+            vector_f32 MDX_u3;
+            vector_f32 MDX_u4;
+            vector_f32 MEAN_u0;
+            vector_f32 MEAN_u1;
+            vector_f32 MEAN_u2;
+            vector_f32 MEAN_u3;
+            vector_f32 MEAN_u4;
+            vector_f32 T0_u0;
+            vector_f32 T0_u1;
+            vector_f32 T0_u2;
+            vector_f32 T0_u3;
+            vector_f32 T0_u4;
+            vector_f32 T1_u0;
+            vector_f32 T1_u1;
+            vector_f32 T1_u2;
+            vector_f32 T1_u3;
+            vector_f32 T1_u4;
+            vector_f32 T2_u0;
+            vector_f32 T2_u1;
+            vector_f32 T2_u2;
+            vector_f32 T2_u3;
+            vector_f32 T2_u4;
+            vector_f32 T3_u0;
+            vector_f32 T3_u1;
+            vector_f32 T3_u2;
+            vector_f32 T3_u3;
+            vector_f32 T3_u4;
+            vector_f32 T4_u0;
+            vector_f32 T4_u1;
+            vector_f32 T4_u2;
+            vector_f32 T4_u3;
+            vector_f32 T4_u4;
+            vector_f32 W_u0;
+            vector_f32 W_u1;
+            vector_f32 W_u2;
+            vector_f32 W_u3;
+            vector_f32 W_u4;
+            vector_f32 X_u0;
+            vector_f32 X_u1;
+            vector_f32 X_u2;
+            vector_f32 X_u3;
+            vector_f32 X_u4;
+            vector_bool mask_u0;
+            vector_bool mask_u1;
+            vector_bool mask_u2;
+            vector_bool mask_u3;
+            vector_bool mask_u4;
+#pragma unroll 1
+            for (uint16_t i = 0; i < 15; i += 5) {
+                mask_u0 = plt_b32(length, POST_UPDATE);
+                mask_u1 = plt_b32(length, POST_UPDATE);
+                mask_u2 = plt_b32(length, POST_UPDATE);
+                mask_u3 = plt_b32(length, POST_UPDATE);
+                mask_u4 = plt_b32(length, POST_UPDATE);
+                uint32_t off_u0 = (i + 0) * 64;
+                uint32_t off_u1 = (i + 1) * 64;
+                uint32_t off_u2 = (i + 2) * 64;
+                uint32_t off_u3 = (i + 3) * 64;
+                uint32_t off_u4 = (i + 4) * 64;
+                vlds(DY_u0, dy + off_u0, 0, NORM);
+                vlds(DY_u1, dy + off_u1, 0, NORM);
+                vlds(DY_u2, dy + off_u2, 0, NORM);
+                vlds(DY_u3, dy + off_u3, 0, NORM);
+                vlds(DY_u4, dy + off_u4, 0, NORM);
+                vlds(X_u0, x + off_u0, 0, NORM);
+                vlds(X_u1, x + off_u1, 0, NORM);
+                vlds(X_u2, x + off_u2, 0, NORM);
+                vlds(X_u3, x + off_u3, 0, NORM);
+                vlds(X_u4, x + off_u4, 0, NORM);
+                vlds(MEAN_u0, mean + off_u0, 0, NORM);
+                vlds(MEAN_u1, mean + off_u1, 0, NORM);
+                vlds(MEAN_u2, mean + off_u2, 0, NORM);
+                vlds(MEAN_u3, mean + off_u3, 0, NORM);
+                vlds(MEAN_u4, mean + off_u4, 0, NORM);
+                vlds(INV_u0, invstd + off_u0, 0, NORM);
+                vlds(INV_u1, invstd + off_u1, 0, NORM);
+                vlds(INV_u2, invstd + off_u2, 0, NORM);
+                vlds(INV_u3, invstd + off_u3, 0, NORM);
+                vlds(INV_u4, invstd + off_u4, 0, NORM);
+                vlds(W_u0, weight + off_u0, 0, NORM);
+                vlds(W_u1, weight + off_u1, 0, NORM);
+                vlds(W_u2, weight + off_u2, 0, NORM);
+                vlds(W_u3, weight + off_u3, 0, NORM);
+                vlds(W_u4, weight + off_u4, 0, NORM);
+                vlds(MD_u0, meanDy + off_u0, 0, NORM);
+                vlds(MD_u1, meanDy + off_u1, 0, NORM);
+                vlds(MD_u2, meanDy + off_u2, 0, NORM);
+                vlds(MD_u3, meanDy + off_u3, 0, NORM);
+                vlds(MD_u4, meanDy + off_u4, 0, NORM);
+                vlds(MDX_u0, meanDyXmu + off_u0, 0, NORM);
+                vlds(MDX_u1, meanDyXmu + off_u1, 0, NORM);
+                vlds(MDX_u2, meanDyXmu + off_u2, 0, NORM);
+                vlds(MDX_u3, meanDyXmu + off_u3, 0, NORM);
+                vlds(MDX_u4, meanDyXmu + off_u4, 0, NORM);
+                vsub(T0_u0, DY_u0, MD_u0, mask_u0, MODE_ZEROING);
+                vsub(T0_u1, DY_u1, MD_u1, mask_u1, MODE_ZEROING);
+                vsub(T0_u2, DY_u2, MD_u2, mask_u2, MODE_ZEROING);
+                vsub(T0_u3, DY_u3, MD_u3, mask_u3, MODE_ZEROING);
+                vsub(T0_u4, DY_u4, MD_u4, mask_u4, MODE_ZEROING);
+                vsub(T1_u0, X_u0, MEAN_u0, mask_u0, MODE_ZEROING);
+                vsub(T1_u1, X_u1, MEAN_u1, mask_u1, MODE_ZEROING);
+                vsub(T1_u2, X_u2, MEAN_u2, mask_u2, MODE_ZEROING);
+                vsub(T1_u3, X_u3, MEAN_u3, mask_u3, MODE_ZEROING);
+                vsub(T1_u4, X_u4, MEAN_u4, mask_u4, MODE_ZEROING);
+                vmul(T2_u0, INV_u0, INV_u0, mask_u0, MODE_ZEROING);
+                vmul(T2_u1, INV_u1, INV_u1, mask_u1, MODE_ZEROING);
+                vmul(T2_u2, INV_u2, INV_u2, mask_u2, MODE_ZEROING);
+                vmul(T2_u3, INV_u3, INV_u3, mask_u3, MODE_ZEROING);
+                vmul(T2_u4, INV_u4, INV_u4, mask_u4, MODE_ZEROING);
+                vmul(T2_u0, MDX_u0, T2_u0, mask_u0, MODE_ZEROING);
+                vmul(T2_u1, MDX_u1, T2_u1, mask_u1, MODE_ZEROING);
+                vmul(T2_u2, MDX_u2, T2_u2, mask_u2, MODE_ZEROING);
+                vmul(T2_u3, MDX_u3, T2_u3, mask_u3, MODE_ZEROING);
+                vmul(T2_u4, MDX_u4, T2_u4, mask_u4, MODE_ZEROING);
+                vmul(T1_u0, T1_u0, T2_u0, mask_u0, MODE_ZEROING);
+                vmul(T1_u1, T1_u1, T2_u1, mask_u1, MODE_ZEROING);
+                vmul(T1_u2, T1_u2, T2_u2, mask_u2, MODE_ZEROING);
+                vmul(T1_u3, T1_u3, T2_u3, mask_u3, MODE_ZEROING);
+                vmul(T1_u4, T1_u4, T2_u4, mask_u4, MODE_ZEROING);
+                vsub(T3_u0, T0_u0, T1_u0, mask_u0, MODE_ZEROING);
+                vsub(T3_u1, T0_u1, T1_u1, mask_u1, MODE_ZEROING);
+                vsub(T3_u2, T0_u2, T1_u2, mask_u2, MODE_ZEROING);
+                vsub(T3_u3, T0_u3, T1_u3, mask_u3, MODE_ZEROING);
+                vsub(T3_u4, T0_u4, T1_u4, mask_u4, MODE_ZEROING);
+                vmul(T4_u0, INV_u0, W_u0, mask_u0, MODE_ZEROING);
+                vmul(T4_u1, INV_u1, W_u1, mask_u1, MODE_ZEROING);
+                vmul(T4_u2, INV_u2, W_u2, mask_u2, MODE_ZEROING);
+                vmul(T4_u3, INV_u3, W_u3, mask_u3, MODE_ZEROING);
+                vmul(T4_u4, INV_u4, W_u4, mask_u4, MODE_ZEROING);
+                vmul(T3_u0, T3_u0, T4_u0, mask_u0, MODE_ZEROING);
+                vmul(T3_u1, T3_u1, T4_u1, mask_u1, MODE_ZEROING);
+                vmul(T3_u2, T3_u2, T4_u2, mask_u2, MODE_ZEROING);
+                vmul(T3_u3, T3_u3, T4_u3, mask_u3, MODE_ZEROING);
+                vmul(T3_u4, T3_u4, T4_u4, mask_u4, MODE_ZEROING);
+                vsts(T3_u0, dx + off_u0, 0, NORM_B32, mask_u0);
+                vsts(T3_u1, dx + off_u1, 0, NORM_B32, mask_u1);
+                vsts(T3_u2, dx + off_u2, 0, NORM_B32, mask_u2);
+                vsts(T3_u3, dx + off_u3, 0, NORM_B32, mask_u3);
+                vsts(T3_u4, dx + off_u4, 0, NORM_B32, mask_u4);
+            }
+#pragma unroll 1
+            for (uint16_t i = 15; i < 16; ++i) {
+
+                mask = plt_b32(length, POST_UPDATE);
+                uint32_t off = i * 64;
+
+                vlds(DY, dy + off, 0, NORM);
+                vlds(X, x + off, 0, NORM);
+                vlds(MEAN, mean + off, 0, NORM);
+                vlds(INV, invstd + off, 0, NORM);
+                vlds(W, weight + off, 0, NORM);
+                vlds(MD, meanDy + off, 0, NORM);
+                vlds(MDX, meanDyXmu + off, 0, NORM);
+                vsub(T0, DY, MD, mask, MODE_ZEROING);
+                vsub(T1, X, MEAN, mask, MODE_ZEROING);
+                vmul(T2, INV, INV, mask, MODE_ZEROING);
+                vmul(T2, MDX, T2, mask, MODE_ZEROING);
+                vmul(T1, T1, T2, mask, MODE_ZEROING);
+                vsub(T3, T0, T1, mask, MODE_ZEROING);
+                vmul(T4, INV, W, mask, MODE_ZEROING);
+                vmul(T3, T3, T4, mask, MODE_ZEROING);
+                vsts(T3, dx + off, 0, NORM_B32, mask);
+            }
+        }
+    }
+}
+extern "C" __global__ __aicore__ void candidate_kernel(__gm__ uint8_t* input,
+                                                       __gm__ uint8_t* output) {
+    __ubuf__ float* dy = (__ubuf__ float*)get_imm(0);
+    __ubuf__ float* x = (__ubuf__ float*)get_imm(4096);
+    __ubuf__ float* mean = (__ubuf__ float*)get_imm(8192);
+    __ubuf__ float* invstd = (__ubuf__ float*)get_imm(12288);
+    __ubuf__ float* weight = (__ubuf__ float*)get_imm(16384);
+    __ubuf__ float* meanDy = (__ubuf__ float*)get_imm(20480);
+    __ubuf__ float* meanDyXmu = (__ubuf__ float*)get_imm(24576);
+    __ubuf__ float* dx = (__ubuf__ float*)get_imm(28672);
+    copy_gm_to_ubuf_align_v2((__ubuf__ uint8_t*)get_imm(0), input, 0, 1, 28672, 0, 0, 0, 0, 0, 0);
+    set_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    wait_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    candidate_vf(dy, x, mean, invstd, weight, meanDy, meanDyXmu, dx);
+    set_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    wait_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    copy_ubuf_to_gm_align_v2(output + 0, (__ubuf__ uint8_t*)dx, 0, 1, 4096, 0, 0, 0);
+}

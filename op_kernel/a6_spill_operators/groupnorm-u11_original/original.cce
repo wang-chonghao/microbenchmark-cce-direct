@@ -1,0 +1,380 @@
+/**
+ * Copyright (c) 2025 Huawei Technologies Co., Ltd.
+ * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+ * CANN Open Software License Agreement Version 2.0 (the "License").
+ * Please refer to the License for details. You may not use this file except in compliance with the License.
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+ * See LICENSE in the root of the software repository for the full text of the License.
+ */
+#include "kernel_operator.h"
+#include <cfloat>
+#include <type_traits>
+__simd_callee__ inline void normalize(vector_f32& x, vector_f32& mean, vector_f32& rstd,
+                                      vector_f32& gamma, vector_f32& beta, vector_f32& y,
+                                      vector_bool& preg) {
+    vsub(x, x, mean, preg, MODE_ZEROING);
+    vmul(x, x, rstd, preg, MODE_ZEROING);
+
+    vmul(x, x, gamma, preg, MODE_ZEROING);
+
+    vadd(x, x, beta, preg, MODE_ZEROING);
+
+    vmuls(y, x, float(-1.0), preg, MODE_ZEROING);
+    vexp(y, y, preg, MODE_ZEROING);
+    vadds(y, y, float(1.0), preg, MODE_ZEROING);
+    vdiv(y, x, y, preg, MODE_ZEROING);
+}
+__aicore__ inline void candidate_vf(__ubuf__ float* xLocal, __ubuf__ float* gammaLocal,
+                                    __ubuf__ float* betaLocal, __ubuf__ float* meanLocal,
+                                    __ubuf__ float* rstdLocal, __ubuf__ float* yLocal) {
+    constexpr uint32_t VL_FP32 = 64;
+    uint16_t groupNums = 1, rowsCount = 1;
+    int32_t reduceCount = 1024;
+
+    uint16_t loopCount = (reduceCount + 63) / 64;
+    uint32_t reduceCountAlign = reduceCount;
+    __VEC_SCOPE__ {
+        vector_f32 x;
+        vector_f32 gamma;
+        vector_f32 beta;
+        vector_f32 mean;
+        vector_f32 rstd;
+        vector_f32 y;
+        vector_bool pregLoop;
+        for (uint16_t i = 0; i < groupNums; i++) {
+            for (uint16_t j = 0; j < rowsCount; j++) {
+                vlds(rstd, rstdLocal + i * rowsCount + j, 0, BRC_B32);
+                vlds(mean, meanLocal + i * rowsCount + j, 0, BRC_B32);
+                uint32_t sreg0 = reduceCount;
+                {
+                    vector_f32 beta_u0;
+                    vector_f32 beta_u1;
+                    vector_f32 beta_u2;
+                    vector_f32 beta_u3;
+                    vector_f32 beta_u4;
+                    vector_f32 beta_u5;
+                    vector_f32 beta_u6;
+                    vector_f32 beta_u7;
+                    vector_f32 beta_u8;
+                    vector_f32 beta_u9;
+                    vector_f32 beta_u10;
+                    vector_f32 gamma_u0;
+                    vector_f32 gamma_u1;
+                    vector_f32 gamma_u2;
+                    vector_f32 gamma_u3;
+                    vector_f32 gamma_u4;
+                    vector_f32 gamma_u5;
+                    vector_f32 gamma_u6;
+                    vector_f32 gamma_u7;
+                    vector_f32 gamma_u8;
+                    vector_f32 gamma_u9;
+                    vector_f32 gamma_u10;
+                    vector_bool pregLoop_u0;
+                    vector_bool pregLoop_u1;
+                    vector_bool pregLoop_u2;
+                    vector_bool pregLoop_u3;
+                    vector_bool pregLoop_u4;
+                    vector_bool pregLoop_u5;
+                    vector_bool pregLoop_u6;
+                    vector_bool pregLoop_u7;
+                    vector_bool pregLoop_u8;
+                    vector_bool pregLoop_u9;
+                    vector_bool pregLoop_u10;
+                    vector_f32 x_u0;
+                    vector_f32 x_u1;
+                    vector_f32 x_u2;
+                    vector_f32 x_u3;
+                    vector_f32 x_u4;
+                    vector_f32 x_u5;
+                    vector_f32 x_u6;
+                    vector_f32 x_u7;
+                    vector_f32 x_u8;
+                    vector_f32 x_u9;
+                    vector_f32 x_u10;
+                    vector_f32 y_u0;
+                    vector_f32 y_u1;
+                    vector_f32 y_u2;
+                    vector_f32 y_u3;
+                    vector_f32 y_u4;
+                    vector_f32 y_u5;
+                    vector_f32 y_u6;
+                    vector_f32 y_u7;
+                    vector_f32 y_u8;
+                    vector_f32 y_u9;
+                    vector_f32 y_u10;
+#pragma unroll 1
+                    for (uint16_t k = 0; k < 11; k += 11) {
+                        pregLoop_u0 = plt_b32(sreg0, POST_UPDATE);
+                        pregLoop_u1 = plt_b32(sreg0, POST_UPDATE);
+                        pregLoop_u2 = plt_b32(sreg0, POST_UPDATE);
+                        pregLoop_u3 = plt_b32(sreg0, POST_UPDATE);
+                        pregLoop_u4 = plt_b32(sreg0, POST_UPDATE);
+                        pregLoop_u5 = plt_b32(sreg0, POST_UPDATE);
+                        pregLoop_u6 = plt_b32(sreg0, POST_UPDATE);
+                        pregLoop_u7 = plt_b32(sreg0, POST_UPDATE);
+                        pregLoop_u8 = plt_b32(sreg0, POST_UPDATE);
+                        pregLoop_u9 = plt_b32(sreg0, POST_UPDATE);
+                        pregLoop_u10 = plt_b32(sreg0, POST_UPDATE);
+                        vlds(x_u0,
+                             xLocal + (i * rowsCount * reduceCountAlign + j * reduceCountAlign +
+                                       (k + 0) * VL_FP32),
+                             0, NORM);
+                        vlds(x_u1,
+                             xLocal + (i * rowsCount * reduceCountAlign + j * reduceCountAlign +
+                                       (k + 1) * VL_FP32),
+                             0, NORM);
+                        vlds(x_u2,
+                             xLocal + (i * rowsCount * reduceCountAlign + j * reduceCountAlign +
+                                       (k + 2) * VL_FP32),
+                             0, NORM);
+                        vlds(x_u3,
+                             xLocal + (i * rowsCount * reduceCountAlign + j * reduceCountAlign +
+                                       (k + 3) * VL_FP32),
+                             0, NORM);
+                        vlds(x_u4,
+                             xLocal + (i * rowsCount * reduceCountAlign + j * reduceCountAlign +
+                                       (k + 4) * VL_FP32),
+                             0, NORM);
+                        vlds(x_u5,
+                             xLocal + (i * rowsCount * reduceCountAlign + j * reduceCountAlign +
+                                       (k + 5) * VL_FP32),
+                             0, NORM);
+                        vlds(x_u6,
+                             xLocal + (i * rowsCount * reduceCountAlign + j * reduceCountAlign +
+                                       (k + 6) * VL_FP32),
+                             0, NORM);
+                        vlds(x_u7,
+                             xLocal + (i * rowsCount * reduceCountAlign + j * reduceCountAlign +
+                                       (k + 7) * VL_FP32),
+                             0, NORM);
+                        vlds(x_u8,
+                             xLocal + (i * rowsCount * reduceCountAlign + j * reduceCountAlign +
+                                       (k + 8) * VL_FP32),
+                             0, NORM);
+                        vlds(x_u9,
+                             xLocal + (i * rowsCount * reduceCountAlign + j * reduceCountAlign +
+                                       (k + 9) * VL_FP32),
+                             0, NORM);
+                        vlds(x_u10,
+                             xLocal + (i * rowsCount * reduceCountAlign + j * reduceCountAlign +
+                                       (k + 10) * VL_FP32),
+                             0, NORM);
+                        vlds(gamma_u0, gammaLocal + (j * reduceCountAlign + (k + 0) * VL_FP32), 0,
+                             NORM);
+                        vlds(gamma_u1, gammaLocal + (j * reduceCountAlign + (k + 1) * VL_FP32), 0,
+                             NORM);
+                        vlds(gamma_u2, gammaLocal + (j * reduceCountAlign + (k + 2) * VL_FP32), 0,
+                             NORM);
+                        vlds(gamma_u3, gammaLocal + (j * reduceCountAlign + (k + 3) * VL_FP32), 0,
+                             NORM);
+                        vlds(gamma_u4, gammaLocal + (j * reduceCountAlign + (k + 4) * VL_FP32), 0,
+                             NORM);
+                        vlds(gamma_u5, gammaLocal + (j * reduceCountAlign + (k + 5) * VL_FP32), 0,
+                             NORM);
+                        vlds(gamma_u6, gammaLocal + (j * reduceCountAlign + (k + 6) * VL_FP32), 0,
+                             NORM);
+                        vlds(gamma_u7, gammaLocal + (j * reduceCountAlign + (k + 7) * VL_FP32), 0,
+                             NORM);
+                        vlds(gamma_u8, gammaLocal + (j * reduceCountAlign + (k + 8) * VL_FP32), 0,
+                             NORM);
+                        vlds(gamma_u9, gammaLocal + (j * reduceCountAlign + (k + 9) * VL_FP32), 0,
+                             NORM);
+                        vlds(gamma_u10, gammaLocal + (j * reduceCountAlign + (k + 10) * VL_FP32), 0,
+                             NORM);
+                        vlds(beta_u0, betaLocal + (j * reduceCountAlign + (k + 0) * VL_FP32), 0,
+                             NORM);
+                        vlds(beta_u1, betaLocal + (j * reduceCountAlign + (k + 1) * VL_FP32), 0,
+                             NORM);
+                        vlds(beta_u2, betaLocal + (j * reduceCountAlign + (k + 2) * VL_FP32), 0,
+                             NORM);
+                        vlds(beta_u3, betaLocal + (j * reduceCountAlign + (k + 3) * VL_FP32), 0,
+                             NORM);
+                        vlds(beta_u4, betaLocal + (j * reduceCountAlign + (k + 4) * VL_FP32), 0,
+                             NORM);
+                        vlds(beta_u5, betaLocal + (j * reduceCountAlign + (k + 5) * VL_FP32), 0,
+                             NORM);
+                        vlds(beta_u6, betaLocal + (j * reduceCountAlign + (k + 6) * VL_FP32), 0,
+                             NORM);
+                        vlds(beta_u7, betaLocal + (j * reduceCountAlign + (k + 7) * VL_FP32), 0,
+                             NORM);
+                        vlds(beta_u8, betaLocal + (j * reduceCountAlign + (k + 8) * VL_FP32), 0,
+                             NORM);
+                        vlds(beta_u9, betaLocal + (j * reduceCountAlign + (k + 9) * VL_FP32), 0,
+                             NORM);
+                        vlds(beta_u10, betaLocal + (j * reduceCountAlign + (k + 10) * VL_FP32), 0,
+                             NORM);
+                        vsub(x_u0, x_u0, mean, pregLoop_u0, MODE_ZEROING);
+                        vsub(x_u1, x_u1, mean, pregLoop_u1, MODE_ZEROING);
+                        vsub(x_u2, x_u2, mean, pregLoop_u2, MODE_ZEROING);
+                        vsub(x_u3, x_u3, mean, pregLoop_u3, MODE_ZEROING);
+                        vsub(x_u4, x_u4, mean, pregLoop_u4, MODE_ZEROING);
+                        vsub(x_u5, x_u5, mean, pregLoop_u5, MODE_ZEROING);
+                        vsub(x_u6, x_u6, mean, pregLoop_u6, MODE_ZEROING);
+                        vsub(x_u7, x_u7, mean, pregLoop_u7, MODE_ZEROING);
+                        vsub(x_u8, x_u8, mean, pregLoop_u8, MODE_ZEROING);
+                        vsub(x_u9, x_u9, mean, pregLoop_u9, MODE_ZEROING);
+                        vsub(x_u10, x_u10, mean, pregLoop_u10, MODE_ZEROING);
+                        vmul(x_u0, x_u0, rstd, pregLoop_u0, MODE_ZEROING);
+                        vmul(x_u1, x_u1, rstd, pregLoop_u1, MODE_ZEROING);
+                        vmul(x_u2, x_u2, rstd, pregLoop_u2, MODE_ZEROING);
+                        vmul(x_u3, x_u3, rstd, pregLoop_u3, MODE_ZEROING);
+                        vmul(x_u4, x_u4, rstd, pregLoop_u4, MODE_ZEROING);
+                        vmul(x_u5, x_u5, rstd, pregLoop_u5, MODE_ZEROING);
+                        vmul(x_u6, x_u6, rstd, pregLoop_u6, MODE_ZEROING);
+                        vmul(x_u7, x_u7, rstd, pregLoop_u7, MODE_ZEROING);
+                        vmul(x_u8, x_u8, rstd, pregLoop_u8, MODE_ZEROING);
+                        vmul(x_u9, x_u9, rstd, pregLoop_u9, MODE_ZEROING);
+                        vmul(x_u10, x_u10, rstd, pregLoop_u10, MODE_ZEROING);
+                        vmul(x_u0, x_u0, gamma_u0, pregLoop_u0, MODE_ZEROING);
+                        vmul(x_u1, x_u1, gamma_u1, pregLoop_u1, MODE_ZEROING);
+                        vmul(x_u2, x_u2, gamma_u2, pregLoop_u2, MODE_ZEROING);
+                        vmul(x_u3, x_u3, gamma_u3, pregLoop_u3, MODE_ZEROING);
+                        vmul(x_u4, x_u4, gamma_u4, pregLoop_u4, MODE_ZEROING);
+                        vmul(x_u5, x_u5, gamma_u5, pregLoop_u5, MODE_ZEROING);
+                        vmul(x_u6, x_u6, gamma_u6, pregLoop_u6, MODE_ZEROING);
+                        vmul(x_u7, x_u7, gamma_u7, pregLoop_u7, MODE_ZEROING);
+                        vmul(x_u8, x_u8, gamma_u8, pregLoop_u8, MODE_ZEROING);
+                        vmul(x_u9, x_u9, gamma_u9, pregLoop_u9, MODE_ZEROING);
+                        vmul(x_u10, x_u10, gamma_u10, pregLoop_u10, MODE_ZEROING);
+                        vadd(x_u0, x_u0, beta_u0, pregLoop_u0, MODE_ZEROING);
+                        vadd(x_u1, x_u1, beta_u1, pregLoop_u1, MODE_ZEROING);
+                        vadd(x_u2, x_u2, beta_u2, pregLoop_u2, MODE_ZEROING);
+                        vadd(x_u3, x_u3, beta_u3, pregLoop_u3, MODE_ZEROING);
+                        vadd(x_u4, x_u4, beta_u4, pregLoop_u4, MODE_ZEROING);
+                        vadd(x_u5, x_u5, beta_u5, pregLoop_u5, MODE_ZEROING);
+                        vadd(x_u6, x_u6, beta_u6, pregLoop_u6, MODE_ZEROING);
+                        vadd(x_u7, x_u7, beta_u7, pregLoop_u7, MODE_ZEROING);
+                        vadd(x_u8, x_u8, beta_u8, pregLoop_u8, MODE_ZEROING);
+                        vadd(x_u9, x_u9, beta_u9, pregLoop_u9, MODE_ZEROING);
+                        vadd(x_u10, x_u10, beta_u10, pregLoop_u10, MODE_ZEROING);
+                        vmuls(y_u0, x_u0, float(-1.0), pregLoop_u0, MODE_ZEROING);
+                        vmuls(y_u1, x_u1, float(-1.0), pregLoop_u1, MODE_ZEROING);
+                        vmuls(y_u2, x_u2, float(-1.0), pregLoop_u2, MODE_ZEROING);
+                        vmuls(y_u3, x_u3, float(-1.0), pregLoop_u3, MODE_ZEROING);
+                        vmuls(y_u4, x_u4, float(-1.0), pregLoop_u4, MODE_ZEROING);
+                        vmuls(y_u5, x_u5, float(-1.0), pregLoop_u5, MODE_ZEROING);
+                        vmuls(y_u6, x_u6, float(-1.0), pregLoop_u6, MODE_ZEROING);
+                        vmuls(y_u7, x_u7, float(-1.0), pregLoop_u7, MODE_ZEROING);
+                        vmuls(y_u8, x_u8, float(-1.0), pregLoop_u8, MODE_ZEROING);
+                        vmuls(y_u9, x_u9, float(-1.0), pregLoop_u9, MODE_ZEROING);
+                        vmuls(y_u10, x_u10, float(-1.0), pregLoop_u10, MODE_ZEROING);
+                        vexp(y_u0, y_u0, pregLoop_u0, MODE_ZEROING);
+                        vexp(y_u1, y_u1, pregLoop_u1, MODE_ZEROING);
+                        vexp(y_u2, y_u2, pregLoop_u2, MODE_ZEROING);
+                        vexp(y_u3, y_u3, pregLoop_u3, MODE_ZEROING);
+                        vexp(y_u4, y_u4, pregLoop_u4, MODE_ZEROING);
+                        vexp(y_u5, y_u5, pregLoop_u5, MODE_ZEROING);
+                        vexp(y_u6, y_u6, pregLoop_u6, MODE_ZEROING);
+                        vexp(y_u7, y_u7, pregLoop_u7, MODE_ZEROING);
+                        vexp(y_u8, y_u8, pregLoop_u8, MODE_ZEROING);
+                        vexp(y_u9, y_u9, pregLoop_u9, MODE_ZEROING);
+                        vexp(y_u10, y_u10, pregLoop_u10, MODE_ZEROING);
+                        vadds(y_u0, y_u0, float(1.0), pregLoop_u0, MODE_ZEROING);
+                        vadds(y_u1, y_u1, float(1.0), pregLoop_u1, MODE_ZEROING);
+                        vadds(y_u2, y_u2, float(1.0), pregLoop_u2, MODE_ZEROING);
+                        vadds(y_u3, y_u3, float(1.0), pregLoop_u3, MODE_ZEROING);
+                        vadds(y_u4, y_u4, float(1.0), pregLoop_u4, MODE_ZEROING);
+                        vadds(y_u5, y_u5, float(1.0), pregLoop_u5, MODE_ZEROING);
+                        vadds(y_u6, y_u6, float(1.0), pregLoop_u6, MODE_ZEROING);
+                        vadds(y_u7, y_u7, float(1.0), pregLoop_u7, MODE_ZEROING);
+                        vadds(y_u8, y_u8, float(1.0), pregLoop_u8, MODE_ZEROING);
+                        vadds(y_u9, y_u9, float(1.0), pregLoop_u9, MODE_ZEROING);
+                        vadds(y_u10, y_u10, float(1.0), pregLoop_u10, MODE_ZEROING);
+                        vdiv(y_u0, x_u0, y_u0, pregLoop_u0, MODE_ZEROING);
+                        vdiv(y_u1, x_u1, y_u1, pregLoop_u1, MODE_ZEROING);
+                        vdiv(y_u2, x_u2, y_u2, pregLoop_u2, MODE_ZEROING);
+                        vdiv(y_u3, x_u3, y_u3, pregLoop_u3, MODE_ZEROING);
+                        vdiv(y_u4, x_u4, y_u4, pregLoop_u4, MODE_ZEROING);
+                        vdiv(y_u5, x_u5, y_u5, pregLoop_u5, MODE_ZEROING);
+                        vdiv(y_u6, x_u6, y_u6, pregLoop_u6, MODE_ZEROING);
+                        vdiv(y_u7, x_u7, y_u7, pregLoop_u7, MODE_ZEROING);
+                        vdiv(y_u8, x_u8, y_u8, pregLoop_u8, MODE_ZEROING);
+                        vdiv(y_u9, x_u9, y_u9, pregLoop_u9, MODE_ZEROING);
+                        vdiv(y_u10, x_u10, y_u10, pregLoop_u10, MODE_ZEROING);
+                        vsts(y_u0,
+                             yLocal + (i * rowsCount * reduceCountAlign + j * reduceCountAlign +
+                                       (k + 0) * VL_FP32),
+                             0, NORM_B32, pregLoop_u0);
+                        vsts(y_u1,
+                             yLocal + (i * rowsCount * reduceCountAlign + j * reduceCountAlign +
+                                       (k + 1) * VL_FP32),
+                             0, NORM_B32, pregLoop_u1);
+                        vsts(y_u2,
+                             yLocal + (i * rowsCount * reduceCountAlign + j * reduceCountAlign +
+                                       (k + 2) * VL_FP32),
+                             0, NORM_B32, pregLoop_u2);
+                        vsts(y_u3,
+                             yLocal + (i * rowsCount * reduceCountAlign + j * reduceCountAlign +
+                                       (k + 3) * VL_FP32),
+                             0, NORM_B32, pregLoop_u3);
+                        vsts(y_u4,
+                             yLocal + (i * rowsCount * reduceCountAlign + j * reduceCountAlign +
+                                       (k + 4) * VL_FP32),
+                             0, NORM_B32, pregLoop_u4);
+                        vsts(y_u5,
+                             yLocal + (i * rowsCount * reduceCountAlign + j * reduceCountAlign +
+                                       (k + 5) * VL_FP32),
+                             0, NORM_B32, pregLoop_u5);
+                        vsts(y_u6,
+                             yLocal + (i * rowsCount * reduceCountAlign + j * reduceCountAlign +
+                                       (k + 6) * VL_FP32),
+                             0, NORM_B32, pregLoop_u6);
+                        vsts(y_u7,
+                             yLocal + (i * rowsCount * reduceCountAlign + j * reduceCountAlign +
+                                       (k + 7) * VL_FP32),
+                             0, NORM_B32, pregLoop_u7);
+                        vsts(y_u8,
+                             yLocal + (i * rowsCount * reduceCountAlign + j * reduceCountAlign +
+                                       (k + 8) * VL_FP32),
+                             0, NORM_B32, pregLoop_u8);
+                        vsts(y_u9,
+                             yLocal + (i * rowsCount * reduceCountAlign + j * reduceCountAlign +
+                                       (k + 9) * VL_FP32),
+                             0, NORM_B32, pregLoop_u9);
+                        vsts(y_u10,
+                             yLocal + (i * rowsCount * reduceCountAlign + j * reduceCountAlign +
+                                       (k + 10) * VL_FP32),
+                             0, NORM_B32, pregLoop_u10);
+                    }
+#pragma unroll 1
+                    for (uint16_t k = 11; k < 16; ++k) {
+
+                        pregLoop = plt_b32(sreg0, POST_UPDATE);
+                        vlds(x,
+                             xLocal + (i * rowsCount * reduceCountAlign + j * reduceCountAlign +
+                                       k * VL_FP32),
+                             0, NORM);
+
+                        vlds(gamma, gammaLocal + (j * reduceCountAlign + k * VL_FP32), 0, NORM);
+
+                        vlds(beta, betaLocal + (j * reduceCountAlign + k * VL_FP32), 0, NORM);
+
+                        normalize(x, mean, rstd, gamma, beta, y, pregLoop);
+
+                        vsts(y,
+                             yLocal + (i * rowsCount * reduceCountAlign + j * reduceCountAlign +
+                                       k * VL_FP32),
+                             0, NORM_B32, pregLoop);
+                    }
+                }
+            }
+        }
+    }
+}
+extern "C" __global__ __aicore__ void candidate_kernel(__gm__ uint8_t* input,
+                                                       __gm__ uint8_t* output) {
+    __ubuf__ float* xLocal = (__ubuf__ float*)get_imm(0);
+    __ubuf__ float* gammaLocal = (__ubuf__ float*)get_imm(4096);
+    __ubuf__ float* betaLocal = (__ubuf__ float*)get_imm(8192);
+    __ubuf__ float* meanLocal = (__ubuf__ float*)get_imm(12288);
+    __ubuf__ float* rstdLocal = (__ubuf__ float*)get_imm(12544);
+    __ubuf__ float* yLocal = (__ubuf__ float*)get_imm(12800);
+    copy_gm_to_ubuf_align_v2((__ubuf__ uint8_t*)get_imm(0), input, 0, 1, 12800, 0, 0, 0, 0, 0, 0);
+    set_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    wait_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    candidate_vf(xLocal, gammaLocal, betaLocal, meanLocal, rstdLocal, yLocal);
+    set_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    wait_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    copy_ubuf_to_gm_align_v2(output + 0, (__ubuf__ uint8_t*)yLocal, 0, 1, 4096, 0, 0, 0);
+}

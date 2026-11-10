@@ -1,0 +1,3960 @@
+{
+  "cases": [
+    {
+      "name": "swiglu-u1_original",
+      "family": "swiglu",
+      "row_id": "swiglu-u1",
+      "role": "original",
+      "source": "swiglu-u1_original/kernel.cce",
+      "source_sha256": "bcc3992e8c4e1143ad9b4b84caf482ccdf8770a54d131457444926a19baeeb5f",
+      "origin": "spill_candidate_alignment/swiglu/u1/original/cce/kernel.cce",
+      "origin_sha256": "d6174a933bcf0415117547e054ad14e5a92f7a83ca44fe0bfd956a606568834b",
+      "input": "swiglu-u1_original/input_input.bin",
+      "input_sha256": "6cc2cd9473c04ef6a36cf4bbfb553f1da90825c3c31d7c0ef0e2815d86af9e89",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 12800,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "gradGateAddress",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 12800,
+          "dtype": "float"
+        },
+        {
+          "name": "gradUpAddress",
+          "gm_offset": 4096,
+          "bytes": 4096,
+          "ub_start": 16896,
+          "dtype": "float"
+        },
+        {
+          "name": "gradWeightProductAddress",
+          "gm_offset": 8192,
+          "bytes": 4096,
+          "ub_start": 20992,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "d40eb99833d92e88a0a5e16a4e19049b33c4f35eed4663616588c34bf5653846",
+      "original_vf_sha256": "ea0680e0eb4bcd1d70ebb0b595d81a1362e15d1f41137340f473af0e85f3975b",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "swiglu-u4_original",
+      "family": "swiglu",
+      "row_id": "swiglu-u4",
+      "role": "original",
+      "source": "swiglu-u4_original/kernel.cce",
+      "source_sha256": "8f63ee90d62edb6ca94c4727c42d6ccbfc26ab1042fdea35315f88edfeebceb3",
+      "origin": "spill_candidate_alignment/swiglu/u4/original/cce/kernel.cce",
+      "origin_sha256": "6cbc02e2342ecd9b5b507a7dc2b6c568305ae43291883af3a53a82bdb0a5b1ba",
+      "input": "swiglu-u4_original/input_input.bin",
+      "input_sha256": "6cc2cd9473c04ef6a36cf4bbfb553f1da90825c3c31d7c0ef0e2815d86af9e89",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 12800,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "gradGateAddress",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 12800,
+          "dtype": "float"
+        },
+        {
+          "name": "gradUpAddress",
+          "gm_offset": 4096,
+          "bytes": 4096,
+          "ub_start": 16896,
+          "dtype": "float"
+        },
+        {
+          "name": "gradWeightProductAddress",
+          "gm_offset": 8192,
+          "bytes": 4096,
+          "ub_start": 20992,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "dc76bb8dcd6fee35f87f8e0b07e82cbab33d1295d66312411a6c7adbf4f2359e",
+      "original_vf_sha256": "e68d02eae111273122bba3ff5762565d0e4e57b9d5017e7c0189e7c410ca10d0",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "swiglu-u4_software",
+      "family": "swiglu",
+      "row_id": "swiglu-u4",
+      "role": "software",
+      "source": "swiglu-u4_software/kernel.cce",
+      "source_sha256": "79d5612b5ad69eea840408d79c2d31723bbaae3d1c50a1698287b4bb119eb6b2",
+      "origin": "a6_software_reselection_20261109/swiglu-u4/rank_0000/kernel.cce",
+      "origin_sha256": "ed11c293bc0edad29a80d218cbf49b68cbb47baaf3805f6c13e9b49f1646e153",
+      "input": "swiglu-u4_software/input_input.bin",
+      "input_sha256": "6cc2cd9473c04ef6a36cf4bbfb553f1da90825c3c31d7c0ef0e2815d86af9e89",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 12800,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "gradGateAddress",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 12800,
+          "dtype": "float"
+        },
+        {
+          "name": "gradUpAddress",
+          "gm_offset": 4096,
+          "bytes": 4096,
+          "ub_start": 16896,
+          "dtype": "float"
+        },
+        {
+          "name": "gradWeightProductAddress",
+          "gm_offset": 8192,
+          "bytes": 4096,
+          "ub_start": 20992,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "3cf4ab891eebdee5924c1a1a1f44c4afa67e834aa081dc522ed9256882c78f72",
+      "original_vf_sha256": "096b1e5defd161a0f1f239eff232d39d786a7b9983b06b0d59439ec55cf4b014",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "focal-u1_original",
+      "family": "focal",
+      "row_id": "focal-u1",
+      "role": "original",
+      "source": "focal-u1_original/kernel.cce",
+      "source_sha256": "b54a2cc06075d44a2a8447a3d8bec9f5eedfbd6876cf9e68b21a126de779fdca",
+      "origin": "spill_candidate_alignment/focal/u1/original/cce/kernel.cce",
+      "origin_sha256": "7f1babf4f95034bb213238c6b95b85ea03cfecd6d63dd5ef0fb89506799c90a0",
+      "input": "focal-u1_original/input_input.bin",
+      "input_sha256": "9f4083e8920e0cfba7a4d004653d530f5f08931520e390da6348f5f28a356038",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 16384,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "dst",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 16384,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "0bfd193d7ee43e08b92026d54475eeab21735d31c518a26f1447dc6e112d914b",
+      "original_vf_sha256": "0857a805bf9e91b29065e55d21d9cb5f8e59f3341b4ace6e50868bca8a6f60d8",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "focal-u2_original",
+      "family": "focal",
+      "row_id": "focal-u2",
+      "role": "original",
+      "source": "focal-u2_original/kernel.cce",
+      "source_sha256": "d69f3008e822ebfb5c315a33b81fde5803582a7babce64a92b829a4e19a6c7ac",
+      "origin": "spill_candidate_alignment/focal/u2/original/cce/kernel.cce",
+      "origin_sha256": "6e39bde040b30129dda9880785583c899545a11e50f86034514f95a3ed8fd20b",
+      "input": "focal-u2_original/input_input.bin",
+      "input_sha256": "9f4083e8920e0cfba7a4d004653d530f5f08931520e390da6348f5f28a356038",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 16384,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "dst",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 16384,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "91124e74311c9c61806d92339c44587d7fae0954f00ae52cbae83be302dca88d",
+      "original_vf_sha256": "452e5c08d51ee75e418ba0b1826724d1fb5434f775fba5a423e2dc4241d1d626",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "focal-u2_software",
+      "family": "focal",
+      "row_id": "focal-u2",
+      "role": "software",
+      "source": "focal-u2_software/kernel.cce",
+      "source_sha256": "1e83da1d547c2f85d27c75ff7b0d1545cc9ca158af6cc757338e6bfc02ef7e85",
+      "origin": "a6_software_reselection_20261109/focal-u2/rank_0000/kernel.cce",
+      "origin_sha256": "2670be1ea749685e7b52c98846d08a73f867d5ee3e7a05576daff0fd93fae1b3",
+      "input": "focal-u2_software/input_input.bin",
+      "input_sha256": "9f4083e8920e0cfba7a4d004653d530f5f08931520e390da6348f5f28a356038",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 16384,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "dst",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 16384,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "d8169e455ce037705fe24068bde6bd9a7b3e948c6fce504b135fd6b4e0013869",
+      "original_vf_sha256": "3e08fc7f1fd41b46c2721ed32f98d0ee6c8c0eaf797a4d0629d2c437fb6d861a",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "focal-u4_original",
+      "family": "focal",
+      "row_id": "focal-u4",
+      "role": "original",
+      "source": "focal-u4_original/kernel.cce",
+      "source_sha256": "2876fdee9b40fe64f03c29f4020cc3a507cb1ab6633603112dd13b89cb698d36",
+      "origin": "spill_candidate_alignment/focal/u4/original/cce/kernel.cce",
+      "origin_sha256": "dfbc32eba4dc1dcbe5f42582d49f33ea8740bb42c7c68acadae99af3cae3e87d",
+      "input": "focal-u4_original/input_input.bin",
+      "input_sha256": "9f4083e8920e0cfba7a4d004653d530f5f08931520e390da6348f5f28a356038",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 16384,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "dst",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 16384,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "519e06380aa72865b119194b21071e3f6f784c693b18c1ee85b99287f648e2a8",
+      "original_vf_sha256": "ae338663d59384cca9dcef662606fff66c2f74e0b57537a913289562dba5d0ee",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "focal-u4_software",
+      "family": "focal",
+      "row_id": "focal-u4",
+      "role": "software",
+      "source": "focal-u4_software/kernel.cce",
+      "source_sha256": "9876ea7d0caabca43b8d61026412587817e054f3d303192fbde786381a39634c",
+      "origin": "a6_software_reselection_20261109/focal-u4/rank_0000/kernel.cce",
+      "origin_sha256": "8c6873f04cee80c11413bb5b3040bf9535a065911fbae35a397264b7a7e01855",
+      "input": "focal-u4_software/input_input.bin",
+      "input_sha256": "9f4083e8920e0cfba7a4d004653d530f5f08931520e390da6348f5f28a356038",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 16384,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "dst",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 16384,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "25411509e5cc82dfc653742569ca60c37fb6d6e9b735ef41ecc45835bbea7a68",
+      "original_vf_sha256": "583bb928b378693318083718106cec2b30b1a7e2c1c0c75b869131a92cbf4f73",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "focal-u5_original",
+      "family": "focal",
+      "row_id": "focal-u5",
+      "role": "original",
+      "source": "focal-u5_original/kernel.cce",
+      "source_sha256": "bf936e8a874a0d57b12bfda05f5256e55832027fe39abee185b3eb27bad6fa93",
+      "origin": "spill_candidate_alignment/focal/u5/original/cce/kernel.cce",
+      "origin_sha256": "2abb480c890a9540ba0c4129d372be4595b7ca9e89ddb6c56003d3f0057bd022",
+      "input": "focal-u5_original/input_input.bin",
+      "input_sha256": "9f4083e8920e0cfba7a4d004653d530f5f08931520e390da6348f5f28a356038",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 16384,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "dst",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 16384,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "791bd2ffaad9df83e96d8e845e2db253773cc2b839afde6bd3d7bd3c5839f81f",
+      "original_vf_sha256": "d785fcbac8309c32f9ff49f5b4401f6dee396087533d59c00cb2ee7435494a5e",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "focal-u5_software",
+      "family": "focal",
+      "row_id": "focal-u5",
+      "role": "software",
+      "source": "focal-u5_software/kernel.cce",
+      "source_sha256": "facf26f1a68665499431b3592836dbabc72aa7f0b80ea48690c872e0cc8c19d0",
+      "origin": "a6_software_reselection_20261109/focal-u5/rank_0000/kernel.cce",
+      "origin_sha256": "25ab20b8491715dd76782e3bd2357c25ecfb2cee2f669a26d46861a19b9a4f4d",
+      "input": "focal-u5_software/input_input.bin",
+      "input_sha256": "9f4083e8920e0cfba7a4d004653d530f5f08931520e390da6348f5f28a356038",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 16384,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "dst",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 16384,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "5bab9eb0f802f8368b9a4744b11e67eded683995501d506d7609734cd2845978",
+      "original_vf_sha256": "b2e309a6dacd44af593a88f07aab31c45a69bef5b84004b152d1d6c961a8906c",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "swiglu_quant-u1_original",
+      "family": "swiglu_quant",
+      "row_id": "swiglu_quant-u1",
+      "role": "original",
+      "source": "swiglu_quant-u1_original/kernel.cce",
+      "source_sha256": "a3d39ab20e9e8d00cd213111736d4b358fea4aa2f2e0998058abcc16ba33cf36",
+      "origin": "spill_candidate_alignment/swiglu_quant/u1/original/cce/kernel.cce",
+      "origin_sha256": "e70bc57a831d6ae2358a75d5f8502b606b98026327ff7f42ee5a80126b9c2d93",
+      "input": "swiglu_quant-u1_original/input_input.bin",
+      "input_sha256": "cc27a5f298fa07b62e1cd7f413a1cb76572defe741d7debed39620fb83b44ad2",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 6400,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "gradXAddr",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 6400,
+          "dtype": "half"
+        }
+      ],
+      "vf_sha256": "d7dd73f58a8e5245023fd6b298e65bc6f6063de6f1e9325d00dac878759ba4cb",
+      "original_vf_sha256": "1072084753bf34003ed927da860ddb57f745d956a386e6730b2314aa2ff4d3e9",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "swiglu_quant-u2_original",
+      "family": "swiglu_quant",
+      "row_id": "swiglu_quant-u2",
+      "role": "original",
+      "source": "swiglu_quant-u2_original/kernel.cce",
+      "source_sha256": "07c529df3f4374b4e72c51cc1b9c2274ce915c8b8af19f8603874a01ab3ab215",
+      "origin": "spill_candidate_alignment/swiglu_quant/u2/original/cce/kernel.cce",
+      "origin_sha256": "989ff83a16bf1ea750efa87b41e084f0b783c0ef1d8468b689eaa75adc632474",
+      "input": "swiglu_quant-u2_original/input_input.bin",
+      "input_sha256": "cc27a5f298fa07b62e1cd7f413a1cb76572defe741d7debed39620fb83b44ad2",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 6400,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "gradXAddr",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 6400,
+          "dtype": "half"
+        }
+      ],
+      "vf_sha256": "289ed2b2b446a85dc2f6a65bdbd7ab76169ee1ea709bc9c600443cb86f926fc4",
+      "original_vf_sha256": "3ec9c633b77107a2c06e4e7e6bd79e8f6fd840da3249e1b68cc9611f47339e26",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "swiglu_quant-u2_software",
+      "family": "swiglu_quant",
+      "row_id": "swiglu_quant-u2",
+      "role": "software",
+      "source": "swiglu_quant-u2_software/kernel.cce",
+      "source_sha256": "75c9e4d20e231ddffc848d4f4f7c224425bcda06333e8a49ceb06fbb2de6cb62",
+      "origin": "a6_software_reselection_20261109/swiglu_quant-u2/rank_0000/kernel.cce",
+      "origin_sha256": "8c556317c0fa4a62615f50def70f8c0f028d463f8dbb2827a7f149a89caa0ea1",
+      "input": "swiglu_quant-u2_software/input_input.bin",
+      "input_sha256": "cc27a5f298fa07b62e1cd7f413a1cb76572defe741d7debed39620fb83b44ad2",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 6400,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "gradXAddr",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 6400,
+          "dtype": "half"
+        }
+      ],
+      "vf_sha256": "eb816ddbbdba92e8c4dc27ec728fc73295c9b90092e964f5933bdc7514825a24",
+      "original_vf_sha256": "b17792d44f4232dbce3c639e2fd09ab3e34a7c06fd44e712447202241cea6303",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "swiglu_quant-u4_original",
+      "family": "swiglu_quant",
+      "row_id": "swiglu_quant-u4",
+      "role": "original",
+      "source": "swiglu_quant-u4_original/kernel.cce",
+      "source_sha256": "401c01771ff5756e02477708dd351143c95ad695be5660a81b5b8a762d01b994",
+      "origin": "spill_candidate_alignment/swiglu_quant/u4/original/cce/kernel.cce",
+      "origin_sha256": "306d19676100c975709ead7c0c88e12ae876240667eb3a2300bb60d81be7cab2",
+      "input": "swiglu_quant-u4_original/input_input.bin",
+      "input_sha256": "cc27a5f298fa07b62e1cd7f413a1cb76572defe741d7debed39620fb83b44ad2",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 6400,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "gradXAddr",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 6400,
+          "dtype": "half"
+        }
+      ],
+      "vf_sha256": "8ed13ccd00f58481c5f3a9ed2022f631d225bf51271f69c10e63ce0a56316fe9",
+      "original_vf_sha256": "95b2f4396b74ff30e8eaa2daf6b8eae0fd663cc7b9752cf0a2a624586bcfaad0",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "swiglu_quant-u4_software",
+      "family": "swiglu_quant",
+      "row_id": "swiglu_quant-u4",
+      "role": "software",
+      "source": "swiglu_quant-u4_software/kernel.cce",
+      "source_sha256": "f9b20a4d33f6974fa3bbc1c2e26aa1488f0e3c4bcf31aee2b1bade494cab9d91",
+      "origin": "a6_software_reselection_20261109/swiglu_quant-u4/rank_0000/kernel.cce",
+      "origin_sha256": "c5ef9c5490f45c3861cdfff1e89a081d31562573597e95f74e382cbddc658fd1",
+      "input": "swiglu_quant-u4_software/input_input.bin",
+      "input_sha256": "cc27a5f298fa07b62e1cd7f413a1cb76572defe741d7debed39620fb83b44ad2",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 6400,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "gradXAddr",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 6400,
+          "dtype": "half"
+        }
+      ],
+      "vf_sha256": "5849e488673b19258daed5086070be99a984b8d29c0f3ee9167a305297c8a10c",
+      "original_vf_sha256": "29f52d86dfab68a124b4fde8546c8e3d064d72f2bf83e7b4ec0aa42dc3db352f",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "swiglu_quant-u5_original",
+      "family": "swiglu_quant",
+      "row_id": "swiglu_quant-u5",
+      "role": "original",
+      "source": "swiglu_quant-u5_original/kernel.cce",
+      "source_sha256": "6d7474abdb035a17b4ebcc964d33a878e092a36880a47308c1734b2120c83a2d",
+      "origin": "spill_candidate_alignment/swiglu_quant/u5/original/cce/kernel.cce",
+      "origin_sha256": "792f372acca6100069aec73898873a2b634c3b48701378d96b25b54c31f92522",
+      "input": "swiglu_quant-u5_original/input_input.bin",
+      "input_sha256": "cc27a5f298fa07b62e1cd7f413a1cb76572defe741d7debed39620fb83b44ad2",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 6400,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "gradXAddr",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 6400,
+          "dtype": "half"
+        }
+      ],
+      "vf_sha256": "c1d7454899202a557d8209d07d61629bf07a005b9d90c46983d44a4556bd5c7b",
+      "original_vf_sha256": "482bafc0124591f516d57e9aaf237e2b914e997cf92fc01d00a9417f7826a36c",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "swiglu_quant-u5_software",
+      "family": "swiglu_quant",
+      "row_id": "swiglu_quant-u5",
+      "role": "software",
+      "source": "swiglu_quant-u5_software/kernel.cce",
+      "source_sha256": "a55dbe5c28a9619b014a7ce8b8a74039d4e9d4d290a913c73a74131f7fa6488f",
+      "origin": "a6_software_reselection_20261109/swiglu_quant-u5/rank_0000/kernel.cce",
+      "origin_sha256": "5a7c4095c2b47971a23e2fa24454ba4c3d1b204c0bdec3e526b0e0bbff203a3a",
+      "input": "swiglu_quant-u5_software/input_input.bin",
+      "input_sha256": "cc27a5f298fa07b62e1cd7f413a1cb76572defe741d7debed39620fb83b44ad2",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 6400,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "gradXAddr",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 6400,
+          "dtype": "half"
+        }
+      ],
+      "vf_sha256": "fc2151d6b7ca0e701c09449fb419956e7f0de3208ecd36b73e20156d529c0444",
+      "original_vf_sha256": "e87bada64c24607e6010128f1aa5032469039f94bae43509a11dd49660cee69c",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "bce-u1_original",
+      "family": "bce",
+      "row_id": "bce-u1",
+      "role": "original",
+      "source": "bce-u1_original/kernel.cce",
+      "source_sha256": "ea855b97e1a8a452d6e7e49e4548c53317c0414fec053326367a5041e6895650",
+      "origin": "spill_candidate_alignment/bce/u1/original/cce/kernel.cce",
+      "origin_sha256": "0a7e71f94ed10de7d6f7acfba6b5ec608f5dfb16893856b61c01246dc588ca1e",
+      "input": "bce-u1_original/input_input.bin",
+      "input_sha256": "8715742687fbc9bca993f88b86af28fdcbad15b42b457fd541c08259a0877f38",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 16384,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "lossAddr",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 16384,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "25735d4230efffdacfa0c532470d15b60fefa136382d9998ae34800d2dcd7c27",
+      "original_vf_sha256": "a520c7a299120e863bb68d14d1c816a23d6eb4d8ff22317473dd314aa4d0df39",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "bce-u5_original",
+      "family": "bce",
+      "row_id": "bce-u5",
+      "role": "original",
+      "source": "bce-u5_original/kernel.cce",
+      "source_sha256": "92255cac3fd77ca453030321a1b89c87ce9dfc697ec82a850c4a458683e1f6a0",
+      "origin": "spill_candidate_alignment/bce/u5/original/cce/kernel.cce",
+      "origin_sha256": "4b2ea00065b1820c44a5f28815b3aaa29987d3dcd3b789509d11d6bb3f793738",
+      "input": "bce-u5_original/input_input.bin",
+      "input_sha256": "8715742687fbc9bca993f88b86af28fdcbad15b42b457fd541c08259a0877f38",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 16384,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "lossAddr",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 16384,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "42c12933529c8c4ab3b84b8ba99a87196547cb5ab50a0d7714da39d1281a8774",
+      "original_vf_sha256": "6c2205db55028c42591c50a54be80e12767e41a687eb69e68d9d72260a5b01c9",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "bce-u5_software",
+      "family": "bce",
+      "row_id": "bce-u5",
+      "role": "software",
+      "source": "bce-u5_software/kernel.cce",
+      "source_sha256": "7ea5866d9c10f4a06bef5cd396dda95a645c63c0796adb1a2c664146c8a0956d",
+      "origin": "a6_software_reselection_20261109/bce-u5/rank_0000/kernel.cce",
+      "origin_sha256": "948d8fd923f56d2fdce2a2565ea5e2b68ed19938417714ee3ac2cdaa057d4203",
+      "input": "bce-u5_software/input_input.bin",
+      "input_sha256": "8715742687fbc9bca993f88b86af28fdcbad15b42b457fd541c08259a0877f38",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 16384,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "lossAddr",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 16384,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "0cffe11af17b6ea61f41d440d2d47b9683f836da1df9f3b2be82fddb78068cec",
+      "original_vf_sha256": "8e8c83fb71e18336493ea485c988b8ba80827578686a789e04aa770c6409c7e0",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "adam_decay-u1_original",
+      "family": "adam_decay",
+      "row_id": "adam_decay-u1",
+      "role": "original",
+      "source": "adam_decay-u1_original/kernel.cce",
+      "source_sha256": "84788467bb500f17cc1fc70220287e836d8e4a8162b8f41d0a02b450540f5bf6",
+      "origin": "spill_candidate_alignment/adam_decay/u1/original/cce/kernel.cce",
+      "origin_sha256": "4be7a7c584707ed7c003fccf183b724531ff6f16b5702abb0ca120df1c097cfe",
+      "input": "adam_decay-u1_original/input_input.bin",
+      "input_sha256": "25f1aede2d65a810f0f85e9d3a054f2a622f9033c940f7e6e2130ac96e673856",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 18176,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "vout",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 18176,
+          "dtype": "float"
+        },
+        {
+          "name": "mout",
+          "gm_offset": 4096,
+          "bytes": 4096,
+          "ub_start": 22272,
+          "dtype": "float"
+        },
+        {
+          "name": "pout",
+          "gm_offset": 8192,
+          "bytes": 4096,
+          "ub_start": 26368,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "541b249cd3b83f77141330893589994d6df70f479c2fbb6e234a4b4a502b4331",
+      "original_vf_sha256": "471aa7f89ab50b58b964460d10e113b422ef3738dacec30a940ad0955c3adcbf",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "adam_decay-u6_original",
+      "family": "adam_decay",
+      "row_id": "adam_decay-u6",
+      "role": "original",
+      "source": "adam_decay-u6_original/kernel.cce",
+      "source_sha256": "bfb6298c31b11b8477c466a335f41b9099c27d87fd27c571d32817717c1d9dd0",
+      "origin": "spill_candidate_alignment/adam_decay/u6/original/cce/kernel.cce",
+      "origin_sha256": "4ccc24d9b99e7da56178a928dbf92fd094faf5c8396f2ddb919cbda4ffd3ce1e",
+      "input": "adam_decay-u6_original/input_input.bin",
+      "input_sha256": "25f1aede2d65a810f0f85e9d3a054f2a622f9033c940f7e6e2130ac96e673856",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 18176,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "vout",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 18176,
+          "dtype": "float"
+        },
+        {
+          "name": "mout",
+          "gm_offset": 4096,
+          "bytes": 4096,
+          "ub_start": 22272,
+          "dtype": "float"
+        },
+        {
+          "name": "pout",
+          "gm_offset": 8192,
+          "bytes": 4096,
+          "ub_start": 26368,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "3e8a555abf440cf3e9ffe4f1c0ba40d349a5a23ac50d0b171cbee88e6d5ec21c",
+      "original_vf_sha256": "6b490bf213e90e9044c047efd002aca79255d85f7243cae833e00c932beeac3a",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "adam_decay-u6_software",
+      "family": "adam_decay",
+      "row_id": "adam_decay-u6",
+      "role": "software",
+      "source": "adam_decay-u6_software/kernel.cce",
+      "source_sha256": "2a6201f436dfed76ca3a22f7373eee098ed914bb56bf0df457a1189a8ad934e7",
+      "origin": "a6_software_reselection_20261109/adam_decay-u6/rank_0000/kernel.cce",
+      "origin_sha256": "f3d2aca5dab232dc7bc48646ff930fb84e8dd0358cdc1ec3d608f5231518d83d",
+      "input": "adam_decay-u6_software/input_input.bin",
+      "input_sha256": "25f1aede2d65a810f0f85e9d3a054f2a622f9033c940f7e6e2130ac96e673856",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 18176,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "vout",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 18176,
+          "dtype": "float"
+        },
+        {
+          "name": "mout",
+          "gm_offset": 4096,
+          "bytes": 4096,
+          "ub_start": 22272,
+          "dtype": "float"
+        },
+        {
+          "name": "pout",
+          "gm_offset": 8192,
+          "bytes": 4096,
+          "ub_start": 26368,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "d05e8ff07254806e5e44646ddbaaf38e763430c8a28ac4bbf2a10590ea4b1758",
+      "original_vf_sha256": "8a33aa03beaa83123d45eeb074eff0c74275d4ed62426529b8cb6d2f0902522c",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "adam_decay-u7_original",
+      "family": "adam_decay",
+      "row_id": "adam_decay-u7",
+      "role": "original",
+      "source": "adam_decay-u7_original/kernel.cce",
+      "source_sha256": "0003128b3481a13af3d9609df764d11e7e990d68ec2fbf7308b10a3dfb98c08a",
+      "origin": "spill_candidate_alignment/adam_decay/u7/original/cce/kernel.cce",
+      "origin_sha256": "5fe1ce63e1a752a841a6dc92ae61d5baf48402a41112e7cc592ea1be6aee4ac3",
+      "input": "adam_decay-u7_original/input_input.bin",
+      "input_sha256": "25f1aede2d65a810f0f85e9d3a054f2a622f9033c940f7e6e2130ac96e673856",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 18176,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "vout",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 18176,
+          "dtype": "float"
+        },
+        {
+          "name": "mout",
+          "gm_offset": 4096,
+          "bytes": 4096,
+          "ub_start": 22272,
+          "dtype": "float"
+        },
+        {
+          "name": "pout",
+          "gm_offset": 8192,
+          "bytes": 4096,
+          "ub_start": 26368,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "e2edc424ce2c0cc127e22f75ce227628a9b0d2154cc66ef3aa8c54c5b2ccf51f",
+      "original_vf_sha256": "82b1a50713c8508c9f53a487486b57c80b9d92a3fd41a59d004b3163c5ae6a99",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "adam_decay-u7_software",
+      "family": "adam_decay",
+      "row_id": "adam_decay-u7",
+      "role": "software",
+      "source": "adam_decay-u7_software/kernel.cce",
+      "source_sha256": "2ec8d7a3897b73f1b8fb4f95504a175c845de753c62bccdbb8c6d34c67eae2b6",
+      "origin": "a6_software_reselection_20261109/adam_decay-u7/rank_0000/kernel.cce",
+      "origin_sha256": "67a4ec0e552f0c79a2a2cdb013a892224815a8ffa7fe70619b26809b93fa617c",
+      "input": "adam_decay-u7_software/input_input.bin",
+      "input_sha256": "25f1aede2d65a810f0f85e9d3a054f2a622f9033c940f7e6e2130ac96e673856",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 18176,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "vout",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 18176,
+          "dtype": "float"
+        },
+        {
+          "name": "mout",
+          "gm_offset": 4096,
+          "bytes": 4096,
+          "ub_start": 22272,
+          "dtype": "float"
+        },
+        {
+          "name": "pout",
+          "gm_offset": 8192,
+          "bytes": 4096,
+          "ub_start": 26368,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "51f69d23587c3e149cb658fe0cdab5ee31e1ba64a26c60968078a8ef37e37ed1",
+      "original_vf_sha256": "298fde58712bd89e6f1af01ae36051d141b6969269c46816717c287bfd372f57",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "groupnorm-u1_original",
+      "family": "groupnorm",
+      "row_id": "groupnorm-u1",
+      "role": "original",
+      "source": "groupnorm-u1_original/kernel.cce",
+      "source_sha256": "6fbb72ccd2cd23c5681c216bf9fab42cda20633a7775af66ca1df2b0136eb67d",
+      "origin": "spill_candidate_alignment/groupnorm/u1/original/cce/kernel.cce",
+      "origin_sha256": "93f9e2b10364688eca209f36f864bb28c311bd21f5737f88cca9df3b881ecfbe",
+      "input": "groupnorm-u1_original/input_input.bin",
+      "input_sha256": "22a4dea61f6edd1b61051acc4a7ab5eaa4d906cd4e04d6627a15c05c3e499d8b",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 12800,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "yLocal",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 12800,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "e47be04f5103886be1092b52dcae2c018a827b804603074eecb410be092c6e95",
+      "original_vf_sha256": "375221efd44919293dcf1ebf4429e15855fa7097ae36d454921cb60f6481fec1",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "groupnorm-u8_original",
+      "family": "groupnorm",
+      "row_id": "groupnorm-u8",
+      "role": "original",
+      "source": "groupnorm-u8_original/kernel.cce",
+      "source_sha256": "d286501ea715070712b05f83dee9ccd49f0f84ee69536eb9dff1122a2eafdf69",
+      "origin": "spill_candidate_alignment/groupnorm/u8/original/cce/kernel.cce",
+      "origin_sha256": "f13757f36fab3fb7dda3d8db8c412e79b743800322db70572e5ca0d39cf7e8ad",
+      "input": "groupnorm-u8_original/input_input.bin",
+      "input_sha256": "22a4dea61f6edd1b61051acc4a7ab5eaa4d906cd4e04d6627a15c05c3e499d8b",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 12800,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "yLocal",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 12800,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "c699787461ee2537da0922dbb79e8ab89b05a8c205d5666783959c1666eb1e7f",
+      "original_vf_sha256": "23cec03ae506d77e7f61a67404ce288c9d4ed702200751570d33eb384eda2628",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "groupnorm-u8_software",
+      "family": "groupnorm",
+      "row_id": "groupnorm-u8",
+      "role": "software",
+      "source": "groupnorm-u8_software/kernel.cce",
+      "source_sha256": "ed0b52add6bae7a6282df8910592c23df035765cc1a4c3b5ae930c77492630f8",
+      "origin": "a6_software_reselection_20261109/groupnorm-u8/rank_0000/kernel.cce",
+      "origin_sha256": "955f2e60b41c46849c14d1c52e6086c48f902a5459a7d34c9ec947cb0095bd35",
+      "input": "groupnorm-u8_software/input_input.bin",
+      "input_sha256": "22a4dea61f6edd1b61051acc4a7ab5eaa4d906cd4e04d6627a15c05c3e499d8b",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 12800,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "yLocal",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 12800,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "2fca31d4bb6d76849da5c71112c1ecae0e541a83c6f54d584923d833529f736d",
+      "original_vf_sha256": "94449f3f382be78308dbcb2fbe2ef713b6baeb46b366893725c422d198478313",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "groupnorm-u10_original",
+      "family": "groupnorm",
+      "row_id": "groupnorm-u10",
+      "role": "original",
+      "source": "groupnorm-u10_original/kernel.cce",
+      "source_sha256": "a874ea842d81f8413f6ae180e6d992861fe1eff1d85f2e777d51fd878a23d8f4",
+      "origin": "spill_candidate_alignment/groupnorm/u10/original/cce/kernel.cce",
+      "origin_sha256": "d47f0ef21ae1006dec0af71b465fdc34ec8ba38de1764674ac62de45db5c091f",
+      "input": "groupnorm-u10_original/input_input.bin",
+      "input_sha256": "22a4dea61f6edd1b61051acc4a7ab5eaa4d906cd4e04d6627a15c05c3e499d8b",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 12800,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "yLocal",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 12800,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "156789cff38e85d5c8ad4b9681f53b765fc222300e941707e9f8dd9ea2ee170f",
+      "original_vf_sha256": "b5687a4b38e44777f6b5bc38b1be7c713baa550c54d596098367444142db969c",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "groupnorm-u10_software",
+      "family": "groupnorm",
+      "row_id": "groupnorm-u10",
+      "role": "software",
+      "source": "groupnorm-u10_software/kernel.cce",
+      "source_sha256": "5e20f5cafade5e7fe4eddf14463e0169212a6187a8ca111cd77cd58e63a37029",
+      "origin": "a6_software_reselection_20261109/groupnorm-u10/rank_0000/kernel.cce",
+      "origin_sha256": "e52e1ff3527370baab03da2e61d2a9b7b296ce64dfbb0730e17175aa37c14557",
+      "input": "groupnorm-u10_software/input_input.bin",
+      "input_sha256": "22a4dea61f6edd1b61051acc4a7ab5eaa4d906cd4e04d6627a15c05c3e499d8b",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 12800,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "yLocal",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 12800,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "8e1cfc54a8872fb013a41f02dc963b7a1f7c4eb9cc2167cd0c8cd751909656e2",
+      "original_vf_sha256": "cab6b4ef429784eb42ad2243bc97fccf14ee775aab2e0200d9089a0a6ab70103",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "groupnorm-u11_original",
+      "family": "groupnorm",
+      "row_id": "groupnorm-u11",
+      "role": "original",
+      "source": "groupnorm-u11_original/kernel.cce",
+      "source_sha256": "bfac84c4f7484200d18eda59c72897a7abdd63c600300bf2330268fd4b0131dc",
+      "origin": "spill_candidate_alignment/groupnorm/u11/original/cce/kernel.cce",
+      "origin_sha256": "e2cd0e5b0deecfcf8ea8a96539379ba3d294a7b5c87886591e0894576b1ccc1c",
+      "input": "groupnorm-u11_original/input_input.bin",
+      "input_sha256": "22a4dea61f6edd1b61051acc4a7ab5eaa4d906cd4e04d6627a15c05c3e499d8b",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 12800,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "yLocal",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 12800,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "b6e6056a9af93fd5b9bbe3318a4936e178a7c2c89487e146f48434cfecf7f0e0",
+      "original_vf_sha256": "73874c4cda18d50dbf9a0a55749863cc47057276c87a06114122f30f0f9f5a1a",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "groupnorm-u11_software",
+      "family": "groupnorm",
+      "row_id": "groupnorm-u11",
+      "role": "software",
+      "source": "groupnorm-u11_software/kernel.cce",
+      "source_sha256": "d47777efe682dc33a2081efe43ece8e01526557c542119e083d02f70a6f4b940",
+      "origin": "a6_software_reselection_20261109/groupnorm-u11/rank_0000/kernel.cce",
+      "origin_sha256": "73e5c2cc1750ed7bc3a05340fb8c2cba5e6abe74ba1b3ed8392fdbc20f9fc344",
+      "input": "groupnorm-u11_software/input_input.bin",
+      "input_sha256": "22a4dea61f6edd1b61051acc4a7ab5eaa4d906cd4e04d6627a15c05c3e499d8b",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 12800,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "yLocal",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 12800,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "bbe2d2e440858567013e110386966a140829d236bcc4307107c1d64e0cdfac9a",
+      "original_vf_sha256": "37a58feeef013998be200df97a87b917aa9c1cffb5d50fb5b4479e71a9989294",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "groupnorm-u16_original",
+      "family": "groupnorm",
+      "row_id": "groupnorm-u16",
+      "role": "original",
+      "source": "groupnorm-u16_original/kernel.cce",
+      "source_sha256": "b72c045cbad27bd1b10cfdb5d6ead28db4176db81a50033a78283a235ffc4895",
+      "origin": "spill_candidate_alignment/groupnorm/u16/original/cce/kernel.cce",
+      "origin_sha256": "99d9ffd77efa257979871d5a03e9868bcfba8d652446a0bbd96efcf1f70f7a9f",
+      "input": "groupnorm-u16_original/input_input.bin",
+      "input_sha256": "22a4dea61f6edd1b61051acc4a7ab5eaa4d906cd4e04d6627a15c05c3e499d8b",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 12800,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "yLocal",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 12800,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "84d8169e0e5ee8e2e09149fd6653786459980dafbaec805c9db5fdc9f6578535",
+      "original_vf_sha256": "50929a269dce229d2a1baec1c79a22c670109f1801c42217e0f60dd21bd24414",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "groupnorm-u16_software",
+      "family": "groupnorm",
+      "row_id": "groupnorm-u16",
+      "role": "software",
+      "source": "groupnorm-u16_software/kernel.cce",
+      "source_sha256": "0c42455f4598b3dfbbe75578f392e413874683c492a9e7289a812427b647dfcc",
+      "origin": "a6_software_reselection_20261109/groupnorm-u16/rank_0000/kernel.cce",
+      "origin_sha256": "f51c9667093900ffa4e149c22c6db630b9bae6539331dabae14ec93498987738",
+      "input": "groupnorm-u16_software/input_input.bin",
+      "input_sha256": "22a4dea61f6edd1b61051acc4a7ab5eaa4d906cd4e04d6627a15c05c3e499d8b",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 12800,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "yLocal",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 12800,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "ba1708aebde3bbbf7a122d3f8a68414279ad5474657cf207a0119c03c2356913",
+      "original_vf_sha256": "d3ab9aed6d9baa7dbe3fa9b8dd426541f3d1819f9eeefd4b5e1992d635041629",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "logit-u1_original",
+      "family": "logit",
+      "row_id": "logit-u1",
+      "role": "original",
+      "source": "logit-u1_original/kernel.cce",
+      "source_sha256": "af67b13d83eb86ad6786a85b59cf873e89e535a155c19f1bc027674d0e58e914",
+      "origin": "spill_candidate_alignment/pure_cce/logit-u1/cce/kernel.cce",
+      "origin_sha256": "d6bf90e5184257bb4afb70ff8b10dac32d2c484c7d9aa5b244b7fabdb2522fdb",
+      "input": "logit-u1_original/input_input.bin",
+      "input_sha256": "58d8c677592d22b9d698a08ecf09e07d6e36532dd90815bb162ebda36fa393cd",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 8192,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "xAddr",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 0,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "22c24cfd873bcd7355249a2ae7aed51d4d6e7246c98e65c7dacaf0603b57f237",
+      "original_vf_sha256": "9b8e4831c86e68955ff8f1d0d9f422abf14625df819bf16058c49a774e73c215",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        4096,
+        4128
+      ]
+    },
+    {
+      "name": "logit-u3_original",
+      "family": "logit",
+      "row_id": "logit-u3",
+      "role": "original",
+      "source": "logit-u3_original/kernel.cce",
+      "source_sha256": "d8be60fd1484935bca1de448ccd6f2fc476aab4b710ff9ed818435a14d689c21",
+      "origin": "spill_candidate_alignment/pure_cce/logit-u3/cce/kernel.cce",
+      "origin_sha256": "b4de6a3f01d8a6b4a3c1c21ed1ae95b77fe44664dd82698b1faeb02da95f8c55",
+      "input": "logit-u3_original/input_input.bin",
+      "input_sha256": "58d8c677592d22b9d698a08ecf09e07d6e36532dd90815bb162ebda36fa393cd",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 8192,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "xAddr",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 0,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "76df0a1fa68da9f8841af361d52505f5728147bc9652462dab4820c0ebb595d0",
+      "original_vf_sha256": "eaf0b3c2fa3b0e36e134136a192aea6349137a26e8c7c6f09150033973259eba",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        4096,
+        4128
+      ]
+    },
+    {
+      "name": "logit-u3_software",
+      "family": "logit",
+      "row_id": "logit-u3",
+      "role": "software",
+      "source": "logit-u3_software/kernel.cce",
+      "source_sha256": "ff152df0b0d4729d6c6ec2437ccabddaddbebca99974fc938252ac34866ed059",
+      "origin": "a6_software_reselection_20261109/logit-u3/rank_0000/kernel.cce",
+      "origin_sha256": "faf5146080463fe5bcea7bc39db99da3a9546f2863d07dc7230f2025f94dc2f1",
+      "input": "logit-u3_software/input_input.bin",
+      "input_sha256": "58d8c677592d22b9d698a08ecf09e07d6e36532dd90815bb162ebda36fa393cd",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 8192,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "xAddr",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 0,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "813d59c8a587dffa765e959f30514667dea245f5e2ead68b50eec521e96087cd",
+      "original_vf_sha256": "31ce75f3b9ff4cbbeeb39a3fd7dfbdc602e0f19bf1a3f86ceba16c694830361e",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        4096,
+        4128
+      ]
+    },
+    {
+      "name": "logit-u4_original",
+      "family": "logit",
+      "row_id": "logit-u4",
+      "role": "original",
+      "source": "logit-u4_original/kernel.cce",
+      "source_sha256": "b089612b64e3ca24e4a9ef8d128eda32668f7252f16e2aa06132ff78a6dd8322",
+      "origin": "spill_candidate_alignment/pure_cce/logit-u4/cce/kernel.cce",
+      "origin_sha256": "1e69872d9b44a5821ae85b841cdf039a9ee6fd27c2b53343a86036b1a6053043",
+      "input": "logit-u4_original/input_input.bin",
+      "input_sha256": "58d8c677592d22b9d698a08ecf09e07d6e36532dd90815bb162ebda36fa393cd",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 8192,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "xAddr",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 0,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "8516e11520ca3738b820c7bfc748be5d3200a962c46b1be2f16a3c97b51e9933",
+      "original_vf_sha256": "9a0b5d9a55b1c29f506d1d79cbfc66b80ad173534fc4a24ec78d6e8f19914c5f",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        4096,
+        4128
+      ]
+    },
+    {
+      "name": "logit-u4_software",
+      "family": "logit",
+      "row_id": "logit-u4",
+      "role": "software",
+      "source": "logit-u4_software/kernel.cce",
+      "source_sha256": "d63d716796278f3891871aabea0137135e74ddc58adb66c2c49d948f3e205148",
+      "origin": "a6_software_reselection_20261109/logit-u4/rank_0000/kernel.cce",
+      "origin_sha256": "68cb9561d64ef15d475a45d6c26d6c54cd9d0e834056eaf3aa8c2735c50052a5",
+      "input": "logit-u4_software/input_input.bin",
+      "input_sha256": "58d8c677592d22b9d698a08ecf09e07d6e36532dd90815bb162ebda36fa393cd",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 8192,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "xAddr",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 0,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "ed04a14c79d4980fcef624cd22e61c29cfa6b28306091efda5cffdd6a696b4fc",
+      "original_vf_sha256": "caab07c0ce39c782138e514928045b2a8be81cb3500eb1941497e71ba054918c",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        4096,
+        4128
+      ]
+    },
+    {
+      "name": "logit-u5_original",
+      "family": "logit",
+      "row_id": "logit-u5",
+      "role": "original",
+      "source": "logit-u5_original/kernel.cce",
+      "source_sha256": "86b5a63c9ce41cb8e90968cb10195bc23bf89a71b74ddb6d2a9fd296838f922f",
+      "origin": "spill_candidate_alignment/pure_cce/logit-u5/cce/kernel.cce",
+      "origin_sha256": "5bd54b0db0456789fa912b507ef3bcef030b2ca7d425e2bc171634bd89e056a1",
+      "input": "logit-u5_original/input_input.bin",
+      "input_sha256": "58d8c677592d22b9d698a08ecf09e07d6e36532dd90815bb162ebda36fa393cd",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 8192,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "xAddr",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 0,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "e1d58121b4a8f5d853f433c67fba002516963bbe51ebdd549b7e46d3d46a9b3d",
+      "original_vf_sha256": "fdc0c689eb6f996ae5492b7220086929c0e0c2375520cb36a8853306ef5e79e9",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        4096,
+        4128
+      ]
+    },
+    {
+      "name": "logit-u5_software",
+      "family": "logit",
+      "row_id": "logit-u5",
+      "role": "software",
+      "source": "logit-u5_software/kernel.cce",
+      "source_sha256": "def8e616622b6e9eb9f1c82587216f161dbc17066eedc24e0f126a08be7beed2",
+      "origin": "a6_software_reselection_20261109/logit-u5/rank_0000/kernel.cce",
+      "origin_sha256": "fa3571db5867c48d5996698cae7c50b5253d0fa55a9de72b71fdc698c5a7a00f",
+      "input": "logit-u5_software/input_input.bin",
+      "input_sha256": "58d8c677592d22b9d698a08ecf09e07d6e36532dd90815bb162ebda36fa393cd",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 8192,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "xAddr",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 0,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "2f608ea48ef7e7d193faedb7f0451bc2fd2ed1c7c5f1d6461016078cdef6d422",
+      "original_vf_sha256": "611bb5fa847c751f46d84cab7ed172446337238e1128d5e3177f410216c93427",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        4096,
+        4128
+      ]
+    },
+    {
+      "name": "logit-u6_original",
+      "family": "logit",
+      "row_id": "logit-u6",
+      "role": "original",
+      "source": "logit-u6_original/kernel.cce",
+      "source_sha256": "7314128f7202c137652070f1bddd009d63ffc1780b8e3eaa966ce092491b86c1",
+      "origin": "spill_candidate_alignment/pure_cce/logit-u6/cce/kernel.cce",
+      "origin_sha256": "6b912b0da1d55eda8de658743589b398667bc490845b73b475cc166768e15f92",
+      "input": "logit-u6_original/input_input.bin",
+      "input_sha256": "58d8c677592d22b9d698a08ecf09e07d6e36532dd90815bb162ebda36fa393cd",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 8192,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "xAddr",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 0,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "1e63b29cb91b864f6eb186c6a27292b223f422a915952082f210807975541a46",
+      "original_vf_sha256": "b6c7992b135879b5bc08bf1386c39d87a1dec34dee3e56003525a5e47db7a8ea",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        4096,
+        4128
+      ]
+    },
+    {
+      "name": "logit-u6_software",
+      "family": "logit",
+      "row_id": "logit-u6",
+      "role": "software",
+      "source": "logit-u6_software/kernel.cce",
+      "source_sha256": "b6f607da0c9857936fae150e5c8310b74219873b2e1fd0dadd9443e3d04a84ba",
+      "origin": "a6_software_reselection_20261109/logit-u6/rank_0000/kernel.cce",
+      "origin_sha256": "094b9e06b9682aef42cec994c6302e00bbea8af66058f8aaf15aeee02a14cea3",
+      "input": "logit-u6_software/input_input.bin",
+      "input_sha256": "58d8c677592d22b9d698a08ecf09e07d6e36532dd90815bb162ebda36fa393cd",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 8192,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "xAddr",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 0,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "27f6c3f7579673a2588741214f570b982685100e7e8c8fd105b908459777d85b",
+      "original_vf_sha256": "df845c35b001f1f405d96fb375196c6f1895f96bac66201e2db1f7a9d46c85ec",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        4096,
+        4128
+      ]
+    },
+    {
+      "name": "logit-u8_original",
+      "family": "logit",
+      "row_id": "logit-u8",
+      "role": "original",
+      "source": "logit-u8_original/kernel.cce",
+      "source_sha256": "b54f9297e6a4428f33dcbd915096a06da8430c6b2a0bd470358784092a7f9566",
+      "origin": "spill_candidate_alignment/pure_cce/logit-u8/cce/kernel.cce",
+      "origin_sha256": "b6c4e455bc02b03df8e525e69d49e1fccc37c00245b2e05bda0868667d548649",
+      "input": "logit-u8_original/input_input.bin",
+      "input_sha256": "58d8c677592d22b9d698a08ecf09e07d6e36532dd90815bb162ebda36fa393cd",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 8192,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "xAddr",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 0,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "938532f7e8a886eece42fd9e4a01268f9b78e5fb5f51b60bdfa5ad7a87d70efd",
+      "original_vf_sha256": "db465498093769a5bb68389c8c2410f2b8c3179e4c4952632773ccaaa66fe186",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        4096,
+        4128
+      ]
+    },
+    {
+      "name": "logit-u8_software",
+      "family": "logit",
+      "row_id": "logit-u8",
+      "role": "software",
+      "source": "logit-u8_software/kernel.cce",
+      "source_sha256": "c5911a0f07e3d9ebca428062300a1e10fd434a8c1820fee56848426d4cd35d4a",
+      "origin": "a6_software_reselection_20261109/logit-u8/rank_0000/kernel.cce",
+      "origin_sha256": "fda0a1ca613f3d70c72bac823c53889469fe51ab8051dce4e9cdee99f787d853",
+      "input": "logit-u8_software/input_input.bin",
+      "input_sha256": "58d8c677592d22b9d698a08ecf09e07d6e36532dd90815bb162ebda36fa393cd",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 8192,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "xAddr",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 0,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "8c3d368b749d37703e12f5f73af786df724ca8280eaaf3a244908fefa1ff2ba5",
+      "original_vf_sha256": "2aff615e01b41189b666653869f8ef2a17fe72bf490ea2de40904338aae5f95e",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        4096,
+        4128
+      ]
+    },
+    {
+      "name": "lstm-u1_original",
+      "family": "lstm",
+      "row_id": "lstm-u1",
+      "role": "original",
+      "source": "lstm-u1_original/kernel.cce",
+      "source_sha256": "9a0e2f25426b245ea7d17699f88f971a755229dd4a7e64226cd8e95ab36f0c0f",
+      "origin": "spill_candidate_alignment/lstm/u1/original/cce/kernel.cce",
+      "origin_sha256": "7d73c660ea6c9b94a6b5a45e39653f7d930033c3eabec93674b04493590fd617",
+      "input": "lstm-u1_original/input_input.bin",
+      "input_sha256": "083d00bf3cab395bc33cec95e2d700ef6a79b49718790f8b86b0b5b9b80d6c3f",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 20480,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "diPreUb",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 20480,
+          "dtype": "float"
+        },
+        {
+          "name": "dciPreUb",
+          "gm_offset": 4096,
+          "bytes": 4096,
+          "ub_start": 24576,
+          "dtype": "float"
+        },
+        {
+          "name": "dfPreUb",
+          "gm_offset": 8192,
+          "bytes": 4096,
+          "ub_start": 28672,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "8da494b3c16a7a2db62b408967eeaf22c3faa206b2a70cef36dfa6455a692681",
+      "original_vf_sha256": "04c77a8b7f58f95ba29545e670713165bd721ff908bc82483cdd92a0701eaa6c",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "lstm-u6_original",
+      "family": "lstm",
+      "row_id": "lstm-u6",
+      "role": "original",
+      "source": "lstm-u6_original/kernel.cce",
+      "source_sha256": "ab1e68ff5c5b04478e22afde48c90c5f41208a030a7fc1d6c24c7e5d0ab8755b",
+      "origin": "spill_candidate_alignment/lstm/u6/original/cce/kernel.cce",
+      "origin_sha256": "54b1854a4824888bf719370358a042861d5b04e883ba3c6a2c2fc2cec20bc205",
+      "input": "lstm-u6_original/input_input.bin",
+      "input_sha256": "083d00bf3cab395bc33cec95e2d700ef6a79b49718790f8b86b0b5b9b80d6c3f",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 20480,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "diPreUb",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 20480,
+          "dtype": "float"
+        },
+        {
+          "name": "dciPreUb",
+          "gm_offset": 4096,
+          "bytes": 4096,
+          "ub_start": 24576,
+          "dtype": "float"
+        },
+        {
+          "name": "dfPreUb",
+          "gm_offset": 8192,
+          "bytes": 4096,
+          "ub_start": 28672,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "b3f0e5248cc9a6224dd850b42a13eeb401274dd9384a62edb0221a19319abfeb",
+      "original_vf_sha256": "1bd3b58bcbbca8368e1bedecd86ab6d40dc0fc263ec99259a27bd5ea9b801ffe",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "lstm-u6_software",
+      "family": "lstm",
+      "row_id": "lstm-u6",
+      "role": "software",
+      "source": "lstm-u6_software/kernel.cce",
+      "source_sha256": "30f32e049e6025f1d32034e7eed370d19e6d7a42b652c17eef2fe017b991682f",
+      "origin": "a6_software_reselection_20261109/lstm-u6/rank_0000/kernel.cce",
+      "origin_sha256": "8abcf0518f1c3fc97b5d3df98f5df571f084750633f2cb806a22ae26f41b365f",
+      "input": "lstm-u6_software/input_input.bin",
+      "input_sha256": "083d00bf3cab395bc33cec95e2d700ef6a79b49718790f8b86b0b5b9b80d6c3f",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 20480,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "diPreUb",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 20480,
+          "dtype": "float"
+        },
+        {
+          "name": "dciPreUb",
+          "gm_offset": 4096,
+          "bytes": 4096,
+          "ub_start": 24576,
+          "dtype": "float"
+        },
+        {
+          "name": "dfPreUb",
+          "gm_offset": 8192,
+          "bytes": 4096,
+          "ub_start": 28672,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "1e7995b44393c27d395406b9f0e847e23f6017da772450bc6356a99795c1b957",
+      "original_vf_sha256": "78804a5f176cd0eda534a71ecdd54c3e902d92f34bcd13e6c146bf3a6537f871",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "lstm-u7_original",
+      "family": "lstm",
+      "row_id": "lstm-u7",
+      "role": "original",
+      "source": "lstm-u7_original/kernel.cce",
+      "source_sha256": "451e2507040ba80514dfe30ecd7a6b05bc17ab974af88d28fa35c6097f46f404",
+      "origin": "spill_candidate_alignment/lstm/u7/original/cce/kernel.cce",
+      "origin_sha256": "a0f209680fc98b17d58df810fc591101c92e27e38abfc99abdb6f3e433488dad",
+      "input": "lstm-u7_original/input_input.bin",
+      "input_sha256": "083d00bf3cab395bc33cec95e2d700ef6a79b49718790f8b86b0b5b9b80d6c3f",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0",
+        "-mllvm",
+        "-cce-vf-stack-size=8192"
+      ],
+      "input_bytes": 20480,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "diPreUb",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 20480,
+          "dtype": "float"
+        },
+        {
+          "name": "dciPreUb",
+          "gm_offset": 4096,
+          "bytes": 4096,
+          "ub_start": 24576,
+          "dtype": "float"
+        },
+        {
+          "name": "dfPreUb",
+          "gm_offset": 8192,
+          "bytes": 4096,
+          "ub_start": 28672,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "76c7a525586f296d4c3b755510100c5f6b56d6938aa7ba79b8a0e761ae60abc9",
+      "original_vf_sha256": "730ec0465eb96fbccc38c14268fa4c1c5634bb9278ca3169b6fccad88ba1f945",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "lstm-u7_software",
+      "family": "lstm",
+      "row_id": "lstm-u7",
+      "role": "software",
+      "source": "lstm-u7_software/kernel.cce",
+      "source_sha256": "59d750dbb3a8df630183da0593891255f877cf1381bd1d797827c1b5cff1c165",
+      "origin": "a6_software_reselection_20261109/lstm-u7/rank_0000/kernel.cce",
+      "origin_sha256": "2f629c01fc5a33f0a499ecf5c48cb00a42e69884860e59986ea42d521412cf05",
+      "input": "lstm-u7_software/input_input.bin",
+      "input_sha256": "083d00bf3cab395bc33cec95e2d700ef6a79b49718790f8b86b0b5b9b80d6c3f",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 20480,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "diPreUb",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 20480,
+          "dtype": "float"
+        },
+        {
+          "name": "dciPreUb",
+          "gm_offset": 4096,
+          "bytes": 4096,
+          "ub_start": 24576,
+          "dtype": "float"
+        },
+        {
+          "name": "dfPreUb",
+          "gm_offset": 8192,
+          "bytes": 4096,
+          "ub_start": 28672,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "d41747d96bd7fe3f7488e69db79072ed412170e934e69f32acce5d2e8591772e",
+      "original_vf_sha256": "a532cda3e15efe2e756e5d3173998937dfb1482878e36b8b99066aa52ac9cee7",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "syncbn-u1_original",
+      "family": "syncbn",
+      "row_id": "syncbn-u1",
+      "role": "original",
+      "source": "syncbn-u1_original/kernel.cce",
+      "source_sha256": "fa747095b57384fd9f954ed3aeb26621a5a5afe8a92887f667de6c5dfe679005",
+      "origin": "spill_candidate_alignment/syncbn/u1/original/cce/kernel.cce",
+      "origin_sha256": "7c505284b65bbc530d653f46c8b0719e9ede118c66216bddbdeea9d87ea82f64",
+      "input": "syncbn-u1_original/input_input.bin",
+      "input_sha256": "3d31bb3d4a7f617f38fd596b7add5fcb424fa872e594174e6e1555585876720c",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 28672,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "dx",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 28672,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "58dec156cba2013c4e3fc58dae1045ba95c8a9ceda412f4a9c291f693cd343d9",
+      "original_vf_sha256": "42dfad35436512057413fddfcd72e5f328b6f01f136da56f9643d00a680a9a43",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "syncbn-u5_original",
+      "family": "syncbn",
+      "row_id": "syncbn-u5",
+      "role": "original",
+      "source": "syncbn-u5_original/kernel.cce",
+      "source_sha256": "c23b8bf6c27feafabb5025d7290763062cc488d7ee2a9c81f4b5afbdd326527d",
+      "origin": "spill_candidate_alignment/syncbn/u5/original/cce/kernel.cce",
+      "origin_sha256": "7550c2882d27ce7d9ae049ebc2e40b0b857933508ac3751401f5b8f1b6307619",
+      "input": "syncbn-u5_original/input_input.bin",
+      "input_sha256": "3d31bb3d4a7f617f38fd596b7add5fcb424fa872e594174e6e1555585876720c",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 28672,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "dx",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 28672,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "ebe9017a5c152764cf191f11b35ba478b3a4dad4e0b7e84501b5ca342f045040",
+      "original_vf_sha256": "b939e35c654b8fcc41abf253f2d6fe5270687309716d74e5b83bb670dc3c010e",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "syncbn-u5_software",
+      "family": "syncbn",
+      "row_id": "syncbn-u5",
+      "role": "software",
+      "source": "syncbn-u5_software/kernel.cce",
+      "source_sha256": "b9d0ca101fac85e8d2d15769be51c66c421b5f8441cd62122cf3ca881e682786",
+      "origin": "a6_software_reselection_20261109/syncbn-u5/rank_0000/kernel.cce",
+      "origin_sha256": "61b3edb476ea2c290ce36fb3ec549ee9b874ea7a459f7877a2eecc1e6e1ed2fa",
+      "input": "syncbn-u5_software/input_input.bin",
+      "input_sha256": "3d31bb3d4a7f617f38fd596b7add5fcb424fa872e594174e6e1555585876720c",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 28672,
+      "output_bytes": 4096,
+      "outputs": [
+        {
+          "name": "dx",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 28672,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "11a418e4bc82aadf9622961257751a620439b4cd4788a0db908c8bd388b45eeb",
+      "original_vf_sha256": "cecbf4d194e935b8bfeca3647f27bde8f5d245e95b2fc17d93e18e1bebd1030e",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "deepnorm-u1_original",
+      "family": "deepnorm",
+      "row_id": "deepnorm-u1",
+      "role": "original",
+      "source": "deepnorm-u1_original/kernel.cce",
+      "source_sha256": "09a2ce03fe5c528027622a8df2b7fe8796427d81f353acbc6812590d1d835fc9",
+      "origin": "spill_candidate_alignment/deepnorm/u1/original/cce/kernel.cce",
+      "origin_sha256": "2547d1552578552b3e108f7a3cc097905eb7121e4d58438b3d50cffddb0f6130",
+      "input": "deepnorm-u1_original/input_input.bin",
+      "input_sha256": "656b097589228c89fd49b4e114cf05afead5707600dcc2fdeddeaad3308b7c0b",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 17408,
+      "output_bytes": 8192,
+      "outputs": [
+        {
+          "name": "dgxPtr",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 17408,
+          "dtype": "float"
+        },
+        {
+          "name": "dxPtr",
+          "gm_offset": 4096,
+          "bytes": 4096,
+          "ub_start": 21504,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "5484dcb4f116446094bd14b85f42b361d696e1b3dbf235f8370f762199fbf5b7",
+      "original_vf_sha256": "0ebb3326d008b13fea381e65d3f77d20099d7a5a90cf3d7e2f39e86a4538608d",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "deepnorm-u8_original",
+      "family": "deepnorm",
+      "row_id": "deepnorm-u8",
+      "role": "original",
+      "source": "deepnorm-u8_original/kernel.cce",
+      "source_sha256": "1bd7278315852452da2e210baf8bdebede47fca2bc15bbab4d8e6b7205b23171",
+      "origin": "spill_candidate_alignment/deepnorm/u8/original/cce/kernel.cce",
+      "origin_sha256": "53c7c1e0c1bbcb8b446516182a742d31251a7d51f26f702cea24c056cc4fdd8a",
+      "input": "deepnorm-u8_original/input_input.bin",
+      "input_sha256": "656b097589228c89fd49b4e114cf05afead5707600dcc2fdeddeaad3308b7c0b",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 17408,
+      "output_bytes": 8192,
+      "outputs": [
+        {
+          "name": "dgxPtr",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 17408,
+          "dtype": "float"
+        },
+        {
+          "name": "dxPtr",
+          "gm_offset": 4096,
+          "bytes": 4096,
+          "ub_start": 21504,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "b82a65add9d8720cd733285d33ec558bf96bc92c7373359db42870bf088f0faa",
+      "original_vf_sha256": "807f9eacedc9fc5deec8117c86f2ffe8643b2d4330d27f929c10a75b6c2bf59a",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "deepnorm-u8_software",
+      "family": "deepnorm",
+      "row_id": "deepnorm-u8",
+      "role": "software",
+      "source": "deepnorm-u8_software/kernel.cce",
+      "source_sha256": "b42cff8cd423097e9fbd63125d7c6bdbd8c73524e931e53f437efabcb177a82b",
+      "origin": "a6_software_reselection_20261109/deepnorm-u8/rank_0000/kernel.cce",
+      "origin_sha256": "061564112c3044a23290f7d3a1db70e919735da66bc1e670aa6dcc389c463ff4",
+      "input": "deepnorm-u8_software/input_input.bin",
+      "input_sha256": "656b097589228c89fd49b4e114cf05afead5707600dcc2fdeddeaad3308b7c0b",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 17408,
+      "output_bytes": 8192,
+      "outputs": [
+        {
+          "name": "dgxPtr",
+          "gm_offset": 0,
+          "bytes": 4096,
+          "ub_start": 17408,
+          "dtype": "float"
+        },
+        {
+          "name": "dxPtr",
+          "gm_offset": 4096,
+          "bytes": 4096,
+          "ub_start": 21504,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "9fd881a5e2124e6be9a17caf07888893c1b132db1cb4d18e61fae1be31e4f31f",
+      "original_vf_sha256": "041aa88651c7ef5faa4db69c313722ff90af726e056e3cd0af4b665265de4136",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round2-mish-u1_original",
+      "family": "mish",
+      "row_id": "round2-mish-u1",
+      "role": "original",
+      "source": "round2-mish-u1_original/kernel.cce",
+      "source_sha256": "9a6effa2c307772412eeccf29ac41533b0fa68a8865ae86e9fa9ca5e95de9459",
+      "origin": "spill_candidate_alignment/mish/u1/original/cce/kernel.cce",
+      "origin_sha256": "d6ebab1c1d03df2a4d96a2a4c17628e21fc5d5ba9608b3667bfe9dbc40fd888a",
+      "input": "round2-mish-u1_original/input_input.bin",
+      "input_sha256": "7cf0d450201a4dd30655bf778fb7e46dcd7cc113cb009626b678065d93e5cfa3",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 12288,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "dstAddr",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 12288,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "4c38371756394ea193d61b80c10818b37a1faf1abff6e754f7d7ec0ebe2ad6a6",
+      "original_vf_sha256": "7182bf8eb7dd18537c33d35602efb749feae9c26532b55ecef664a44fd9f7e10",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round2-mish-u4_original",
+      "family": "mish",
+      "row_id": "round2-mish-u4",
+      "role": "original",
+      "source": "round2-mish-u4_original/kernel.cce",
+      "source_sha256": "8a88741b4bdc131cede8639407a07553152b8c8e8585f523c8bdc5f3ace0d6ca",
+      "origin": "spill_candidate_alignment/mish/u4/original/cce/kernel.cce",
+      "origin_sha256": "9a1e691a0f874d614334fd39695ddaf146ee19c621a16ac4ec6122a449632955",
+      "input": "round2-mish-u4_original/input_input.bin",
+      "input_sha256": "7cf0d450201a4dd30655bf778fb7e46dcd7cc113cb009626b678065d93e5cfa3",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 12288,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "dstAddr",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 12288,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "b4a7e10b86998b110d189cd552584d720f0c61b9a770a2e4885341c7111f21f2",
+      "original_vf_sha256": "e6660c6829185ee3a6934a6855bb5e0706ffdab07389f55ef7fc1c492e5c30db",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round2-mish-u4_software",
+      "family": "mish",
+      "row_id": "round2-mish-u4",
+      "role": "software",
+      "source": "round2-mish-u4_software/kernel.cce",
+      "source_sha256": "70bb5744afacc4d0072c6db67265c1f5439e417b3bb9dad3861a818b15ef301b",
+      "origin": "a6_software_reselection_20261109/round2-mish-u4/rank_0000/kernel.cce",
+      "origin_sha256": "a71774538811d35b02fae77cbabf10c1f73c150998d3a4092264f2be62eb25a2",
+      "input": "round2-mish-u4_software/input_input.bin",
+      "input_sha256": "7cf0d450201a4dd30655bf778fb7e46dcd7cc113cb009626b678065d93e5cfa3",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 12288,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "dstAddr",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 12288,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "819b2ef7c0f75f311f1dc926fae7d3a6f19e42dc7d2bedda6f7e9c5058552282",
+      "original_vf_sha256": "ef1e76f11f91d7397d21925b09ac72fabeb622ebfce81038347abc77aab61a0a",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round2-mish-u8_original",
+      "family": "mish",
+      "row_id": "round2-mish-u8",
+      "role": "original",
+      "source": "round2-mish-u8_original/kernel.cce",
+      "source_sha256": "af1ac409216b53689cc88e9be0c44feefbe857c64e47016834f1093f961bc198",
+      "origin": "spill_candidate_alignment/mish/u8/original/cce/kernel.cce",
+      "origin_sha256": "f46b629607016e52cd2e913442c8f51ccee546556f6189a87c7e00b0ea71aa26",
+      "input": "round2-mish-u8_original/input_input.bin",
+      "input_sha256": "7cf0d450201a4dd30655bf778fb7e46dcd7cc113cb009626b678065d93e5cfa3",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 12288,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "dstAddr",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 12288,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "cd49edace0fb57d3cb55edeeb5e91208570a531b271fdd1737ad97be8eee71e3",
+      "original_vf_sha256": "63443ff2429374fa7b96e28a6f79708f6a1bb307dee34a10b274aff29ad1a7f0",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round2-mish-u8_software",
+      "family": "mish",
+      "row_id": "round2-mish-u8",
+      "role": "software",
+      "source": "round2-mish-u8_software/kernel.cce",
+      "source_sha256": "d1f67005e92ddfd21334d4f65daafc41d16a0656a9be3970e42b80d8d97914c4",
+      "origin": "a6_software_reselection_20261109/round2-mish-u8/rank_0000/kernel.cce",
+      "origin_sha256": "d9d4ecb975113d6aa83c53378d432dcdeba0c556797ee514f415f1e0e6f0ff47",
+      "input": "round2-mish-u8_software/input_input.bin",
+      "input_sha256": "7cf0d450201a4dd30655bf778fb7e46dcd7cc113cb009626b678065d93e5cfa3",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 12288,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "dstAddr",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 12288,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "e1ee3519560c0ed47a758d6061310b02dbeb9305f5fc7aa5945effc2bc23362c",
+      "original_vf_sha256": "6e36bea684b23234111de5ddfa298a4f458a9a4733443615d40157b4d5eb21ad",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round2-mish-u12_original",
+      "family": "mish",
+      "row_id": "round2-mish-u12",
+      "role": "original",
+      "source": "round2-mish-u12_original/kernel.cce",
+      "source_sha256": "9836f41c3a37f4d7db519f89c497513b80385df770251a7602c5073e3e1afed8",
+      "origin": "spill_candidate_alignment/mish/u12/original/cce/kernel.cce",
+      "origin_sha256": "37ae9717aa06166d9998fd85bae58cea1ce84b89b36fdea2328bad529812a3c1",
+      "input": "round2-mish-u12_original/input_input.bin",
+      "input_sha256": "7cf0d450201a4dd30655bf778fb7e46dcd7cc113cb009626b678065d93e5cfa3",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 12288,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "dstAddr",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 12288,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "4ac54d5adbb06ab718c4db551da9bdfef029278a5373a136726f9eb102f1ba1b",
+      "original_vf_sha256": "d723485ea2be40d0c318a389251adc30bf13c16564545e288ee7fed3319c379e",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round2-mish-u12_software",
+      "family": "mish",
+      "row_id": "round2-mish-u12",
+      "role": "software",
+      "source": "round2-mish-u12_software/kernel.cce",
+      "source_sha256": "cdfcef7a0afa1cf789c11333435fb17a588efd92971b8aa74847a1898f4648ea",
+      "origin": "a6_software_reselection_20261109/round2-mish-u12/rank_0000/kernel.cce",
+      "origin_sha256": "8489df137cd7158495a10d540e441a49bd1ed88932afa9220ac45ca65cbeb684",
+      "input": "round2-mish-u12_software/input_input.bin",
+      "input_sha256": "7cf0d450201a4dd30655bf778fb7e46dcd7cc113cb009626b678065d93e5cfa3",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 12288,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "dstAddr",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 12288,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "12cfaffc42b3c5acda53c86ffacc336072a080f878f8343555643644d1415f3c",
+      "original_vf_sha256": "a355cd8d1a427a4eb50091ec0fe867e1cb76c9e2f4f33398ab076ee7458ffb21",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round2-logsigmoid_grad-u1_original",
+      "family": "logsigmoid_grad",
+      "row_id": "round2-logsigmoid_grad-u1",
+      "role": "original",
+      "source": "round2-logsigmoid_grad-u1_original/kernel.cce",
+      "source_sha256": "c50c3a04184e2ca8f63c89383ef7da3a52b6905bcc1e5e8f4660c3bf53512e34",
+      "origin": "spill_candidate_alignment/logsigmoid_grad/u1/original/cce/kernel.cce",
+      "origin_sha256": "bd1a913d5b5138c0c9efa29fd4fa99c409630c267245c79ecbd9b84d9bf5f8f8",
+      "input": "round2-logsigmoid_grad-u1_original/input_input.bin",
+      "input_sha256": "c44846aed651f4d10e4aa890de98246d82e1e17c7bc660a66345b350896535c6",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 24576,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "dstAddr",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 24576,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "d02da31542d3ffce3d01d733c700fffeeea4bf5864aa3b9a98e620c2134d7bbc",
+      "original_vf_sha256": "26dbefe4d9dccff0b2166ec06ad3b6f85545f9221cbf029775807fedf99fd986",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round2-logsigmoid_grad-u4_original",
+      "family": "logsigmoid_grad",
+      "row_id": "round2-logsigmoid_grad-u4",
+      "role": "original",
+      "source": "round2-logsigmoid_grad-u4_original/kernel.cce",
+      "source_sha256": "9a6f931873999275f35a92cb30124e464c1726054de6e99e93f322b8789ddb58",
+      "origin": "spill_candidate_alignment/logsigmoid_grad/u4/original/cce/kernel.cce",
+      "origin_sha256": "3d98017062046dbf87bbe45f3859e9a39c7f8e448f2bb2d74f23ad49e73ee647",
+      "input": "round2-logsigmoid_grad-u4_original/input_input.bin",
+      "input_sha256": "c44846aed651f4d10e4aa890de98246d82e1e17c7bc660a66345b350896535c6",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 24576,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "dstAddr",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 24576,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "3979067bc8b9243fd47fa2e29489c2fb6f78510a8b8716292e96e173db41623f",
+      "original_vf_sha256": "74861c46076b4b499e58ec07029d46919054829099fafc2ced13b03873c0a383",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round2-logsigmoid_grad-u4_software",
+      "family": "logsigmoid_grad",
+      "row_id": "round2-logsigmoid_grad-u4",
+      "role": "software",
+      "source": "round2-logsigmoid_grad-u4_software/kernel.cce",
+      "source_sha256": "ee0725ca1d4cb867fc35823efd901a891edae7f828b5d3a66937ee757c241c8c",
+      "origin": "a6_software_reselection_20261109/round2-logsigmoid_grad-u4/rank_0000/kernel.cce",
+      "origin_sha256": "361381473f75dc20b5af96d66afa6f12f38032ed83632b0425ef0faea5cfaf07",
+      "input": "round2-logsigmoid_grad-u4_software/input_input.bin",
+      "input_sha256": "c44846aed651f4d10e4aa890de98246d82e1e17c7bc660a66345b350896535c6",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 24576,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "dstAddr",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 24576,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "f585273c1df6cfcd0460c73849528cd264b3542fabd4426d94594e42d2de2609",
+      "original_vf_sha256": "8f69ec0c9bacdb0ba52afd54120d4654bb1258fd4c1b27bbaa7216c427f3a420",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round2-logsigmoid_grad-u8_original",
+      "family": "logsigmoid_grad",
+      "row_id": "round2-logsigmoid_grad-u8",
+      "role": "original",
+      "source": "round2-logsigmoid_grad-u8_original/kernel.cce",
+      "source_sha256": "4ad66baf8d0d0be7f3d2be709d3d8bebbbca6fa8b3e20910e577a2ad14f6b51f",
+      "origin": "spill_candidate_alignment/logsigmoid_grad/u8/original/cce/kernel.cce",
+      "origin_sha256": "a4f5a2e69b818d4dc08de8c6c1ab48584f184633cb2b2e37ef7fff3bb2e64fc4",
+      "input": "round2-logsigmoid_grad-u8_original/input_input.bin",
+      "input_sha256": "c44846aed651f4d10e4aa890de98246d82e1e17c7bc660a66345b350896535c6",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 24576,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "dstAddr",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 24576,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "67bbe56291fb5b3429a065576d7abe53b58ff7d6248b06f42a00aa100a80a180",
+      "original_vf_sha256": "ab1d1f2693dd5c99c45fa37519b8db294ba38e772e0de05d019dc12a2edca6f0",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round2-logsigmoid_grad-u8_software",
+      "family": "logsigmoid_grad",
+      "row_id": "round2-logsigmoid_grad-u8",
+      "role": "software",
+      "source": "round2-logsigmoid_grad-u8_software/kernel.cce",
+      "source_sha256": "2bb5c3d32bc64fdd3e693aed3c132975ef1ead2f1e8e943e38e40bfa6a7c916a",
+      "origin": "a6_software_reselection_20261109/round2-logsigmoid_grad-u8/rank_0000/kernel.cce",
+      "origin_sha256": "203b9fb658ba0ffb5bd54469c27adcdfb9a9ebc1b91b4a6f8b68cc85de60898a",
+      "input": "round2-logsigmoid_grad-u8_software/input_input.bin",
+      "input_sha256": "c44846aed651f4d10e4aa890de98246d82e1e17c7bc660a66345b350896535c6",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 24576,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "dstAddr",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 24576,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "3e6f687ac224b7465f040ef9964a7d2517e8778848ebd637e1d90cc7738a8285",
+      "original_vf_sha256": "9d54a67828cd5dab6b3204482879dcb2e6584b5fc57649a50aa7a289390510e7",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round2-logsigmoid_grad-u12_original",
+      "family": "logsigmoid_grad",
+      "row_id": "round2-logsigmoid_grad-u12",
+      "role": "original",
+      "source": "round2-logsigmoid_grad-u12_original/kernel.cce",
+      "source_sha256": "c7a445832872f4127b4e6cd5ffd3082526bb805fea14b0c44ff72a062988e0b0",
+      "origin": "spill_candidate_alignment/logsigmoid_grad/u12/original/cce/kernel.cce",
+      "origin_sha256": "97eb4689db0b24d70ea1da3a50a9c01a8322ffbd8b02057716b6639bac3984f6",
+      "input": "round2-logsigmoid_grad-u12_original/input_input.bin",
+      "input_sha256": "c44846aed651f4d10e4aa890de98246d82e1e17c7bc660a66345b350896535c6",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 24576,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "dstAddr",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 24576,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "a0debe3c0c8382c7934934ab104632b49892e459f7674758e3f2901d2cdd25f2",
+      "original_vf_sha256": "3989ee4b3f5f1f20c97116e4992b09617ffc5f430cb4c299a6ad21af829bb4fb",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round2-logsigmoid_grad-u12_software",
+      "family": "logsigmoid_grad",
+      "row_id": "round2-logsigmoid_grad-u12",
+      "role": "software",
+      "source": "round2-logsigmoid_grad-u12_software/kernel.cce",
+      "source_sha256": "019c10f8672b3c25f25a9b47d9e687eb6ce85aeb1ccc7b2a107e99f60b6a4232",
+      "origin": "a6_software_reselection_20261109/round2-logsigmoid_grad-u12/rank_0000/kernel.cce",
+      "origin_sha256": "655c56fcf4b833557deea415f24369025a2c25731aed83548e6a1574c2e05a29",
+      "input": "round2-logsigmoid_grad-u12_software/input_input.bin",
+      "input_sha256": "c44846aed651f4d10e4aa890de98246d82e1e17c7bc660a66345b350896535c6",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 24576,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "dstAddr",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 24576,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "9ce4fbb02a37e8a52a2fd71a511fafab7347b5f8c20cdb3d40002246e4314d6f",
+      "original_vf_sha256": "6b2e6dc779dd90a667bceadf2fa9d7707516f25a416caab76d72923c8f040906",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round2-binary_cross_entropy-u1_original",
+      "family": "binary_cross_entropy",
+      "row_id": "round2-binary_cross_entropy-u1",
+      "role": "original",
+      "source": "round2-binary_cross_entropy-u1_original/kernel.cce",
+      "source_sha256": "aa75f54709d53b7c1124f1df0eb524b85bc20a27b088106567a3172a9754af17",
+      "origin": "spill_candidate_alignment/binary_cross_entropy/u1/original/cce/kernel.cce",
+      "origin_sha256": "9e8394fc3a3daf84eb0cc9593a40e2ba1eba144db9bbf0de6cdd9eb10e874b0f",
+      "input": "round2-binary_cross_entropy-u1_original/input_input.bin",
+      "input_sha256": "3b047573de7669f2bc00d757ecbf0bf1729223617a34498700cc070d3e5bbfb7",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 24576,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "yLogXTAddr",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 24576,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "c56680440c174091501bf6cab8f9b4fb77657ea73c34dff273de4e8b775e771d",
+      "original_vf_sha256": "b154b9ac6053b80cd16981c7b5622a2bac9659214ffc5867d54ba5d527df05b5",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round2-binary_cross_entropy-u8_original",
+      "family": "binary_cross_entropy",
+      "row_id": "round2-binary_cross_entropy-u8",
+      "role": "original",
+      "source": "round2-binary_cross_entropy-u8_original/kernel.cce",
+      "source_sha256": "54fdfc90038889b5889232ece8c292f6f99fec23ab869ce2f2a8d92a49e0f541",
+      "origin": "spill_candidate_alignment/binary_cross_entropy/u8/original/cce/kernel.cce",
+      "origin_sha256": "cd6fb7a1a3fc7d48351aacb3c939d10b46c09868909ed1540e928a6e86706570",
+      "input": "round2-binary_cross_entropy-u8_original/input_input.bin",
+      "input_sha256": "3b047573de7669f2bc00d757ecbf0bf1729223617a34498700cc070d3e5bbfb7",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 24576,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "yLogXTAddr",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 24576,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "f41f42dffc96ce6dfad14b5ebce17d6e7f7f7ccdacfe6812ee36f2f2c33e574a",
+      "original_vf_sha256": "2ee6e0716573f4fa83f20259b528bebe1ca7e73d6b78dec27dd276cf199bbe59",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round2-binary_cross_entropy-u8_software",
+      "family": "binary_cross_entropy",
+      "row_id": "round2-binary_cross_entropy-u8",
+      "role": "software",
+      "source": "round2-binary_cross_entropy-u8_software/kernel.cce",
+      "source_sha256": "d13d18ab5686a516416b7a19398479c0453fbd275ffd2286311a2eb7a75c08eb",
+      "origin": "a6_software_reselection_20261109/round2-binary_cross_entropy-u8/rank_0000/kernel.cce",
+      "origin_sha256": "8a47a549387b3b0576d5f3f370630f24cbe6c54b784ea5aab751df50ae9a9c0f",
+      "input": "round2-binary_cross_entropy-u8_software/input_input.bin",
+      "input_sha256": "3b047573de7669f2bc00d757ecbf0bf1729223617a34498700cc070d3e5bbfb7",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 24576,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "yLogXTAddr",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 24576,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "106704b5439c600fd84409415b28477db649237af4db61614133c2ca1a216cd2",
+      "original_vf_sha256": "e986a6bd5f496c61308d0d49d5ae8a71c74098ee5491a27a8f52799c01aca84c",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round3-groupnorm_swish_dx-u1_original",
+      "family": "groupnorm_swish_dx",
+      "row_id": "round3-groupnorm_swish_dx-u1",
+      "role": "original",
+      "source": "round3-groupnorm_swish_dx-u1_original/kernel.cce",
+      "source_sha256": "43993202894e1d21aacdc14d37f311eb8ff9218bccd5e13456ac3c2f9f4db842",
+      "origin": "spill_candidate_alignment/round3/groupnorm_swish_dx/u1/original/cce/kernel.cce",
+      "origin_sha256": "51a494000286eaa08e9ecda3918bde0ca2ca5c64f2d5520307e4985e3a09a056",
+      "input": "round3-groupnorm_swish_dx-u1_original/input_input.bin",
+      "input_sha256": "74de1e23e24f4221a0a7736d5b72418d535251b3836d241134d0910f2db2d023",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 50432,
+      "output_bytes": 24576,
+      "outputs": [
+        {
+          "name": "dxPtr",
+          "gm_offset": 0,
+          "bytes": 24576,
+          "ub_start": 50432,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "61efa32371c550bc74b0ea2acdacef1dfc810b8a6dcf514ba3b881ff2e3a3601",
+      "original_vf_sha256": "eee240e0634439fff5c29fc25524e9dc1d6cf81a4ac3497b04a36f2b1b246ac5",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round3-groupnorm_swish_dx-u4_original",
+      "family": "groupnorm_swish_dx",
+      "row_id": "round3-groupnorm_swish_dx-u4",
+      "role": "original",
+      "source": "round3-groupnorm_swish_dx-u4_original/kernel.cce",
+      "source_sha256": "204a3a89384abc36ccff762255f4aae0be62993803cdb2db5b5e5829cb7b7a65",
+      "origin": "spill_candidate_alignment/round3/groupnorm_swish_dx/u4/original/cce/kernel.cce",
+      "origin_sha256": "553246785f77daa08615d8c68506ecbb61728ba4722101b08b04abc8f26af11b",
+      "input": "round3-groupnorm_swish_dx-u4_original/input_input.bin",
+      "input_sha256": "74de1e23e24f4221a0a7736d5b72418d535251b3836d241134d0910f2db2d023",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 50432,
+      "output_bytes": 24576,
+      "outputs": [
+        {
+          "name": "dxPtr",
+          "gm_offset": 0,
+          "bytes": 24576,
+          "ub_start": 50432,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "d3d48420dd6c621ce6c596158d3e0c4dd114a5224a4388c9bc3131e96912549c",
+      "original_vf_sha256": "464015687f6eeb35296d2a9a50f229ceccab95fdaf55874fbab32d18ea1eb811",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round3-logsigmoid-u1_original",
+      "family": "logsigmoid",
+      "row_id": "round3-logsigmoid-u1",
+      "role": "original",
+      "source": "round3-logsigmoid-u1_original/kernel.cce",
+      "source_sha256": "bc636985b7c7e05e2f4a1776946c82228ec0976f168c72d8a8acb29abfa90746",
+      "origin": "spill_candidate_alignment/round3/logsigmoid/u1/original/cce/kernel.cce",
+      "origin_sha256": "c1a697f566a9d7c7f9bb2531f5a31e6354627df3a5c2bc5f813884cc16fd2feb",
+      "input": "round3-logsigmoid-u1_original/input_input.bin",
+      "input_sha256": "1cd9a053905944ed144d000bf29e17cf2f02596ba7cf459f5714858ca0e951c4",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 12288,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "dstAddr",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 12288,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "56b54d0496416e839388a5b318e16858985efaa1898da37ec663c5475a9913ae",
+      "original_vf_sha256": "3163dbd5af8d2f5c92de0f9cbecf614a15a9793655ca2b2c995dec86bf0b7173",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round3-logsigmoid-u4_original",
+      "family": "logsigmoid",
+      "row_id": "round3-logsigmoid-u4",
+      "role": "original",
+      "source": "round3-logsigmoid-u4_original/kernel.cce",
+      "source_sha256": "0d6418f50dfe200c81cb68b4c20a542ccc18a8bd16d6cadb5b4f3e260dfdc5a0",
+      "origin": "spill_candidate_alignment/round3/logsigmoid/u4/original/cce/kernel.cce",
+      "origin_sha256": "d81ab28363357805b1446a9c703aef1f09123bb0d12e601bf8f433ebe2ac6daa",
+      "input": "round3-logsigmoid-u4_original/input_input.bin",
+      "input_sha256": "1cd9a053905944ed144d000bf29e17cf2f02596ba7cf459f5714858ca0e951c4",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 12288,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "dstAddr",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 12288,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "0283bf86c93e9cc7b3c86ce9a2bcd1c9b5e83003397c38fd861f18c972943fb2",
+      "original_vf_sha256": "db0593f8247584c1872a58a4953ac449f64d5da0df213fcf944c6c436e4a24bd",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round3-logsigmoid-u8_original",
+      "family": "logsigmoid",
+      "row_id": "round3-logsigmoid-u8",
+      "role": "original",
+      "source": "round3-logsigmoid-u8_original/kernel.cce",
+      "source_sha256": "1e9288b6d57a036d1810b2a3ce2779a5088efc6a531359600b09261abcab6bf1",
+      "origin": "spill_candidate_alignment/round3/logsigmoid/u8/original/cce/kernel.cce",
+      "origin_sha256": "2d2056d94c9ba56800b738b6dbadff813f81d5b002487ced5aa32a0b336e0a59",
+      "input": "round3-logsigmoid-u8_original/input_input.bin",
+      "input_sha256": "1cd9a053905944ed144d000bf29e17cf2f02596ba7cf459f5714858ca0e951c4",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 12288,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "dstAddr",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 12288,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "b3d26e1d6fc9cf8d6eee97e90d95123428a5978fe4d40f4feabf104db31d014f",
+      "original_vf_sha256": "11e965da5bd994c2fa90e082607f6eaa9072c4cd1cdef5ad7c0ace0bfba2a38e",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round3-logsigmoid-u8_software",
+      "family": "logsigmoid",
+      "row_id": "round3-logsigmoid-u8",
+      "role": "software",
+      "source": "round3-logsigmoid-u8_software/kernel.cce",
+      "source_sha256": "0c0a9f53ea7b6665b869c9a1a1bd4ab3e3a8ef602bc9407fe3dde755304d449f",
+      "origin": "a6_software_reselection_20261109/round3-logsigmoid-u8/rank_0000/kernel.cce",
+      "origin_sha256": "e2eae86297d3b5d28d829b4ca86dd9f4080db9226ba6b308bba63c9dd7729ae0",
+      "input": "round3-logsigmoid-u8_software/input_input.bin",
+      "input_sha256": "1cd9a053905944ed144d000bf29e17cf2f02596ba7cf459f5714858ca0e951c4",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 12288,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "dstAddr",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 12288,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "44d38afd47ce73543376e20848e1a43337b75554f58080b87629bba4d269a824",
+      "original_vf_sha256": "c64134b5b3a66c70c6b2ae29942e586e032b94c7bf0c8e1e34202b693c7c7d2a",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round3-layernorm_dx-u1_original",
+      "family": "layernorm_dx",
+      "row_id": "round3-layernorm_dx-u1",
+      "role": "original",
+      "source": "round3-layernorm_dx-u1_original/kernel.cce",
+      "source_sha256": "6fc2c50e9d53703dad214e72b078d954d5951c8a892b931adfd1dc30914bba9b",
+      "origin": "spill_candidate_alignment/round3/layernorm_dx/u1/original/cce/kernel.cce",
+      "origin_sha256": "c5a76c8e53dd423cf1a4905d5e5ba753b39245c9a69d2db3f7a4ce3e7d806e77",
+      "input": "round3-layernorm_dx-u1_original/input_input.bin",
+      "input_sha256": "d69ae154ea75bea2810eca3924ed9c67a258ca79e29b9cf276e5ed900ec40feb",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 25600,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "dst",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 25600,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "110e28fd75459f47d36d3b964f6a0decd42675a37912801983debd7619f36bc3",
+      "original_vf_sha256": "0dbcf2a50f2e95e18b58bb1370dc4590a52f16972972304763f43de57ad3c4e3",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round3-layernorm_dx-u8_original",
+      "family": "layernorm_dx",
+      "row_id": "round3-layernorm_dx-u8",
+      "role": "original",
+      "source": "round3-layernorm_dx-u8_original/kernel.cce",
+      "source_sha256": "8ce1bbf7b685e55d46cadb86824e30658b395d0dccb3c9060de23e6237bc8afd",
+      "origin": "spill_candidate_alignment/round3/layernorm_dx/u8/original/cce/kernel.cce",
+      "origin_sha256": "677afdebe45812b24da686f0d83fd5f1c83178d39912887824d6613cc34024ed",
+      "input": "round3-layernorm_dx-u8_original/input_input.bin",
+      "input_sha256": "d69ae154ea75bea2810eca3924ed9c67a258ca79e29b9cf276e5ed900ec40feb",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 25600,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "dst",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 25600,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "5db83c04efed03f488dfb1a9e2a0909c80b4c92343c31fd7c307a270bceb04b2",
+      "original_vf_sha256": "4ae16ec7c71217af944097ed46adebe7bcff897cb7035dc4e1658d7159d5cf09",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round3-softplus-u1_original",
+      "family": "softplus",
+      "row_id": "round3-softplus-u1",
+      "role": "original",
+      "source": "round3-softplus-u1_original/kernel.cce",
+      "source_sha256": "c0a73ceed6d0758c347ff6cdcfa650005e4c4e6d1e2e544c94d7bb5b125fb6be",
+      "origin": "spill_candidate_alignment/round3/softplus/u1/original/cce/kernel.cce",
+      "origin_sha256": "524bb0029171d182103ca1980094024c77e2fc0110ae772c8cf3ab074c79b22e",
+      "input": "round3-softplus-u1_original/input_input.bin",
+      "input_sha256": "f6bea619557d5b2b58df7432de3c4e31476daacea73dad171dc51a6be88505b1",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 12288,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "dst",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 12288,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "d8b10538f40da9e7dea8d41c3cbd995dec0fd79745de104290b1046fe21020f6",
+      "original_vf_sha256": "90b854126d4e0f3ce3a58a21639726d1fcaf41444f302e75df9247a8faa3e2f8",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round3-softplus-u8_original",
+      "family": "softplus",
+      "row_id": "round3-softplus-u8",
+      "role": "original",
+      "source": "round3-softplus-u8_original/kernel.cce",
+      "source_sha256": "f0670d0826087eebd137c080964448bb98787c758e28af88265fd7cd7a79c1a2",
+      "origin": "spill_candidate_alignment/round3/softplus/u8/original/cce/kernel.cce",
+      "origin_sha256": "00991ba57c350ddfa72a938a769a0e84df9d9dadc13e969de43bc062ad73d2fb",
+      "input": "round3-softplus-u8_original/input_input.bin",
+      "input_sha256": "f6bea619557d5b2b58df7432de3c4e31476daacea73dad171dc51a6be88505b1",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 12288,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "dst",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 12288,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "f3857f0bcd90412b0c6ccb67094343b48a23fa398f0bc679eb6799ba3b4cbbf2",
+      "original_vf_sha256": "5061aa2306c8516cf8f88814dc9da022099dcd84ea382f65b5992cb8c8b9fe87",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round3-softplus-u8_software",
+      "family": "softplus",
+      "row_id": "round3-softplus-u8",
+      "role": "software",
+      "source": "round3-softplus-u8_software/kernel.cce",
+      "source_sha256": "1eb16831bd506a9daa02327e1d446964bc4478e593008d69241ee6e3548adab0",
+      "origin": "a6_software_reselection_20261109/round3-softplus-u8/rank_0000/kernel.cce",
+      "origin_sha256": "9d871c2c7048b52cd4b1b30f7410c1f65156cffa694138fd5aed531f0c48710f",
+      "input": "round3-softplus-u8_software/input_input.bin",
+      "input_sha256": "f6bea619557d5b2b58df7432de3c4e31476daacea73dad171dc51a6be88505b1",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 12288,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "dst",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 12288,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "391e985790c90dcab4f2ead8e2d9da76b0852b00c9befd77e54e34aa5ce7c3c6",
+      "original_vf_sha256": "ee8da0cb8afdb10abcf6e7d28ba544e47ded539302edc8023d0c872f23218c9b",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round3-moe_softplus-u1_original",
+      "family": "moe_softplus",
+      "row_id": "round3-moe_softplus-u1",
+      "role": "original",
+      "source": "round3-moe_softplus-u1_original/kernel.cce",
+      "source_sha256": "941afa167145230362b2f80707bc9217c230bcf069f706ad195ca50e135901fc",
+      "origin": "spill_candidate_alignment/round3/moe_softplus/u1/original/cce/kernel.cce",
+      "origin_sha256": "80c3169d4ac2ba8fd8a2fa0f69b8e33e828dfb28864d4d8d627835d6f07e0684",
+      "input": "round3-moe_softplus-u1_original/input_input.bin",
+      "input_sha256": "08ab811fa887c84180f07ebb176b63af329da4904a85df2bbdd8173e13418dda",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 12288,
+      "output_bytes": 36864,
+      "outputs": [
+        {
+          "name": "outputAddr",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 12288,
+          "dtype": "float"
+        },
+        {
+          "name": "expertIdxAddr",
+          "gm_offset": 12288,
+          "bytes": 12288,
+          "ub_start": 24576,
+          "dtype": "int32_t"
+        },
+        {
+          "name": "outAddr",
+          "gm_offset": 24576,
+          "bytes": 12288,
+          "ub_start": 36864,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "cef25428962a5ff6c4cda358db1d2c0cfd654616a5f8438bab9fa120cb287227",
+      "original_vf_sha256": "1c2a72900ba7010d057ba70ee72dc471f0753e80a384a3dedd9f090090839105",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round3-moe_softplus-u4_original",
+      "family": "moe_softplus",
+      "row_id": "round3-moe_softplus-u4",
+      "role": "original",
+      "source": "round3-moe_softplus-u4_original/kernel.cce",
+      "source_sha256": "0da9bece4bb3e5541642c1ea0239354d2158afc4d7a7a7d8e7f525401b8e0b94",
+      "origin": "spill_candidate_alignment/round3/moe_softplus/u4/original/cce/kernel.cce",
+      "origin_sha256": "df87769834eee1a64feeee87c9bab49b6e2ae53b14e65b003f2d747a90c638f7",
+      "input": "round3-moe_softplus-u4_original/input_input.bin",
+      "input_sha256": "08ab811fa887c84180f07ebb176b63af329da4904a85df2bbdd8173e13418dda",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 12288,
+      "output_bytes": 36864,
+      "outputs": [
+        {
+          "name": "outputAddr",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 12288,
+          "dtype": "float"
+        },
+        {
+          "name": "expertIdxAddr",
+          "gm_offset": 12288,
+          "bytes": 12288,
+          "ub_start": 24576,
+          "dtype": "int32_t"
+        },
+        {
+          "name": "outAddr",
+          "gm_offset": 24576,
+          "bytes": 12288,
+          "ub_start": 36864,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "cec256aee47440d100d92603bc951e5266f391fc88b27d1efd185d79789fb100",
+      "original_vf_sha256": "ac1419b375da003932a22cecd992021bbdcf7a552c4dd4d6ecd63100ffe22186",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round3-moe_softplus-u8_original",
+      "family": "moe_softplus",
+      "row_id": "round3-moe_softplus-u8",
+      "role": "original",
+      "source": "round3-moe_softplus-u8_original/kernel.cce",
+      "source_sha256": "bb65b3511fb5cc21107ee0d44025f1b64bceed399bcc6d78713aa98cf26c3b70",
+      "origin": "spill_candidate_alignment/round3/moe_softplus/u8/original/cce/kernel.cce",
+      "origin_sha256": "549b1b7488c24b030530ab7c54a92253d40459aad4f8c07d9e38a9380e3704bd",
+      "input": "round3-moe_softplus-u8_original/input_input.bin",
+      "input_sha256": "08ab811fa887c84180f07ebb176b63af329da4904a85df2bbdd8173e13418dda",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 12288,
+      "output_bytes": 36864,
+      "outputs": [
+        {
+          "name": "outputAddr",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 12288,
+          "dtype": "float"
+        },
+        {
+          "name": "expertIdxAddr",
+          "gm_offset": 12288,
+          "bytes": 12288,
+          "ub_start": 24576,
+          "dtype": "int32_t"
+        },
+        {
+          "name": "outAddr",
+          "gm_offset": 24576,
+          "bytes": 12288,
+          "ub_start": 36864,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "47d67d9a1a2e1d538ae408e5a730159e4158dc26577878670049968855c37e67",
+      "original_vf_sha256": "0f3a49127ab93b7c51d9b129ab6b031994d74b2d1906b0b30f560a04ee18f154",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round3-causal_conv-u1_original",
+      "family": "causal_conv",
+      "row_id": "round3-causal_conv-u1",
+      "role": "original",
+      "source": "round3-causal_conv-u1_original/kernel.cce",
+      "source_sha256": "cef30f791a61576148fd0eb853a28e5f42e4211396b737d4aada6933b0a06a27",
+      "origin": "spill_candidate_alignment/round3/causal_conv/u1/original/cce/kernel.cce",
+      "origin_sha256": "ea5ca588bc07e5b97781d397b1c31b05d28ae297e436644ecdbd6d15dffa04bb",
+      "input": "round3-causal_conv-u1_original/input_input.bin",
+      "input_sha256": "d943789dac7c8ce0cf17570a8f76ae780ece4a34353d1f2d25b2e789132b7faf",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 21504,
+      "output_bytes": 18816,
+      "outputs": [
+        {
+          "name": "yAddr",
+          "gm_offset": 0,
+          "bytes": 18816,
+          "ub_start": 21504,
+          "dtype": "half"
+        }
+      ],
+      "vf_sha256": "4cd5535f17cf9eefe35812a92af45aa6741c4b882ca114fcd2694e75c6a40d0a",
+      "original_vf_sha256": "214eaf62938330aa46e9f07c2512323e7ee233bc6045ced312828e6a510aeae0",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round3-causal_conv-u2_original",
+      "family": "causal_conv",
+      "row_id": "round3-causal_conv-u2",
+      "role": "original",
+      "source": "round3-causal_conv-u2_original/kernel.cce",
+      "source_sha256": "32ad7e5989ba38aaea3144b78a1a48946b1740b72872ec895b525f5a9fe207f1",
+      "origin": "spill_candidate_alignment/round3/causal_conv/u2/original/cce/kernel.cce",
+      "origin_sha256": "12694f774dfafa8a1b3bc9c91f7850918452543d8fc6442fa13d3499bcaf197b",
+      "input": "round3-causal_conv-u2_original/input_input.bin",
+      "input_sha256": "d943789dac7c8ce0cf17570a8f76ae780ece4a34353d1f2d25b2e789132b7faf",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 21504,
+      "output_bytes": 18816,
+      "outputs": [
+        {
+          "name": "yAddr",
+          "gm_offset": 0,
+          "bytes": 18816,
+          "ub_start": 21504,
+          "dtype": "half"
+        }
+      ],
+      "vf_sha256": "3287a4867fd53652f5d41df6a8d3f9ec1ce89e791d092b639f42cfe88476e919",
+      "original_vf_sha256": "a09377be9d1ecc67b33e9058ea9e6668d2bfe1ce5bbdfe283251c9b121a8a176",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round3-rope_grad-u1_original",
+      "family": "rope_grad",
+      "row_id": "round3-rope_grad-u1",
+      "role": "original",
+      "source": "round3-rope_grad-u1_original/kernel.cce",
+      "source_sha256": "ddf0ef1ad55ef09089502b91fabd663c28b004f69379a1e57c08f064f2b2ee0c",
+      "origin": "spill_candidate_alignment/round3/rope_grad/u1/original/cce/kernel.cce",
+      "origin_sha256": "698c5f50eee914373b99fcdcbf591b7630b5403d358b8593953c1f336e43911d",
+      "input": "round3-rope_grad-u1_original/input_input.bin",
+      "input_sha256": "e537d3c18866c344d60f8010c07064671822ec9849aba3cdf15964c9db61cd82",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 73728,
+      "output_bytes": 24576,
+      "outputs": [
+        {
+          "name": "out",
+          "gm_offset": 0,
+          "bytes": 24576,
+          "ub_start": 73728,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "ad337aff86c438900b10397c8b3ffa651ccea85c7bd59dfe729d1156ae15df3f",
+      "original_vf_sha256": "0a3af46722f168635466a698c432022d0e58f64305dfe1131f547a6ad7d3dffd",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round3-rope_grad-u4_original",
+      "family": "rope_grad",
+      "row_id": "round3-rope_grad-u4",
+      "role": "original",
+      "source": "round3-rope_grad-u4_original/kernel.cce",
+      "source_sha256": "c40506874fb40e5de20717b6507814b5c7e1c43d0c39c10e59acb6d7711c5ad3",
+      "origin": "spill_candidate_alignment/round3/rope_grad/u4/original/cce/kernel.cce",
+      "origin_sha256": "b8c86fb7364783190ca062c29a54b9cab5d61458de0b0f2d25cf5b54e5909d97",
+      "input": "round3-rope_grad-u4_original/input_input.bin",
+      "input_sha256": "e537d3c18866c344d60f8010c07064671822ec9849aba3cdf15964c9db61cd82",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 73728,
+      "output_bytes": 24576,
+      "outputs": [
+        {
+          "name": "out",
+          "gm_offset": 0,
+          "bytes": 24576,
+          "ub_start": 73728,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "2d9b04c3c6b0a51966b128720289789fdd7f92f82c1c11087bc5d5b8378cda81",
+      "original_vf_sha256": "721de5debfc38d1f85c75f8a0217691173e7a8e737ead972fcad219a25a7bd20",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round3-rope_grad-u8_original",
+      "family": "rope_grad",
+      "row_id": "round3-rope_grad-u8",
+      "role": "original",
+      "source": "round3-rope_grad-u8_original/kernel.cce",
+      "source_sha256": "1051dbb093e32ad840e55dab112ef5e31df2240ca639a6393411846f44b02dc8",
+      "origin": "spill_candidate_alignment/round3/rope_grad/u8/original/cce/kernel.cce",
+      "origin_sha256": "a4bb073f2c09ad791ba45e8eb91ee5d247fc99426498766e96c6e0d26f612b70",
+      "input": "round3-rope_grad-u8_original/input_input.bin",
+      "input_sha256": "e537d3c18866c344d60f8010c07064671822ec9849aba3cdf15964c9db61cd82",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 73728,
+      "output_bytes": 24576,
+      "outputs": [
+        {
+          "name": "out",
+          "gm_offset": 0,
+          "bytes": 24576,
+          "ub_start": 73728,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "b4b3050614a0abb610c1b705d9ad27d1bcc8cd58ed515134e66bad40f48295b9",
+      "original_vf_sha256": "0e07a35ea7b59dcb2a57d15f7ccb5cdfa93721cc385461308bdba133f405c33a",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round3-rmsnorm_dx-u1_original",
+      "family": "rmsnorm_dx",
+      "row_id": "round3-rmsnorm_dx-u1",
+      "role": "original",
+      "source": "round3-rmsnorm_dx-u1_original/kernel.cce",
+      "source_sha256": "bd9fd315d324a70de47ad0d2cd8d228c138d504748c925c4903673476bfae580",
+      "origin": "spill_candidate_alignment/round3/rmsnorm_dx/u1/original/cce/kernel.cce",
+      "origin_sha256": "80c99e6c7e741bf531290ec4583863b38017d9cbef03e2a72a8767de8426293f",
+      "input": "round3-rmsnorm_dx-u1_original/input_input.bin",
+      "input_sha256": "dfef1286fd616161397867d45393bff1d0a2e8a35ceb5898647e5fc580f50262",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 37376,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "dxAddr",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 37376,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "b0566f3ce51eaf9fde3433f858cd9d198ce95651b0ae0baab532c4fa66fd9655",
+      "original_vf_sha256": "89487fd57251d2ba804126ba17cc5550ba64cd24d5db69943435806f7b0af382",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round3-rmsnorm_dx-u8_original",
+      "family": "rmsnorm_dx",
+      "row_id": "round3-rmsnorm_dx-u8",
+      "role": "original",
+      "source": "round3-rmsnorm_dx-u8_original/kernel.cce",
+      "source_sha256": "6b5bd1c490dc2fb6a417cbfa8418629cfc36c27c84236fe35d931d86cedf3d98",
+      "origin": "spill_candidate_alignment/round3/rmsnorm_dx/u8/original/cce/kernel.cce",
+      "origin_sha256": "4ba3fc6058fe65977ba37c98987da83ab5ab6229c2c428bfffec05dbdc6cfb15",
+      "input": "round3-rmsnorm_dx-u8_original/input_input.bin",
+      "input_sha256": "dfef1286fd616161397867d45393bff1d0a2e8a35ceb5898647e5fc580f50262",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 37376,
+      "output_bytes": 12288,
+      "outputs": [
+        {
+          "name": "dxAddr",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 37376,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "d4c41b08e60d43d3220f67a95341f541577978712f9210664ecfd4a2ab22ae1b",
+      "original_vf_sha256": "a42f05320263dad3ca171ea13d21d6c5d85e5da40ed729c03210edde70cc25a9",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round3-softmax_ce-u1_original",
+      "family": "softmax_ce",
+      "row_id": "round3-softmax_ce-u1",
+      "role": "original",
+      "source": "round3-softmax_ce-u1_original/kernel.cce",
+      "source_sha256": "a120aaf9426769457b3a2e0c19fa544d57f125644d3d4fc93668d3c72e00a35e",
+      "origin": "spill_candidate_alignment/round3/softmax_ce/u1/original/cce/kernel.cce",
+      "origin_sha256": "a3bfa9e0a311f638505305268efbe580b36d9f58013a45224060e8f0d6d84e4b",
+      "input": "round3-softmax_ce-u1_original/input_input.bin",
+      "input_sha256": "fe413fcaef14a2b05932011ef88b1109ed2096293a438a10a94d1c33de89c29a",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 37632,
+      "output_bytes": 24576,
+      "outputs": [
+        {
+          "name": "outUbAddr",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 25344,
+          "dtype": "float"
+        },
+        {
+          "name": "backProbAddr",
+          "gm_offset": 12288,
+          "bytes": 12288,
+          "ub_start": 37632,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "b5bcc0f59c6b3b276a31b6deb4a33a0f20f894546ecfad1bd672a11f4e8ddf32",
+      "original_vf_sha256": "f8126e35e3cf7022420ab278ad4501586a17fd7e212ccec95152f716c31f1039",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round3-softmax_ce-u4_original",
+      "family": "softmax_ce",
+      "row_id": "round3-softmax_ce-u4",
+      "role": "original",
+      "source": "round3-softmax_ce-u4_original/kernel.cce",
+      "source_sha256": "886a5a0829fb032878cb2d002d22957a7242638e8ff0db3cd4de74493968e50c",
+      "origin": "spill_candidate_alignment/round3/softmax_ce/u4/original/cce/kernel.cce",
+      "origin_sha256": "d111aabb7515d3b2fce6d4ea27443f9360ecae9e4ddb465be7f2c8f4eddd9f29",
+      "input": "round3-softmax_ce-u4_original/input_input.bin",
+      "input_sha256": "fe413fcaef14a2b05932011ef88b1109ed2096293a438a10a94d1c33de89c29a",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 37632,
+      "output_bytes": 24576,
+      "outputs": [
+        {
+          "name": "outUbAddr",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 25344,
+          "dtype": "float"
+        },
+        {
+          "name": "backProbAddr",
+          "gm_offset": 12288,
+          "bytes": 12288,
+          "ub_start": 37632,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "35d82d0c68df04ffb1678e7671488db6a41d9763976c889d6c1a4a655a96045e",
+      "original_vf_sha256": "885ac93cffadc26cdadff49cf69f596ef37537784e1422da7dc7b7a44c6d2d7a",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round3-softmax_ce-u8_original",
+      "family": "softmax_ce",
+      "row_id": "round3-softmax_ce-u8",
+      "role": "original",
+      "source": "round3-softmax_ce-u8_original/kernel.cce",
+      "source_sha256": "f9d9f6c7edf9849666bffd9f719ed1fa4fb1fb4484a7d563d5f522aaf9e7b758",
+      "origin": "spill_candidate_alignment/round3/softmax_ce/u8/original/cce/kernel.cce",
+      "origin_sha256": "445ce1773ebc15c4efcf9759855505a7c1173a7eba9ba623d3c4f13b5f083386",
+      "input": "round3-softmax_ce-u8_original/input_input.bin",
+      "input_sha256": "fe413fcaef14a2b05932011ef88b1109ed2096293a438a10a94d1c33de89c29a",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 37632,
+      "output_bytes": 24576,
+      "outputs": [
+        {
+          "name": "outUbAddr",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 25344,
+          "dtype": "float"
+        },
+        {
+          "name": "backProbAddr",
+          "gm_offset": 12288,
+          "bytes": 12288,
+          "ub_start": 37632,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "31d1c2e6333013c5bed41690ad6fbcb4f102ac0cdcd549cee7e97af0eab2c6c3",
+      "original_vf_sha256": "f94485afb63297a5a9a2ee427e8fd56027f1f147f0529fa5daabc68e47192f03",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round3-mhc_partial-u1_original",
+      "family": "mhc_partial",
+      "row_id": "round3-mhc_partial-u1",
+      "role": "original",
+      "source": "round3-mhc_partial-u1_original/kernel.cce",
+      "source_sha256": "fac5ff0993f4e8a7154e2ffed870a6b00e7355611770d003c3936cecc8a5c725",
+      "origin": "spill_candidate_alignment/pure_cce/round3-mhc_partial-u1/cce/kernel.cce",
+      "origin_sha256": "08f836d50982ce569a0ef6116d466142c1216a317fe2c5a8ff85679a99672d5e",
+      "input": "round3-mhc_partial-u1_original/input_input.bin",
+      "input_sha256": "2efd95d66ab5d7258cadaffe2fb4510cd80ad284d083d728ed2e850fc04925c7",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 49920,
+      "output_bytes": 12480,
+      "outputs": [
+        {
+          "name": "mmOut",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 49920,
+          "dtype": "float"
+        },
+        {
+          "name": "invRmsOut",
+          "gm_offset": 12288,
+          "bytes": 192,
+          "ub_start": 62208,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "ee550d3a60cf1f595dfa88fe947ab121cf9daedd2fe6a5a2103027e4a8dcb955",
+      "original_vf_sha256": "2885133e8d609ebfdf515f5a8dbec80e42b0476b3033fe01ea1b4a1bed15cddf",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round3-mhc_partial-u4_original",
+      "family": "mhc_partial",
+      "row_id": "round3-mhc_partial-u4",
+      "role": "original",
+      "source": "round3-mhc_partial-u4_original/kernel.cce",
+      "source_sha256": "e0a94ba1823f2445084127dc3c96e9ba5a584676469ca315f714387df3ce4aeb",
+      "origin": "spill_candidate_alignment/pure_cce/round3-mhc_partial-u4/cce/kernel.cce",
+      "origin_sha256": "7cb667a27af8ec74e2ff5a8f204c058e2922cd9601e763d4196c22ea0871e914",
+      "input": "round3-mhc_partial-u4_original/input_input.bin",
+      "input_sha256": "2efd95d66ab5d7258cadaffe2fb4510cd80ad284d083d728ed2e850fc04925c7",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 49920,
+      "output_bytes": 12480,
+      "outputs": [
+        {
+          "name": "mmOut",
+          "gm_offset": 0,
+          "bytes": 12288,
+          "ub_start": 49920,
+          "dtype": "float"
+        },
+        {
+          "name": "invRmsOut",
+          "gm_offset": 12288,
+          "bytes": 192,
+          "ub_start": 62208,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "39982fcec30a6113f1ea33186c511d84f9e3e7a08ab51214e2f4afced830aa20",
+      "original_vf_sha256": "0f33ee6d010d7f4e69b4af5da18ddc5f4e83cf4ce28ccce46cac70cc5d5caa68",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    },
+    {
+      "name": "round3-compressor_softmax-u1_original",
+      "family": "compressor_softmax",
+      "row_id": "round3-compressor_softmax-u1",
+      "role": "original",
+      "source": "round3-compressor_softmax-u1_original/kernel.cce",
+      "source_sha256": "5e296c97d83c9ef1714c05c6f8517a0b9c4e1dcb6d5748734e570b1fc2c2d5e6",
+      "origin": "spill_candidate_alignment/round3/compressor_softmax/u1/original/cce/kernel.cce",
+      "origin_sha256": "8be5a376c6b274b5e16aa60f6150ea1494f89cc3b2f3330015d18d27f8fa67db",
+      "input": "round3-compressor_softmax-u1_original/input_input.bin",
+      "input_sha256": "56e6d392fc96c8d8ac79c5d70ab5f76f1afb1d835f59c498c382494e585e3c57",
+      "golden": "not_implemented",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ],
+      "input_bytes": 16384,
+      "output_bytes": 16384,
+      "outputs": [
+        {
+          "name": "inputAddr",
+          "gm_offset": 0,
+          "bytes": 16384,
+          "ub_start": 16384,
+          "dtype": "float"
+        }
+      ],
+      "vf_sha256": "d7c2ff62002b8940824860a9691a84fc2b84ee7dd88f06a0ecd5b722ccb6eaee",
+      "original_vf_sha256": "53815a2c93cd183d9c33746b8982118f23f38d5f03b3e9611e382229a363555b",
+      "header_adaptation": "Replace unused kernel_operator.h with stdint and aicore macro; VF bodies unchanged",
+      "offsets_ub": [
+        0,
+        32
+      ]
+    }
+  ],
+  "excluded": [
+    {
+      "name": "history-softmax_three_loop-round56_original",
+      "origin": "softmax_three_loop/round56/source/kernel.cce",
+      "reason": "Nonstandard entry; needs an individually reviewed wrapper/input layout"
+    },
+    {
+      "name": "history-gelu_poly-u1_original",
+      "origin": "gelu_poly/u1/source/kernel.cce",
+      "reason": "Nonstandard entry; needs an individually reviewed wrapper/input layout"
+    },
+    {
+      "name": "history-gelu_poly-u12_original",
+      "origin": "gelu_poly/u12/source/kernel.cce",
+      "reason": "Nonstandard entry; needs an individually reviewed wrapper/input layout"
+    },
+    {
+      "name": "history-gelu_poly-u12_software",
+      "origin": "a6_software_reselection_20261109/history-gelu_poly-u12/rank_0000/kernel.cce",
+      "reason": "Unknown output address"
+    },
+    {
+      "name": "history-swiglu_grad-u1_original",
+      "origin": "swiglu_grad/u1/source/kernel.cce",
+      "reason": "Nonstandard entry; needs an individually reviewed wrapper/input layout"
+    },
+    {
+      "name": "history-swiglu_grad-u6_original",
+      "origin": "swiglu_grad/u6/source/kernel.cce",
+      "reason": "Nonstandard entry; needs an individually reviewed wrapper/input layout"
+    },
+    {
+      "name": "history-swiglu_grad-u6_software",
+      "origin": "a6_software_reselection_20261109/history-swiglu_grad-u6/rank_0000/kernel.cce",
+      "reason": "Unknown output address"
+    },
+    {
+      "name": "history-swiglu_grad-u8_original",
+      "origin": "swiglu_grad/u8/source/kernel.cce",
+      "reason": "Nonstandard entry; needs an individually reviewed wrapper/input layout"
+    },
+    {
+      "name": "history-swiglu_grad-u8_software",
+      "origin": "a6_software_reselection_20261109/history-swiglu_grad-u8/rank_0000/kernel.cce",
+      "reason": "Unknown output address"
+    },
+    {
+      "name": "history-adam_apply_one-u1_original",
+      "origin": "adam_apply_one/u1/source/kernel.cce",
+      "reason": "Nonstandard entry; needs an individually reviewed wrapper/input layout"
+    },
+    {
+      "name": "history-adam_apply_one-u6_original",
+      "origin": "adam_apply_one/u6/source/kernel.cce",
+      "reason": "Nonstandard entry; needs an individually reviewed wrapper/input layout"
+    },
+    {
+      "name": "history-adam_apply_one-u6_software",
+      "origin": "a6_software_reselection_20261109/history-adam_apply_one-u6/rank_0000/kernel.cce",
+      "reason": "Nonstandard entry; needs an individually reviewed wrapper/input layout"
+    },
+    {
+      "name": "history-adam_apply_one-u8_original",
+      "origin": "adam_apply_one/u8/source/kernel.cce",
+      "reason": "Nonstandard entry; needs an individually reviewed wrapper/input layout"
+    },
+    {
+      "name": "history-adam_apply_one-u8_software",
+      "origin": "a6_software_reselection_20261109/history-adam_apply_one-u8/rank_0000/kernel.cce",
+      "reason": "Unknown output address"
+    },
+    {
+      "name": "history-gelu_grad-u1_original",
+      "origin": "gelu_grad/u1/source/kernel.cce",
+      "reason": "Nonstandard entry; needs an individually reviewed wrapper/input layout"
+    },
+    {
+      "name": "history-gelu_grad-u8_original",
+      "origin": "gelu_grad/u8/source/kernel.cce",
+      "reason": "Nonstandard entry; needs an individually reviewed wrapper/input layout"
+    },
+    {
+      "name": "history-gelu_grad-u8_software",
+      "origin": "a6_software_reselection_20261109/history-gelu_grad-u8/rank_0000/kernel.cce",
+      "reason": "Unknown output address"
+    },
+    {
+      "name": "history-gelu_grad-u8_explicit_original",
+      "origin": "gelu_grad/u8_explicit/source/kernel.cce",
+      "reason": "Nonstandard entry; needs an individually reviewed wrapper/input layout"
+    },
+    {
+      "name": "history-gelu_grad-u8_explicit_software",
+      "origin": "a6_software_reselection_20261109/history-gelu_grad-u8_explicit/rank_0000/kernel.cce",
+      "reason": "Unknown output address"
+    },
+    {
+      "name": "history-gelu_grad_three_stage-single_u1_original",
+      "origin": "gelu_grad_three_stage/single_u1/source/kernel.cce",
+      "reason": "Nonstandard entry; needs an individually reviewed wrapper/input layout"
+    },
+    {
+      "name": "history-flash_attention_grad_front-u1_original",
+      "origin": "flash_attention_grad_front/u1/source/kernel.cce",
+      "reason": "Nonstandard entry; needs an individually reviewed wrapper/input layout"
+    },
+    {
+      "name": "history-flash_attention_grad_front-u2_concentrated_spill_original",
+      "origin": "flash_attention_grad_front/u2_concentrated_spill/source/kernel.cce",
+      "reason": "Nonstandard entry; needs an individually reviewed wrapper/input layout"
+    },
+    {
+      "name": "history-flash_attention_grad_front-u2_concentrated_spill_software",
+      "origin": "a6_software_reselection_20261109/history-flash_attention_grad_front-u2_concentrated_spill/rank_0000/kernel.cce",
+      "reason": "Nonstandard entry; needs an individually reviewed wrapper/input layout"
+    },
+    {
+      "name": "history-mhc_sinkhorn-m8_resident_original",
+      "origin": "mhc_sinkhorn/m8_resident/source/kernel.cce",
+      "reason": "Nonstandard entry; needs an individually reviewed wrapper/input layout"
+    },
+    {
+      "name": "history-mhc_sinkhorn-m8_element_major_original",
+      "origin": "mhc_sinkhorn/m8_element_major/source/kernel.cce",
+      "reason": "Nonstandard entry; needs an individually reviewed wrapper/input layout"
+    },
+    {
+      "name": "history-mhc_sinkhorn-resident_original",
+      "origin": "mhc_sinkhorn/resident/source/kernel.cce",
+      "reason": "Nonstandard entry; needs an individually reviewed wrapper/input layout"
+    },
+    {
+      "name": "history-mhc_sinkhorn-resident_u6_original",
+      "origin": "mhc_sinkhorn/resident_u6/source/kernel.cce",
+      "reason": "Nonstandard entry; needs an individually reviewed wrapper/input layout"
+    },
+    {
+      "name": "history-mhc_sinkhorn-resident_u6_software",
+      "origin": "a6_software_reselection_20261109/history-mhc_sinkhorn-resident_u6/rank_0002/kernel.cce",
+      "reason": "Nonstandard entry; needs an individually reviewed wrapper/input layout"
+    },
+    {
+      "name": "history-mhc_sinkhorn-element_major_original",
+      "origin": "mhc_sinkhorn/element_major/source/kernel.cce",
+      "reason": "Nonstandard entry; needs an individually reviewed wrapper/input layout"
+    },
+    {
+      "name": "history-mhc_sinkhorn-m64_resident_original",
+      "origin": "mhc_sinkhorn/m64_resident/source/kernel.cce",
+      "reason": "Nonstandard entry; needs an individually reviewed wrapper/input layout"
+    },
+    {
+      "name": "history-mhc_sinkhorn-m64_element_major_original",
+      "origin": "mhc_sinkhorn/m64_element_major/source/kernel.cce",
+      "reason": "Nonstandard entry; needs an individually reviewed wrapper/input layout"
+    },
+    {
+      "name": "history-mhc_sinkhorn-m128_element_major_original",
+      "origin": "mhc_sinkhorn/m128_element_major/source/kernel.cce",
+      "reason": "Nonstandard entry; needs an individually reviewed wrapper/input layout"
+    },
+    {
+      "name": "history-mhc_sinkhorn-m128_element_major_u2_original",
+      "origin": "mhc_sinkhorn/m128_element_major_u2/source/kernel.cce",
+      "reason": "Nonstandard entry; needs an individually reviewed wrapper/input layout"
+    }
+  ],
+  "report_rows": 92,
+  "report": "spill_candidate_alignment_standalone.html",
+  "metadata_sha256": {
+    "spill_candidate_alignment.json": "ff34f2e6210863dd4e8c5b41a058902e66ef78fe2db88de1a5b1716e627ca71f",
+    "software_cce_links.json": "bb01f1ca926cb45a7e774b86c4956d350453731434f6174bcc5c44d8b4663a13"
+  },
+  "note": "A6 compiler validation required. Preserved VF; no numerical golden claim."
+}

@@ -1,0 +1,102 @@
+/**
+ * Copyright (c) 2026 Huawei Technologies Co., Ltd.
+ * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+ * CANN Open Software License Agreement Version 2.0 (the "License").
+ * Please refer to the License for details. You may not use this file except in compliance with the License.
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+ * See LICENSE in the root of the software repository for the full text of the License.
+ */
+#include "kernel_operator.h"
+#include <cfloat>
+#include <type_traits>
+__aicore__ inline void candidate_vf(__ubuf__ float* xPtr, __ubuf__ float* dyPtr,
+                                    __ubuf__ float* gammaPtr, __ubuf__ float* betaPtr,
+                                    __ubuf__ float* c1Ptr, __ubuf__ float* c2Ptr,
+                                    __ubuf__ float* meanRstdPtr, __ubuf__ float* dxPtr) {
+    uint32_t calCount = 6144, cGIdx = 0;
+    constexpr uint32_t oneRepeatSizeB32 = 64, rstdValueOffset = 8;
+    float swishScaleValue = 0.800000011920929f;
+    __VEC_SCOPE__ {
+
+        vector_bool maskFull0;
+        vector_bool maskFull1;
+        vector_f32 vGamma, vBeta, vC1, vC2, vRstd;
+        vector_f32 vX0, vDy0, vYMul0, vY0, vDenScaled0, vDenExp0, vDen0;
+        vector_f32 vDswish0, vDyNew0, vCorrectionMul0, vCorrection0, vDx0;
+        vector_f32 vX1, vDy1, vYMul1, vY1, vDenScaled1, vDenExp1, vDen1;
+        vector_f32 vDswish1, vDyNew1, vCorrectionMul1, vCorrection1, vDx1;
+        uint32_t fullRepeatTimes = (calCount + oneRepeatSizeB32 - 1) / oneRepeatSizeB32;
+        uint16_t pairRepeatTimes = static_cast<uint16_t>((fullRepeatTimes + 1) / 2);
+        vlds(vGamma, gammaPtr + cGIdx, 0, BRC_B32);
+        vlds(vBeta, betaPtr + cGIdx, 0, BRC_B32);
+        vlds(vC1, c1Ptr, 0, BRC_B32);
+        vlds(vC2, c2Ptr, 0, BRC_B32);
+        vlds(vRstd, meanRstdPtr + rstdValueOffset, 0, BRC_B32);
+#pragma unroll 1
+        for (uint16_t i = 0; i < pairRepeatTimes; i++) {
+            uint32_t offset0 = i * 2 * oneRepeatSizeB32;
+            uint32_t offset1 = offset0 + oneRepeatSizeB32;
+            maskFull0 = plt_b32(calCount, POST_UPDATE);
+            maskFull1 = plt_b32(calCount, POST_UPDATE);
+            vlds(vX0, xPtr + offset0, 0, NORM);
+            vlds(vDy0, dyPtr + offset0, 0, NORM);
+            vlds(vX1, xPtr + offset1, 0, NORM);
+            vlds(vDy1, dyPtr + offset1, 0, NORM);
+            vmul(vYMul0, vX0, vGamma, maskFull0, MODE_ZEROING);
+            vmul(vYMul1, vX1, vGamma, maskFull1, MODE_ZEROING);
+            vadd(vY0, vYMul0, vBeta, maskFull0, MODE_ZEROING);
+            vadd(vY1, vYMul1, vBeta, maskFull1, MODE_ZEROING);
+            vmuls(vYMul0, vY0, swishScaleValue, maskFull0, MODE_ZEROING);
+            vmuls(vYMul1, vY1, swishScaleValue, maskFull1, MODE_ZEROING);
+            vmuls(vDenScaled0, vYMul0, float(-1.0), maskFull0, MODE_ZEROING);
+            vmuls(vDenScaled1, vYMul1, float(-1.0), maskFull1, MODE_ZEROING);
+            vexp(vDenExp0, vDenScaled0, maskFull0, MODE_ZEROING);
+            vexp(vDenExp1, vDenScaled1, maskFull1, MODE_ZEROING);
+            vadds(vDen0, vDenExp0, float(1.0), maskFull0, MODE_ZEROING);
+            vadds(vDen1, vDenExp1, float(1.0), maskFull1, MODE_ZEROING);
+            vdiv(vDenScaled0, vYMul0, vDen0, maskFull0, MODE_ZEROING);
+            vdiv(vDenScaled1, vYMul1, vDen1, maskFull1, MODE_ZEROING);
+            vsub(vDenExp0, vYMul0, vDenScaled0, maskFull0, MODE_ZEROING);
+            vsub(vDenExp1, vYMul1, vDenScaled1, maskFull1, MODE_ZEROING);
+            vadds(vYMul0, vDenExp0, float(1.0), maskFull0, MODE_ZEROING);
+            vadds(vYMul1, vDenExp1, float(1.0), maskFull1, MODE_ZEROING);
+            vdiv(vDswish0, vYMul0, vDen0, maskFull0, MODE_ZEROING);
+            vdiv(vDswish1, vYMul1, vDen1, maskFull1, MODE_ZEROING);
+            vmul(vDyNew0, vDswish0, vDy0, maskFull0, MODE_ZEROING);
+            vmul(vDyNew1, vDswish1, vDy1, maskFull1, MODE_ZEROING);
+            vmul(vDswish0, vDyNew0, vGamma, maskFull0, MODE_ZEROING);
+            vmul(vDswish1, vDyNew1, vGamma, maskFull1, MODE_ZEROING);
+            vmul(vDyNew0, vDswish0, vRstd, maskFull0, MODE_ZEROING);
+            vmul(vDyNew1, vDswish1, vRstd, maskFull1, MODE_ZEROING);
+            vmul(vCorrectionMul0, vX0, vC2, maskFull0, MODE_ZEROING);
+            vmul(vCorrectionMul1, vX1, vC2, maskFull1, MODE_ZEROING);
+            vadd(vCorrection0, vCorrectionMul0, vC1, maskFull0, MODE_ZEROING);
+            vadd(vCorrection1, vCorrectionMul1, vC1, maskFull1, MODE_ZEROING);
+            vmul(vCorrectionMul0, vCorrection0, vRstd, maskFull0, MODE_ZEROING);
+            vmul(vCorrectionMul1, vCorrection1, vRstd, maskFull1, MODE_ZEROING);
+            vsub(vDx0, vDyNew0, vCorrectionMul0, maskFull0, MODE_ZEROING);
+            vsub(vDx1, vDyNew1, vCorrectionMul1, maskFull1, MODE_ZEROING);
+            vsts(vDx0, dxPtr + offset0, 0, NORM_B32, maskFull0);
+            vsts(vDx1, dxPtr + offset1, 0, NORM_B32, maskFull1);
+        }
+    }
+}
+extern "C" __global__ __aicore__ void candidate_kernel(__gm__ uint8_t* input,
+                                                       __gm__ uint8_t* output) {
+    __ubuf__ float* xPtr = (__ubuf__ float*)get_imm(0);
+    __ubuf__ float* dyPtr = (__ubuf__ float*)get_imm(24576);
+    __ubuf__ float* gammaPtr = (__ubuf__ float*)get_imm(49152);
+    __ubuf__ float* betaPtr = (__ubuf__ float*)get_imm(49408);
+    __ubuf__ float* c1Ptr = (__ubuf__ float*)get_imm(49664);
+    __ubuf__ float* c2Ptr = (__ubuf__ float*)get_imm(49920);
+    __ubuf__ float* meanRstdPtr = (__ubuf__ float*)get_imm(50176);
+    __ubuf__ float* dxPtr = (__ubuf__ float*)get_imm(50432);
+    copy_gm_to_ubuf_align_v2((__ubuf__ uint8_t*)get_imm(0), input, 0, 1, 50432, 0, 0, 0, 0, 0, 0);
+    set_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    wait_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    candidate_vf(xPtr, dyPtr, gammaPtr, betaPtr, c1Ptr, c2Ptr, meanRstdPtr, dxPtr);
+    set_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    wait_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    copy_ubuf_to_gm_align_v2(output + 0, (__ubuf__ uint8_t*)dxPtr, 0, 1, 24576, 0, 0, 0);
+}

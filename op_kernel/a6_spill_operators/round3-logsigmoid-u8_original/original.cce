@@ -1,0 +1,288 @@
+/**
+ * Copyright (c) 2026 Huawei Technologies Co., Ltd.
+ * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+ * CANN Open Software License Agreement Version 2.0 (the "License").
+ * Please refer to the License for details. You may not use this file except in compliance with the License.
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE. 
+ * See LICENSE in the root of the software repository for the full text of the License.
+ */
+#include "kernel_operator.h"
+#include <cfloat>
+#include <type_traits>
+__aicore__ inline void candidate_vf(__ubuf__ float* srcAddr, __ubuf__ float* dstAddr) {
+    uint32_t count = 3072, vlSize = 64;
+    uint16_t loopNum = 48;
+    float valZero = 0.0f, valPosOne = 1.0f, valNegOne = -1.0f;
+    __VEC_SCOPE__ {
+
+        vector_f32 x;
+        vector_f32 zeroReg;
+        vector_f32 xAbs;
+        vector_f32 xAbsNeg;
+        vector_f32 expRes;
+        vector_f32 expResPlusOne;
+        vector_f32 expResPlusOneSubOne;
+        vector_f32 logExpXPlus1;
+        vector_f32 divRes;
+        vector_f32 mulRes;
+        vector_f32 minRes;
+        vector_f32 selectRes;
+        vector_f32 ans;
+
+        vector_bool mask;
+        vector_bool cmpLog1pPosvector_bool;
+
+        vdup(zeroReg, valZero, pset_b32(PAT_ALL), MODE_ZEROING);
+
+        {
+            vector_f32 ans_u0;
+            vector_f32 ans_u1;
+            vector_f32 ans_u2;
+            vector_f32 ans_u3;
+            vector_f32 ans_u4;
+            vector_f32 ans_u5;
+            vector_f32 ans_u6;
+            vector_f32 ans_u7;
+            vector_bool cmpLog1pPosvector_bool_u0;
+            vector_bool cmpLog1pPosvector_bool_u1;
+            vector_bool cmpLog1pPosvector_bool_u2;
+            vector_bool cmpLog1pPosvector_bool_u3;
+            vector_bool cmpLog1pPosvector_bool_u4;
+            vector_bool cmpLog1pPosvector_bool_u5;
+            vector_bool cmpLog1pPosvector_bool_u6;
+            vector_bool cmpLog1pPosvector_bool_u7;
+            vector_f32 divRes_u0;
+            vector_f32 divRes_u1;
+            vector_f32 divRes_u2;
+            vector_f32 divRes_u3;
+            vector_f32 divRes_u4;
+            vector_f32 divRes_u5;
+            vector_f32 divRes_u6;
+            vector_f32 divRes_u7;
+            vector_f32 expRes_u0;
+            vector_f32 expRes_u1;
+            vector_f32 expRes_u2;
+            vector_f32 expRes_u3;
+            vector_f32 expRes_u4;
+            vector_f32 expRes_u5;
+            vector_f32 expRes_u6;
+            vector_f32 expRes_u7;
+            vector_f32 expResPlusOne_u0;
+            vector_f32 expResPlusOne_u1;
+            vector_f32 expResPlusOne_u2;
+            vector_f32 expResPlusOne_u3;
+            vector_f32 expResPlusOne_u4;
+            vector_f32 expResPlusOne_u5;
+            vector_f32 expResPlusOne_u6;
+            vector_f32 expResPlusOne_u7;
+            vector_f32 expResPlusOneSubOne_u0;
+            vector_f32 expResPlusOneSubOne_u1;
+            vector_f32 expResPlusOneSubOne_u2;
+            vector_f32 expResPlusOneSubOne_u3;
+            vector_f32 expResPlusOneSubOne_u4;
+            vector_f32 expResPlusOneSubOne_u5;
+            vector_f32 expResPlusOneSubOne_u6;
+            vector_f32 expResPlusOneSubOne_u7;
+            vector_f32 logExpXPlus1_u0;
+            vector_f32 logExpXPlus1_u1;
+            vector_f32 logExpXPlus1_u2;
+            vector_f32 logExpXPlus1_u3;
+            vector_f32 logExpXPlus1_u4;
+            vector_f32 logExpXPlus1_u5;
+            vector_f32 logExpXPlus1_u6;
+            vector_f32 logExpXPlus1_u7;
+            vector_bool mask_u0;
+            vector_bool mask_u1;
+            vector_bool mask_u2;
+            vector_bool mask_u3;
+            vector_bool mask_u4;
+            vector_bool mask_u5;
+            vector_bool mask_u6;
+            vector_bool mask_u7;
+            vector_f32 minRes_u0;
+            vector_f32 minRes_u1;
+            vector_f32 minRes_u2;
+            vector_f32 minRes_u3;
+            vector_f32 minRes_u4;
+            vector_f32 minRes_u5;
+            vector_f32 minRes_u6;
+            vector_f32 minRes_u7;
+            vector_f32 mulRes_u0;
+            vector_f32 mulRes_u1;
+            vector_f32 mulRes_u2;
+            vector_f32 mulRes_u3;
+            vector_f32 mulRes_u4;
+            vector_f32 mulRes_u5;
+            vector_f32 mulRes_u6;
+            vector_f32 mulRes_u7;
+            vector_f32 selectRes_u0;
+            vector_f32 selectRes_u1;
+            vector_f32 selectRes_u2;
+            vector_f32 selectRes_u3;
+            vector_f32 selectRes_u4;
+            vector_f32 selectRes_u5;
+            vector_f32 selectRes_u6;
+            vector_f32 selectRes_u7;
+            vector_f32 x_u0;
+            vector_f32 x_u1;
+            vector_f32 x_u2;
+            vector_f32 x_u3;
+            vector_f32 x_u4;
+            vector_f32 x_u5;
+            vector_f32 x_u6;
+            vector_f32 x_u7;
+            vector_f32 xAbs_u0;
+            vector_f32 xAbs_u1;
+            vector_f32 xAbs_u2;
+            vector_f32 xAbs_u3;
+            vector_f32 xAbs_u4;
+            vector_f32 xAbs_u5;
+            vector_f32 xAbs_u6;
+            vector_f32 xAbs_u7;
+            vector_f32 xAbsNeg_u0;
+            vector_f32 xAbsNeg_u1;
+            vector_f32 xAbsNeg_u2;
+            vector_f32 xAbsNeg_u3;
+            vector_f32 xAbsNeg_u4;
+            vector_f32 xAbsNeg_u5;
+            vector_f32 xAbsNeg_u6;
+            vector_f32 xAbsNeg_u7;
+#pragma unroll 1
+            for (uint32_t loopIdx = 0; loopIdx < 48; loopIdx += 8) {
+                mask_u0 = plt_b32(count, POST_UPDATE);
+                mask_u1 = plt_b32(count, POST_UPDATE);
+                mask_u2 = plt_b32(count, POST_UPDATE);
+                mask_u3 = plt_b32(count, POST_UPDATE);
+                mask_u4 = plt_b32(count, POST_UPDATE);
+                mask_u5 = plt_b32(count, POST_UPDATE);
+                mask_u6 = plt_b32(count, POST_UPDATE);
+                mask_u7 = plt_b32(count, POST_UPDATE);
+                vlds(x_u0, (srcAddr + (loopIdx + 0) * vlSize), 0, NORM);
+                vlds(x_u1, (srcAddr + (loopIdx + 1) * vlSize), 0, NORM);
+                vlds(x_u2, (srcAddr + (loopIdx + 2) * vlSize), 0, NORM);
+                vlds(x_u3, (srcAddr + (loopIdx + 3) * vlSize), 0, NORM);
+                vlds(x_u4, (srcAddr + (loopIdx + 4) * vlSize), 0, NORM);
+                vlds(x_u5, (srcAddr + (loopIdx + 5) * vlSize), 0, NORM);
+                vlds(x_u6, (srcAddr + (loopIdx + 6) * vlSize), 0, NORM);
+                vlds(x_u7, (srcAddr + (loopIdx + 7) * vlSize), 0, NORM);
+                vmin(minRes_u0, x_u0, zeroReg, mask_u0, MODE_ZEROING);
+                vmin(minRes_u1, x_u1, zeroReg, mask_u1, MODE_ZEROING);
+                vmin(minRes_u2, x_u2, zeroReg, mask_u2, MODE_ZEROING);
+                vmin(minRes_u3, x_u3, zeroReg, mask_u3, MODE_ZEROING);
+                vmin(minRes_u4, x_u4, zeroReg, mask_u4, MODE_ZEROING);
+                vmin(minRes_u5, x_u5, zeroReg, mask_u5, MODE_ZEROING);
+                vmin(minRes_u6, x_u6, zeroReg, mask_u6, MODE_ZEROING);
+                vmin(minRes_u7, x_u7, zeroReg, mask_u7, MODE_ZEROING);
+                vabs(xAbs_u0, x_u0, mask_u0, MODE_ZEROING);
+                vabs(xAbs_u1, x_u1, mask_u1, MODE_ZEROING);
+                vabs(xAbs_u2, x_u2, mask_u2, MODE_ZEROING);
+                vabs(xAbs_u3, x_u3, mask_u3, MODE_ZEROING);
+                vabs(xAbs_u4, x_u4, mask_u4, MODE_ZEROING);
+                vabs(xAbs_u5, x_u5, mask_u5, MODE_ZEROING);
+                vabs(xAbs_u6, x_u6, mask_u6, MODE_ZEROING);
+                vabs(xAbs_u7, x_u7, mask_u7, MODE_ZEROING);
+                vmuls(xAbsNeg_u0, xAbs_u0, valNegOne, mask_u0, MODE_ZEROING);
+                vmuls(xAbsNeg_u1, xAbs_u1, valNegOne, mask_u1, MODE_ZEROING);
+                vmuls(xAbsNeg_u2, xAbs_u2, valNegOne, mask_u2, MODE_ZEROING);
+                vmuls(xAbsNeg_u3, xAbs_u3, valNegOne, mask_u3, MODE_ZEROING);
+                vmuls(xAbsNeg_u4, xAbs_u4, valNegOne, mask_u4, MODE_ZEROING);
+                vmuls(xAbsNeg_u5, xAbs_u5, valNegOne, mask_u5, MODE_ZEROING);
+                vmuls(xAbsNeg_u6, xAbs_u6, valNegOne, mask_u6, MODE_ZEROING);
+                vmuls(xAbsNeg_u7, xAbs_u7, valNegOne, mask_u7, MODE_ZEROING);
+                vexp(expRes_u0, xAbsNeg_u0, mask_u0, MODE_ZEROING);
+                vexp(expRes_u1, xAbsNeg_u1, mask_u1, MODE_ZEROING);
+                vexp(expRes_u2, xAbsNeg_u2, mask_u2, MODE_ZEROING);
+                vexp(expRes_u3, xAbsNeg_u3, mask_u3, MODE_ZEROING);
+                vexp(expRes_u4, xAbsNeg_u4, mask_u4, MODE_ZEROING);
+                vexp(expRes_u5, xAbsNeg_u5, mask_u5, MODE_ZEROING);
+                vexp(expRes_u6, xAbsNeg_u6, mask_u6, MODE_ZEROING);
+                vexp(expRes_u7, xAbsNeg_u7, mask_u7, MODE_ZEROING);
+                vadds(expResPlusOne_u0, expRes_u0, valPosOne, mask_u0, MODE_ZEROING);
+                vadds(expResPlusOne_u1, expRes_u1, valPosOne, mask_u1, MODE_ZEROING);
+                vadds(expResPlusOne_u2, expRes_u2, valPosOne, mask_u2, MODE_ZEROING);
+                vadds(expResPlusOne_u3, expRes_u3, valPosOne, mask_u3, MODE_ZEROING);
+                vadds(expResPlusOne_u4, expRes_u4, valPosOne, mask_u4, MODE_ZEROING);
+                vadds(expResPlusOne_u5, expRes_u5, valPosOne, mask_u5, MODE_ZEROING);
+                vadds(expResPlusOne_u6, expRes_u6, valPosOne, mask_u6, MODE_ZEROING);
+                vadds(expResPlusOne_u7, expRes_u7, valPosOne, mask_u7, MODE_ZEROING);
+                vadds(expResPlusOneSubOne_u0, expResPlusOne_u0, valNegOne, mask_u0, MODE_ZEROING);
+                vadds(expResPlusOneSubOne_u1, expResPlusOne_u1, valNegOne, mask_u1, MODE_ZEROING);
+                vadds(expResPlusOneSubOne_u2, expResPlusOne_u2, valNegOne, mask_u2, MODE_ZEROING);
+                vadds(expResPlusOneSubOne_u3, expResPlusOne_u3, valNegOne, mask_u3, MODE_ZEROING);
+                vadds(expResPlusOneSubOne_u4, expResPlusOne_u4, valNegOne, mask_u4, MODE_ZEROING);
+                vadds(expResPlusOneSubOne_u5, expResPlusOne_u5, valNegOne, mask_u5, MODE_ZEROING);
+                vadds(expResPlusOneSubOne_u6, expResPlusOne_u6, valNegOne, mask_u6, MODE_ZEROING);
+                vadds(expResPlusOneSubOne_u7, expResPlusOne_u7, valNegOne, mask_u7, MODE_ZEROING);
+                vdiv(divRes_u0, expRes_u0, expResPlusOneSubOne_u0, mask_u0, MODE_ZEROING);
+                vdiv(divRes_u1, expRes_u1, expResPlusOneSubOne_u1, mask_u1, MODE_ZEROING);
+                vdiv(divRes_u2, expRes_u2, expResPlusOneSubOne_u2, mask_u2, MODE_ZEROING);
+                vdiv(divRes_u3, expRes_u3, expResPlusOneSubOne_u3, mask_u3, MODE_ZEROING);
+                vdiv(divRes_u4, expRes_u4, expResPlusOneSubOne_u4, mask_u4, MODE_ZEROING);
+                vdiv(divRes_u5, expRes_u5, expResPlusOneSubOne_u5, mask_u5, MODE_ZEROING);
+                vdiv(divRes_u6, expRes_u6, expResPlusOneSubOne_u6, mask_u6, MODE_ZEROING);
+                vdiv(divRes_u7, expRes_u7, expResPlusOneSubOne_u7, mask_u7, MODE_ZEROING);
+                vln(logExpXPlus1_u0, expResPlusOne_u0, mask_u0, MODE_ZEROING);
+                vln(logExpXPlus1_u1, expResPlusOne_u1, mask_u1, MODE_ZEROING);
+                vln(logExpXPlus1_u2, expResPlusOne_u2, mask_u2, MODE_ZEROING);
+                vln(logExpXPlus1_u3, expResPlusOne_u3, mask_u3, MODE_ZEROING);
+                vln(logExpXPlus1_u4, expResPlusOne_u4, mask_u4, MODE_ZEROING);
+                vln(logExpXPlus1_u5, expResPlusOne_u5, mask_u5, MODE_ZEROING);
+                vln(logExpXPlus1_u6, expResPlusOne_u6, mask_u6, MODE_ZEROING);
+                vln(logExpXPlus1_u7, expResPlusOne_u7, mask_u7, MODE_ZEROING);
+                vmul(mulRes_u0, logExpXPlus1_u0, divRes_u0, mask_u0, MODE_ZEROING);
+                vmul(mulRes_u1, logExpXPlus1_u1, divRes_u1, mask_u1, MODE_ZEROING);
+                vmul(mulRes_u2, logExpXPlus1_u2, divRes_u2, mask_u2, MODE_ZEROING);
+                vmul(mulRes_u3, logExpXPlus1_u3, divRes_u3, mask_u3, MODE_ZEROING);
+                vmul(mulRes_u4, logExpXPlus1_u4, divRes_u4, mask_u4, MODE_ZEROING);
+                vmul(mulRes_u5, logExpXPlus1_u5, divRes_u5, mask_u5, MODE_ZEROING);
+                vmul(mulRes_u6, logExpXPlus1_u6, divRes_u6, mask_u6, MODE_ZEROING);
+                vmul(mulRes_u7, logExpXPlus1_u7, divRes_u7, mask_u7, MODE_ZEROING);
+                vcmps_ne(cmpLog1pPosvector_bool_u0, expResPlusOne_u0, valPosOne, mask_u0);
+                vcmps_ne(cmpLog1pPosvector_bool_u1, expResPlusOne_u1, valPosOne, mask_u1);
+                vcmps_ne(cmpLog1pPosvector_bool_u2, expResPlusOne_u2, valPosOne, mask_u2);
+                vcmps_ne(cmpLog1pPosvector_bool_u3, expResPlusOne_u3, valPosOne, mask_u3);
+                vcmps_ne(cmpLog1pPosvector_bool_u4, expResPlusOne_u4, valPosOne, mask_u4);
+                vcmps_ne(cmpLog1pPosvector_bool_u5, expResPlusOne_u5, valPosOne, mask_u5);
+                vcmps_ne(cmpLog1pPosvector_bool_u6, expResPlusOne_u6, valPosOne, mask_u6);
+                vcmps_ne(cmpLog1pPosvector_bool_u7, expResPlusOne_u7, valPosOne, mask_u7);
+                vsel(selectRes_u0, mulRes_u0, expRes_u0, cmpLog1pPosvector_bool_u0);
+                vsel(selectRes_u1, mulRes_u1, expRes_u1, cmpLog1pPosvector_bool_u1);
+                vsel(selectRes_u2, mulRes_u2, expRes_u2, cmpLog1pPosvector_bool_u2);
+                vsel(selectRes_u3, mulRes_u3, expRes_u3, cmpLog1pPosvector_bool_u3);
+                vsel(selectRes_u4, mulRes_u4, expRes_u4, cmpLog1pPosvector_bool_u4);
+                vsel(selectRes_u5, mulRes_u5, expRes_u5, cmpLog1pPosvector_bool_u5);
+                vsel(selectRes_u6, mulRes_u6, expRes_u6, cmpLog1pPosvector_bool_u6);
+                vsel(selectRes_u7, mulRes_u7, expRes_u7, cmpLog1pPosvector_bool_u7);
+                vsub(ans_u0, minRes_u0, selectRes_u0, mask_u0, MODE_ZEROING);
+                vsub(ans_u1, minRes_u1, selectRes_u1, mask_u1, MODE_ZEROING);
+                vsub(ans_u2, minRes_u2, selectRes_u2, mask_u2, MODE_ZEROING);
+                vsub(ans_u3, minRes_u3, selectRes_u3, mask_u3, MODE_ZEROING);
+                vsub(ans_u4, minRes_u4, selectRes_u4, mask_u4, MODE_ZEROING);
+                vsub(ans_u5, minRes_u5, selectRes_u5, mask_u5, MODE_ZEROING);
+                vsub(ans_u6, minRes_u6, selectRes_u6, mask_u6, MODE_ZEROING);
+                vsub(ans_u7, minRes_u7, selectRes_u7, mask_u7, MODE_ZEROING);
+                vsts(ans_u0, (dstAddr + (loopIdx + 0) * vlSize), 0, NORM_B32, mask_u0);
+                vsts(ans_u1, (dstAddr + (loopIdx + 1) * vlSize), 0, NORM_B32, mask_u1);
+                vsts(ans_u2, (dstAddr + (loopIdx + 2) * vlSize), 0, NORM_B32, mask_u2);
+                vsts(ans_u3, (dstAddr + (loopIdx + 3) * vlSize), 0, NORM_B32, mask_u3);
+                vsts(ans_u4, (dstAddr + (loopIdx + 4) * vlSize), 0, NORM_B32, mask_u4);
+                vsts(ans_u5, (dstAddr + (loopIdx + 5) * vlSize), 0, NORM_B32, mask_u5);
+                vsts(ans_u6, (dstAddr + (loopIdx + 6) * vlSize), 0, NORM_B32, mask_u6);
+                vsts(ans_u7, (dstAddr + (loopIdx + 7) * vlSize), 0, NORM_B32, mask_u7);
+            }
+        }
+    }
+}
+extern "C" __global__ __aicore__ void candidate_kernel(__gm__ uint8_t* input,
+                                                       __gm__ uint8_t* output) {
+    __ubuf__ float* srcAddr = (__ubuf__ float*)get_imm(0);
+    __ubuf__ float* dstAddr = (__ubuf__ float*)get_imm(12288);
+    copy_gm_to_ubuf_align_v2((__ubuf__ uint8_t*)get_imm(0), input, 0, 1, 12288, 0, 0, 0, 0, 0, 0);
+    set_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    wait_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    candidate_vf(srcAddr, dstAddr);
+    set_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    wait_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    copy_ubuf_to_gm_align_v2(output + 0, (__ubuf__ uint8_t*)dstAddr, 0, 1, 12288, 0, 0, 0);
+}

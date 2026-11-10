@@ -1,0 +1,509 @@
+/**
+ * Copyright (c) 2025 Huawei Technologies Co., Ltd.
+ * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+ * CANN Open Software License Agreement Version 2.0 (the "License").
+ * Please refer to the License for details. You may not use this file except in compliance with the License.
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+ * See LICENSE in the root of the software repository for the full text of the License.
+ */
+#include "kernel_operator.h"
+#include <cfloat>
+#include <type_traits>
+__aicore__ inline void candidate_vf(__ubuf__ float* inputUbAddr, __ubuf__ float* labelsUbAddr,
+                                    __ubuf__ float* maxUbAddr, __ubuf__ float* sumUbAddr,
+                                    __ubuf__ float* logUbAddr, __ubuf__ float* outUbAddr,
+                                    __ubuf__ float* backProbAddr) {
+    uint16_t nTimes = 48, repeatTimes1 = 1, tailLoopTimes = 0;
+    uint32_t vfLen = 64, rOnceNumTAlign = 64, rOnceNumAlign = 64, tailNum = 0;
+    __VEC_SCOPE__ {
+        vector_bool copyOutReg = pset_b32(PAT_ALL);
+        vector_f32 maxReg;
+        vector_f32 sumReg;
+        vector_f32 logReg;
+        vector_f32 srcReg0;
+        vector_f32 srcReg1;
+        vector_f32 srcRegfp32;
+        vector_f32 srcReg1fp32;
+        vector_f32 subReg;
+        vector_f32 expReg;
+        vector_f32 tmpReg;
+
+        vector_f32 outReg;
+        vector_f32 outReg1;
+        vector_f32 backPropReg;
+        vector_bool preg = plt_b32(tailNum, POST_UPDATE);
+        {
+            vector_f32 expReg_u0;
+            vector_f32 expReg_u1;
+            vector_f32 expReg_u2;
+            vector_f32 expReg_u3;
+            vector_f32 expReg_u4;
+            vector_f32 expReg_u5;
+            vector_f32 expReg_u6;
+            vector_f32 expReg_u7;
+            vector_f32 logReg_u0;
+            vector_f32 logReg_u1;
+            vector_f32 logReg_u2;
+            vector_f32 logReg_u3;
+            vector_f32 logReg_u4;
+            vector_f32 logReg_u5;
+            vector_f32 logReg_u6;
+            vector_f32 logReg_u7;
+            vector_f32 maxReg_u0;
+            vector_f32 maxReg_u1;
+            vector_f32 maxReg_u2;
+            vector_f32 maxReg_u3;
+            vector_f32 maxReg_u4;
+            vector_f32 maxReg_u5;
+            vector_f32 maxReg_u6;
+            vector_f32 maxReg_u7;
+            vector_f32 outReg_u0;
+            vector_f32 outReg_u1;
+            vector_f32 outReg_u2;
+            vector_f32 outReg_u3;
+            vector_f32 outReg_u4;
+            vector_f32 outReg_u5;
+            vector_f32 outReg_u6;
+            vector_f32 outReg_u7;
+            vector_f32 outReg1_u0;
+            vector_f32 outReg1_u1;
+            vector_f32 outReg1_u2;
+            vector_f32 outReg1_u3;
+            vector_f32 outReg1_u4;
+            vector_f32 outReg1_u5;
+            vector_f32 outReg1_u6;
+            vector_f32 outReg1_u7;
+            vector_f32 srcReg1fp32_u0;
+            vector_f32 srcReg1fp32_u1;
+            vector_f32 srcReg1fp32_u2;
+            vector_f32 srcReg1fp32_u3;
+            vector_f32 srcReg1fp32_u4;
+            vector_f32 srcReg1fp32_u5;
+            vector_f32 srcReg1fp32_u6;
+            vector_f32 srcReg1fp32_u7;
+            vector_f32 srcRegfp32_u0;
+            vector_f32 srcRegfp32_u1;
+            vector_f32 srcRegfp32_u2;
+            vector_f32 srcRegfp32_u3;
+            vector_f32 srcRegfp32_u4;
+            vector_f32 srcRegfp32_u5;
+            vector_f32 srcRegfp32_u6;
+            vector_f32 srcRegfp32_u7;
+            vector_f32 subReg_u0;
+            vector_f32 subReg_u1;
+            vector_f32 subReg_u2;
+            vector_f32 subReg_u3;
+            vector_f32 subReg_u4;
+            vector_f32 subReg_u5;
+            vector_f32 subReg_u6;
+            vector_f32 subReg_u7;
+            vector_f32 sumReg_u0;
+            vector_f32 sumReg_u1;
+            vector_f32 sumReg_u2;
+            vector_f32 sumReg_u3;
+            vector_f32 sumReg_u4;
+            vector_f32 sumReg_u5;
+            vector_f32 sumReg_u6;
+            vector_f32 sumReg_u7;
+            vector_f32 tmpReg_u0;
+            vector_f32 tmpReg_u1;
+            vector_f32 tmpReg_u2;
+            vector_f32 tmpReg_u3;
+            vector_f32 tmpReg_u4;
+            vector_f32 tmpReg_u5;
+            vector_f32 tmpReg_u6;
+            vector_f32 tmpReg_u7;
+#pragma unroll 1
+            for (uint32_t i = 0; i < 48; i += 8) {
+                vlds(maxReg_u0, maxUbAddr + (i + 0), 0, BRC_B32);
+                vlds(maxReg_u1, maxUbAddr + (i + 1), 0, BRC_B32);
+                vlds(maxReg_u2, maxUbAddr + (i + 2), 0, BRC_B32);
+                vlds(maxReg_u3, maxUbAddr + (i + 3), 0, BRC_B32);
+                vlds(maxReg_u4, maxUbAddr + (i + 4), 0, BRC_B32);
+                vlds(maxReg_u5, maxUbAddr + (i + 5), 0, BRC_B32);
+                vlds(maxReg_u6, maxUbAddr + (i + 6), 0, BRC_B32);
+                vlds(maxReg_u7, maxUbAddr + (i + 7), 0, BRC_B32);
+                vlds(sumReg_u0, sumUbAddr + (i + 0), 0, BRC_B32);
+                vlds(sumReg_u1, sumUbAddr + (i + 1), 0, BRC_B32);
+                vlds(sumReg_u2, sumUbAddr + (i + 2), 0, BRC_B32);
+                vlds(sumReg_u3, sumUbAddr + (i + 3), 0, BRC_B32);
+                vlds(sumReg_u4, sumUbAddr + (i + 4), 0, BRC_B32);
+                vlds(sumReg_u5, sumUbAddr + (i + 5), 0, BRC_B32);
+                vlds(sumReg_u6, sumUbAddr + (i + 6), 0, BRC_B32);
+                vlds(sumReg_u7, sumUbAddr + (i + 7), 0, BRC_B32);
+                vlds(logReg_u0, logUbAddr + (i + 0), 0, BRC_B32);
+                vlds(logReg_u1, logUbAddr + (i + 1), 0, BRC_B32);
+                vlds(logReg_u2, logUbAddr + (i + 2), 0, BRC_B32);
+                vlds(logReg_u3, logUbAddr + (i + 3), 0, BRC_B32);
+                vlds(logReg_u4, logUbAddr + (i + 4), 0, BRC_B32);
+                vlds(logReg_u5, logUbAddr + (i + 5), 0, BRC_B32);
+                vlds(logReg_u6, logUbAddr + (i + 6), 0, BRC_B32);
+                vlds(logReg_u7, logUbAddr + (i + 7), 0, BRC_B32);
+#pragma unroll 1
+                for (uint16_t j = 0; j < repeatTimes1; j++) {
+                    uint32_t srcOffset = (((i + 0)) * (rOnceNumTAlign) + (j) * (vfLen));
+                    uint32_t outOffset = (((i + 0)) * (rOnceNumAlign) + (j) * (vfLen));
+
+                    vlds(srcRegfp32_u0, inputUbAddr, srcOffset, NORM);
+                    vlds(srcReg1fp32_u0, labelsUbAddr, srcOffset, NORM);
+
+                    vsub(subReg_u0, srcRegfp32_u0, maxReg_u0, copyOutReg, MODE_ZEROING);
+                    vexp(expReg_u0, subReg_u0, copyOutReg, MODE_ZEROING);
+                    vdiv(expReg_u0, expReg_u0, sumReg_u0, copyOutReg, MODE_ZEROING);
+                    vsub(expReg_u0, expReg_u0, srcReg1fp32_u0, copyOutReg, MODE_ZEROING);
+                    vsub(tmpReg_u0, logReg_u0, subReg_u0, copyOutReg, MODE_ZEROING);
+                    vmul(tmpReg_u0, tmpReg_u0, srcReg1fp32_u0, copyOutReg, MODE_ZEROING);
+                    vlds(outReg_u0, outUbAddr, outOffset, NORM);
+                    vadd(outReg1_u0, tmpReg_u0, outReg_u0, copyOutReg, MODE_ZEROING);
+                    vsts(outReg1_u0, outUbAddr, outOffset, NORM_B32, copyOutReg);
+
+                    vsts(expReg_u0, backProbAddr, srcOffset, NORM_B32, copyOutReg);
+                }
+#pragma unroll 1
+                for (uint16_t j = 0; j < repeatTimes1; j++) {
+                    uint32_t srcOffset = (((i + 1)) * (rOnceNumTAlign) + (j) * (vfLen));
+                    uint32_t outOffset = (((i + 1)) * (rOnceNumAlign) + (j) * (vfLen));
+
+                    vlds(srcRegfp32_u1, inputUbAddr, srcOffset, NORM);
+                    vlds(srcReg1fp32_u1, labelsUbAddr, srcOffset, NORM);
+
+                    vsub(subReg_u1, srcRegfp32_u1, maxReg_u1, copyOutReg, MODE_ZEROING);
+                    vexp(expReg_u1, subReg_u1, copyOutReg, MODE_ZEROING);
+                    vdiv(expReg_u1, expReg_u1, sumReg_u1, copyOutReg, MODE_ZEROING);
+                    vsub(expReg_u1, expReg_u1, srcReg1fp32_u1, copyOutReg, MODE_ZEROING);
+                    vsub(tmpReg_u1, logReg_u1, subReg_u1, copyOutReg, MODE_ZEROING);
+                    vmul(tmpReg_u1, tmpReg_u1, srcReg1fp32_u1, copyOutReg, MODE_ZEROING);
+                    vlds(outReg_u1, outUbAddr, outOffset, NORM);
+                    vadd(outReg1_u1, tmpReg_u1, outReg_u1, copyOutReg, MODE_ZEROING);
+                    vsts(outReg1_u1, outUbAddr, outOffset, NORM_B32, copyOutReg);
+
+                    vsts(expReg_u1, backProbAddr, srcOffset, NORM_B32, copyOutReg);
+                }
+#pragma unroll 1
+                for (uint16_t j = 0; j < repeatTimes1; j++) {
+                    uint32_t srcOffset = (((i + 2)) * (rOnceNumTAlign) + (j) * (vfLen));
+                    uint32_t outOffset = (((i + 2)) * (rOnceNumAlign) + (j) * (vfLen));
+
+                    vlds(srcRegfp32_u2, inputUbAddr, srcOffset, NORM);
+                    vlds(srcReg1fp32_u2, labelsUbAddr, srcOffset, NORM);
+
+                    vsub(subReg_u2, srcRegfp32_u2, maxReg_u2, copyOutReg, MODE_ZEROING);
+                    vexp(expReg_u2, subReg_u2, copyOutReg, MODE_ZEROING);
+                    vdiv(expReg_u2, expReg_u2, sumReg_u2, copyOutReg, MODE_ZEROING);
+                    vsub(expReg_u2, expReg_u2, srcReg1fp32_u2, copyOutReg, MODE_ZEROING);
+                    vsub(tmpReg_u2, logReg_u2, subReg_u2, copyOutReg, MODE_ZEROING);
+                    vmul(tmpReg_u2, tmpReg_u2, srcReg1fp32_u2, copyOutReg, MODE_ZEROING);
+                    vlds(outReg_u2, outUbAddr, outOffset, NORM);
+                    vadd(outReg1_u2, tmpReg_u2, outReg_u2, copyOutReg, MODE_ZEROING);
+                    vsts(outReg1_u2, outUbAddr, outOffset, NORM_B32, copyOutReg);
+
+                    vsts(expReg_u2, backProbAddr, srcOffset, NORM_B32, copyOutReg);
+                }
+#pragma unroll 1
+                for (uint16_t j = 0; j < repeatTimes1; j++) {
+                    uint32_t srcOffset = (((i + 3)) * (rOnceNumTAlign) + (j) * (vfLen));
+                    uint32_t outOffset = (((i + 3)) * (rOnceNumAlign) + (j) * (vfLen));
+
+                    vlds(srcRegfp32_u3, inputUbAddr, srcOffset, NORM);
+                    vlds(srcReg1fp32_u3, labelsUbAddr, srcOffset, NORM);
+
+                    vsub(subReg_u3, srcRegfp32_u3, maxReg_u3, copyOutReg, MODE_ZEROING);
+                    vexp(expReg_u3, subReg_u3, copyOutReg, MODE_ZEROING);
+                    vdiv(expReg_u3, expReg_u3, sumReg_u3, copyOutReg, MODE_ZEROING);
+                    vsub(expReg_u3, expReg_u3, srcReg1fp32_u3, copyOutReg, MODE_ZEROING);
+                    vsub(tmpReg_u3, logReg_u3, subReg_u3, copyOutReg, MODE_ZEROING);
+                    vmul(tmpReg_u3, tmpReg_u3, srcReg1fp32_u3, copyOutReg, MODE_ZEROING);
+                    vlds(outReg_u3, outUbAddr, outOffset, NORM);
+                    vadd(outReg1_u3, tmpReg_u3, outReg_u3, copyOutReg, MODE_ZEROING);
+                    vsts(outReg1_u3, outUbAddr, outOffset, NORM_B32, copyOutReg);
+
+                    vsts(expReg_u3, backProbAddr, srcOffset, NORM_B32, copyOutReg);
+                }
+#pragma unroll 1
+                for (uint16_t j = 0; j < repeatTimes1; j++) {
+                    uint32_t srcOffset = (((i + 4)) * (rOnceNumTAlign) + (j) * (vfLen));
+                    uint32_t outOffset = (((i + 4)) * (rOnceNumAlign) + (j) * (vfLen));
+
+                    vlds(srcRegfp32_u4, inputUbAddr, srcOffset, NORM);
+                    vlds(srcReg1fp32_u4, labelsUbAddr, srcOffset, NORM);
+
+                    vsub(subReg_u4, srcRegfp32_u4, maxReg_u4, copyOutReg, MODE_ZEROING);
+                    vexp(expReg_u4, subReg_u4, copyOutReg, MODE_ZEROING);
+                    vdiv(expReg_u4, expReg_u4, sumReg_u4, copyOutReg, MODE_ZEROING);
+                    vsub(expReg_u4, expReg_u4, srcReg1fp32_u4, copyOutReg, MODE_ZEROING);
+                    vsub(tmpReg_u4, logReg_u4, subReg_u4, copyOutReg, MODE_ZEROING);
+                    vmul(tmpReg_u4, tmpReg_u4, srcReg1fp32_u4, copyOutReg, MODE_ZEROING);
+                    vlds(outReg_u4, outUbAddr, outOffset, NORM);
+                    vadd(outReg1_u4, tmpReg_u4, outReg_u4, copyOutReg, MODE_ZEROING);
+                    vsts(outReg1_u4, outUbAddr, outOffset, NORM_B32, copyOutReg);
+
+                    vsts(expReg_u4, backProbAddr, srcOffset, NORM_B32, copyOutReg);
+                }
+#pragma unroll 1
+                for (uint16_t j = 0; j < repeatTimes1; j++) {
+                    uint32_t srcOffset = (((i + 5)) * (rOnceNumTAlign) + (j) * (vfLen));
+                    uint32_t outOffset = (((i + 5)) * (rOnceNumAlign) + (j) * (vfLen));
+
+                    vlds(srcRegfp32_u5, inputUbAddr, srcOffset, NORM);
+                    vlds(srcReg1fp32_u5, labelsUbAddr, srcOffset, NORM);
+
+                    vsub(subReg_u5, srcRegfp32_u5, maxReg_u5, copyOutReg, MODE_ZEROING);
+                    vexp(expReg_u5, subReg_u5, copyOutReg, MODE_ZEROING);
+                    vdiv(expReg_u5, expReg_u5, sumReg_u5, copyOutReg, MODE_ZEROING);
+                    vsub(expReg_u5, expReg_u5, srcReg1fp32_u5, copyOutReg, MODE_ZEROING);
+                    vsub(tmpReg_u5, logReg_u5, subReg_u5, copyOutReg, MODE_ZEROING);
+                    vmul(tmpReg_u5, tmpReg_u5, srcReg1fp32_u5, copyOutReg, MODE_ZEROING);
+                    vlds(outReg_u5, outUbAddr, outOffset, NORM);
+                    vadd(outReg1_u5, tmpReg_u5, outReg_u5, copyOutReg, MODE_ZEROING);
+                    vsts(outReg1_u5, outUbAddr, outOffset, NORM_B32, copyOutReg);
+
+                    vsts(expReg_u5, backProbAddr, srcOffset, NORM_B32, copyOutReg);
+                }
+#pragma unroll 1
+                for (uint16_t j = 0; j < repeatTimes1; j++) {
+                    uint32_t srcOffset = (((i + 6)) * (rOnceNumTAlign) + (j) * (vfLen));
+                    uint32_t outOffset = (((i + 6)) * (rOnceNumAlign) + (j) * (vfLen));
+
+                    vlds(srcRegfp32_u6, inputUbAddr, srcOffset, NORM);
+                    vlds(srcReg1fp32_u6, labelsUbAddr, srcOffset, NORM);
+
+                    vsub(subReg_u6, srcRegfp32_u6, maxReg_u6, copyOutReg, MODE_ZEROING);
+                    vexp(expReg_u6, subReg_u6, copyOutReg, MODE_ZEROING);
+                    vdiv(expReg_u6, expReg_u6, sumReg_u6, copyOutReg, MODE_ZEROING);
+                    vsub(expReg_u6, expReg_u6, srcReg1fp32_u6, copyOutReg, MODE_ZEROING);
+                    vsub(tmpReg_u6, logReg_u6, subReg_u6, copyOutReg, MODE_ZEROING);
+                    vmul(tmpReg_u6, tmpReg_u6, srcReg1fp32_u6, copyOutReg, MODE_ZEROING);
+                    vlds(outReg_u6, outUbAddr, outOffset, NORM);
+                    vadd(outReg1_u6, tmpReg_u6, outReg_u6, copyOutReg, MODE_ZEROING);
+                    vsts(outReg1_u6, outUbAddr, outOffset, NORM_B32, copyOutReg);
+
+                    vsts(expReg_u6, backProbAddr, srcOffset, NORM_B32, copyOutReg);
+                }
+#pragma unroll 1
+                for (uint16_t j = 0; j < repeatTimes1; j++) {
+                    uint32_t srcOffset = (((i + 7)) * (rOnceNumTAlign) + (j) * (vfLen));
+                    uint32_t outOffset = (((i + 7)) * (rOnceNumAlign) + (j) * (vfLen));
+
+                    vlds(srcRegfp32_u7, inputUbAddr, srcOffset, NORM);
+                    vlds(srcReg1fp32_u7, labelsUbAddr, srcOffset, NORM);
+
+                    vsub(subReg_u7, srcRegfp32_u7, maxReg_u7, copyOutReg, MODE_ZEROING);
+                    vexp(expReg_u7, subReg_u7, copyOutReg, MODE_ZEROING);
+                    vdiv(expReg_u7, expReg_u7, sumReg_u7, copyOutReg, MODE_ZEROING);
+                    vsub(expReg_u7, expReg_u7, srcReg1fp32_u7, copyOutReg, MODE_ZEROING);
+                    vsub(tmpReg_u7, logReg_u7, subReg_u7, copyOutReg, MODE_ZEROING);
+                    vmul(tmpReg_u7, tmpReg_u7, srcReg1fp32_u7, copyOutReg, MODE_ZEROING);
+                    vlds(outReg_u7, outUbAddr, outOffset, NORM);
+                    vadd(outReg1_u7, tmpReg_u7, outReg_u7, copyOutReg, MODE_ZEROING);
+                    vsts(outReg1_u7, outUbAddr, outOffset, NORM_B32, copyOutReg);
+
+                    vsts(expReg_u7, backProbAddr, srcOffset, NORM_B32, copyOutReg);
+                }
+#pragma unroll 1
+                for (uint16_t k = 0; k < tailLoopTimes; k++) {
+
+                    vlds(srcRegfp32_u0,
+                         inputUbAddr + (i + 0) * rOnceNumTAlign + repeatTimes1 * vfLen, 0, NORM);
+                    vlds(srcReg1fp32_u0,
+                         labelsUbAddr + (i + 0) * rOnceNumTAlign + repeatTimes1 * vfLen, 0, NORM);
+
+                    vsub(subReg_u0, srcRegfp32_u0, maxReg_u0, preg, MODE_ZEROING);
+                    vexp(expReg_u0, subReg_u0, preg, MODE_ZEROING);
+                    vdiv(expReg_u0, expReg_u0, sumReg_u0, preg, MODE_ZEROING);
+                    vsub(expReg_u0, expReg_u0, srcReg1fp32_u0, preg, MODE_ZEROING);
+                    vsub(logReg_u0, logReg_u0, subReg_u0, preg, MODE_ZEROING);
+                    vmul(logReg_u0, logReg_u0, srcReg1fp32_u0, preg, MODE_ZEROING);
+                    vlds(outReg_u0, outUbAddr + (i + 0) * rOnceNumAlign + repeatTimes1 * vfLen, 0,
+                         NORM);
+                    vadd(outReg1_u0, logReg_u0, outReg_u0, preg, MODE_ZEROING);
+                    vsts(outReg1_u0, outUbAddr + (i + 0) * rOnceNumAlign + repeatTimes1 * vfLen, 0,
+                         NORM_B32, preg);
+
+                    vsts(expReg_u0, backProbAddr + (i + 0) * rOnceNumTAlign + repeatTimes1 * vfLen,
+                         0, NORM_B32, preg);
+                }
+#pragma unroll 1
+                for (uint16_t k = 0; k < tailLoopTimes; k++) {
+
+                    vlds(srcRegfp32_u1,
+                         inputUbAddr + (i + 1) * rOnceNumTAlign + repeatTimes1 * vfLen, 0, NORM);
+                    vlds(srcReg1fp32_u1,
+                         labelsUbAddr + (i + 1) * rOnceNumTAlign + repeatTimes1 * vfLen, 0, NORM);
+
+                    vsub(subReg_u1, srcRegfp32_u1, maxReg_u1, preg, MODE_ZEROING);
+                    vexp(expReg_u1, subReg_u1, preg, MODE_ZEROING);
+                    vdiv(expReg_u1, expReg_u1, sumReg_u1, preg, MODE_ZEROING);
+                    vsub(expReg_u1, expReg_u1, srcReg1fp32_u1, preg, MODE_ZEROING);
+                    vsub(logReg_u1, logReg_u1, subReg_u1, preg, MODE_ZEROING);
+                    vmul(logReg_u1, logReg_u1, srcReg1fp32_u1, preg, MODE_ZEROING);
+                    vlds(outReg_u1, outUbAddr + (i + 1) * rOnceNumAlign + repeatTimes1 * vfLen, 0,
+                         NORM);
+                    vadd(outReg1_u1, logReg_u1, outReg_u1, preg, MODE_ZEROING);
+                    vsts(outReg1_u1, outUbAddr + (i + 1) * rOnceNumAlign + repeatTimes1 * vfLen, 0,
+                         NORM_B32, preg);
+
+                    vsts(expReg_u1, backProbAddr + (i + 1) * rOnceNumTAlign + repeatTimes1 * vfLen,
+                         0, NORM_B32, preg);
+                }
+#pragma unroll 1
+                for (uint16_t k = 0; k < tailLoopTimes; k++) {
+
+                    vlds(srcRegfp32_u2,
+                         inputUbAddr + (i + 2) * rOnceNumTAlign + repeatTimes1 * vfLen, 0, NORM);
+                    vlds(srcReg1fp32_u2,
+                         labelsUbAddr + (i + 2) * rOnceNumTAlign + repeatTimes1 * vfLen, 0, NORM);
+
+                    vsub(subReg_u2, srcRegfp32_u2, maxReg_u2, preg, MODE_ZEROING);
+                    vexp(expReg_u2, subReg_u2, preg, MODE_ZEROING);
+                    vdiv(expReg_u2, expReg_u2, sumReg_u2, preg, MODE_ZEROING);
+                    vsub(expReg_u2, expReg_u2, srcReg1fp32_u2, preg, MODE_ZEROING);
+                    vsub(logReg_u2, logReg_u2, subReg_u2, preg, MODE_ZEROING);
+                    vmul(logReg_u2, logReg_u2, srcReg1fp32_u2, preg, MODE_ZEROING);
+                    vlds(outReg_u2, outUbAddr + (i + 2) * rOnceNumAlign + repeatTimes1 * vfLen, 0,
+                         NORM);
+                    vadd(outReg1_u2, logReg_u2, outReg_u2, preg, MODE_ZEROING);
+                    vsts(outReg1_u2, outUbAddr + (i + 2) * rOnceNumAlign + repeatTimes1 * vfLen, 0,
+                         NORM_B32, preg);
+
+                    vsts(expReg_u2, backProbAddr + (i + 2) * rOnceNumTAlign + repeatTimes1 * vfLen,
+                         0, NORM_B32, preg);
+                }
+#pragma unroll 1
+                for (uint16_t k = 0; k < tailLoopTimes; k++) {
+
+                    vlds(srcRegfp32_u3,
+                         inputUbAddr + (i + 3) * rOnceNumTAlign + repeatTimes1 * vfLen, 0, NORM);
+                    vlds(srcReg1fp32_u3,
+                         labelsUbAddr + (i + 3) * rOnceNumTAlign + repeatTimes1 * vfLen, 0, NORM);
+
+                    vsub(subReg_u3, srcRegfp32_u3, maxReg_u3, preg, MODE_ZEROING);
+                    vexp(expReg_u3, subReg_u3, preg, MODE_ZEROING);
+                    vdiv(expReg_u3, expReg_u3, sumReg_u3, preg, MODE_ZEROING);
+                    vsub(expReg_u3, expReg_u3, srcReg1fp32_u3, preg, MODE_ZEROING);
+                    vsub(logReg_u3, logReg_u3, subReg_u3, preg, MODE_ZEROING);
+                    vmul(logReg_u3, logReg_u3, srcReg1fp32_u3, preg, MODE_ZEROING);
+                    vlds(outReg_u3, outUbAddr + (i + 3) * rOnceNumAlign + repeatTimes1 * vfLen, 0,
+                         NORM);
+                    vadd(outReg1_u3, logReg_u3, outReg_u3, preg, MODE_ZEROING);
+                    vsts(outReg1_u3, outUbAddr + (i + 3) * rOnceNumAlign + repeatTimes1 * vfLen, 0,
+                         NORM_B32, preg);
+
+                    vsts(expReg_u3, backProbAddr + (i + 3) * rOnceNumTAlign + repeatTimes1 * vfLen,
+                         0, NORM_B32, preg);
+                }
+#pragma unroll 1
+                for (uint16_t k = 0; k < tailLoopTimes; k++) {
+
+                    vlds(srcRegfp32_u4,
+                         inputUbAddr + (i + 4) * rOnceNumTAlign + repeatTimes1 * vfLen, 0, NORM);
+                    vlds(srcReg1fp32_u4,
+                         labelsUbAddr + (i + 4) * rOnceNumTAlign + repeatTimes1 * vfLen, 0, NORM);
+
+                    vsub(subReg_u4, srcRegfp32_u4, maxReg_u4, preg, MODE_ZEROING);
+                    vexp(expReg_u4, subReg_u4, preg, MODE_ZEROING);
+                    vdiv(expReg_u4, expReg_u4, sumReg_u4, preg, MODE_ZEROING);
+                    vsub(expReg_u4, expReg_u4, srcReg1fp32_u4, preg, MODE_ZEROING);
+                    vsub(logReg_u4, logReg_u4, subReg_u4, preg, MODE_ZEROING);
+                    vmul(logReg_u4, logReg_u4, srcReg1fp32_u4, preg, MODE_ZEROING);
+                    vlds(outReg_u4, outUbAddr + (i + 4) * rOnceNumAlign + repeatTimes1 * vfLen, 0,
+                         NORM);
+                    vadd(outReg1_u4, logReg_u4, outReg_u4, preg, MODE_ZEROING);
+                    vsts(outReg1_u4, outUbAddr + (i + 4) * rOnceNumAlign + repeatTimes1 * vfLen, 0,
+                         NORM_B32, preg);
+
+                    vsts(expReg_u4, backProbAddr + (i + 4) * rOnceNumTAlign + repeatTimes1 * vfLen,
+                         0, NORM_B32, preg);
+                }
+#pragma unroll 1
+                for (uint16_t k = 0; k < tailLoopTimes; k++) {
+
+                    vlds(srcRegfp32_u5,
+                         inputUbAddr + (i + 5) * rOnceNumTAlign + repeatTimes1 * vfLen, 0, NORM);
+                    vlds(srcReg1fp32_u5,
+                         labelsUbAddr + (i + 5) * rOnceNumTAlign + repeatTimes1 * vfLen, 0, NORM);
+
+                    vsub(subReg_u5, srcRegfp32_u5, maxReg_u5, preg, MODE_ZEROING);
+                    vexp(expReg_u5, subReg_u5, preg, MODE_ZEROING);
+                    vdiv(expReg_u5, expReg_u5, sumReg_u5, preg, MODE_ZEROING);
+                    vsub(expReg_u5, expReg_u5, srcReg1fp32_u5, preg, MODE_ZEROING);
+                    vsub(logReg_u5, logReg_u5, subReg_u5, preg, MODE_ZEROING);
+                    vmul(logReg_u5, logReg_u5, srcReg1fp32_u5, preg, MODE_ZEROING);
+                    vlds(outReg_u5, outUbAddr + (i + 5) * rOnceNumAlign + repeatTimes1 * vfLen, 0,
+                         NORM);
+                    vadd(outReg1_u5, logReg_u5, outReg_u5, preg, MODE_ZEROING);
+                    vsts(outReg1_u5, outUbAddr + (i + 5) * rOnceNumAlign + repeatTimes1 * vfLen, 0,
+                         NORM_B32, preg);
+
+                    vsts(expReg_u5, backProbAddr + (i + 5) * rOnceNumTAlign + repeatTimes1 * vfLen,
+                         0, NORM_B32, preg);
+                }
+#pragma unroll 1
+                for (uint16_t k = 0; k < tailLoopTimes; k++) {
+
+                    vlds(srcRegfp32_u6,
+                         inputUbAddr + (i + 6) * rOnceNumTAlign + repeatTimes1 * vfLen, 0, NORM);
+                    vlds(srcReg1fp32_u6,
+                         labelsUbAddr + (i + 6) * rOnceNumTAlign + repeatTimes1 * vfLen, 0, NORM);
+
+                    vsub(subReg_u6, srcRegfp32_u6, maxReg_u6, preg, MODE_ZEROING);
+                    vexp(expReg_u6, subReg_u6, preg, MODE_ZEROING);
+                    vdiv(expReg_u6, expReg_u6, sumReg_u6, preg, MODE_ZEROING);
+                    vsub(expReg_u6, expReg_u6, srcReg1fp32_u6, preg, MODE_ZEROING);
+                    vsub(logReg_u6, logReg_u6, subReg_u6, preg, MODE_ZEROING);
+                    vmul(logReg_u6, logReg_u6, srcReg1fp32_u6, preg, MODE_ZEROING);
+                    vlds(outReg_u6, outUbAddr + (i + 6) * rOnceNumAlign + repeatTimes1 * vfLen, 0,
+                         NORM);
+                    vadd(outReg1_u6, logReg_u6, outReg_u6, preg, MODE_ZEROING);
+                    vsts(outReg1_u6, outUbAddr + (i + 6) * rOnceNumAlign + repeatTimes1 * vfLen, 0,
+                         NORM_B32, preg);
+
+                    vsts(expReg_u6, backProbAddr + (i + 6) * rOnceNumTAlign + repeatTimes1 * vfLen,
+                         0, NORM_B32, preg);
+                }
+#pragma unroll 1
+                for (uint16_t k = 0; k < tailLoopTimes; k++) {
+
+                    vlds(srcRegfp32_u7,
+                         inputUbAddr + (i + 7) * rOnceNumTAlign + repeatTimes1 * vfLen, 0, NORM);
+                    vlds(srcReg1fp32_u7,
+                         labelsUbAddr + (i + 7) * rOnceNumTAlign + repeatTimes1 * vfLen, 0, NORM);
+
+                    vsub(subReg_u7, srcRegfp32_u7, maxReg_u7, preg, MODE_ZEROING);
+                    vexp(expReg_u7, subReg_u7, preg, MODE_ZEROING);
+                    vdiv(expReg_u7, expReg_u7, sumReg_u7, preg, MODE_ZEROING);
+                    vsub(expReg_u7, expReg_u7, srcReg1fp32_u7, preg, MODE_ZEROING);
+                    vsub(logReg_u7, logReg_u7, subReg_u7, preg, MODE_ZEROING);
+                    vmul(logReg_u7, logReg_u7, srcReg1fp32_u7, preg, MODE_ZEROING);
+                    vlds(outReg_u7, outUbAddr + (i + 7) * rOnceNumAlign + repeatTimes1 * vfLen, 0,
+                         NORM);
+                    vadd(outReg1_u7, logReg_u7, outReg_u7, preg, MODE_ZEROING);
+                    vsts(outReg1_u7, outUbAddr + (i + 7) * rOnceNumAlign + repeatTimes1 * vfLen, 0,
+                         NORM_B32, preg);
+
+                    vsts(expReg_u7, backProbAddr + (i + 7) * rOnceNumTAlign + repeatTimes1 * vfLen,
+                         0, NORM_B32, preg);
+                }
+            }
+        }
+    }
+}
+extern "C" __global__ __aicore__ void candidate_kernel(__gm__ uint8_t* input,
+                                                       __gm__ uint8_t* output) {
+    __ubuf__ float* inputUbAddr = (__ubuf__ float*)get_imm(0);
+    __ubuf__ float* labelsUbAddr = (__ubuf__ float*)get_imm(12288);
+    __ubuf__ float* maxUbAddr = (__ubuf__ float*)get_imm(24576);
+    __ubuf__ float* sumUbAddr = (__ubuf__ float*)get_imm(24832);
+    __ubuf__ float* logUbAddr = (__ubuf__ float*)get_imm(25088);
+    __ubuf__ float* outUbAddr = (__ubuf__ float*)get_imm(25344);
+    __ubuf__ float* backProbAddr = (__ubuf__ float*)get_imm(37632);
+    copy_gm_to_ubuf_align_v2((__ubuf__ uint8_t*)get_imm(0), input, 0, 1, 37632, 0, 0, 0, 0, 0, 0);
+    set_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    wait_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    candidate_vf(inputUbAddr, labelsUbAddr, maxUbAddr, sumUbAddr, logUbAddr, outUbAddr,
+                 backProbAddr);
+    set_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    wait_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    copy_ubuf_to_gm_align_v2(output + 0, (__ubuf__ uint8_t*)outUbAddr, 0, 1, 12288, 0, 0, 0);
+    copy_ubuf_to_gm_align_v2(output + 12288, (__ubuf__ uint8_t*)backProbAddr, 0, 1, 12288, 0, 0, 0);
+}

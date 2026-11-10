@@ -1,0 +1,584 @@
+/**
+ * Copyright (c) 2026 Huawei Technologies Co., Ltd.
+ * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+ * CANN Open Software License Agreement Version 2.0 (the "License").
+ * Please refer to the License for details. You may not use this file except in compliance with the License.
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+ * See LICENSE in the root of the software repository for the full text of the License.
+ */
+#include "kernel_operator.h"
+#include <cfloat>
+#include <type_traits>
+__aicore__ inline void candidate_vf(__ubuf__ float* mmPartial, __ubuf__ float* rmsPartial,
+                                    __ubuf__ float* mmOut, __ubuf__ float* invRmsOut) {
+    uint16_t rowCount = 48, fusionSize = 64, mmSegmentOffset = 0, mmSegmentSize = 64,
+             rmsStride = 48, fourLoopCount = 1, tailLoopCount = 0;
+    uint32_t mmGroupStride = 3072;
+    float scaleMean = 0.25f, normEps = 1e-5f;
+    __VEC_SCOPE__ {
+        vector_f32 rms0;
+        vector_f32 rms1;
+        vector_f32 rms2;
+        vector_f32 rms3;
+        vector_f32 mm0;
+        vector_f32 mm1;
+        vector_f32 mm2;
+        vector_f32 mm3;
+        vector_f32 sumRms0;
+        vector_f32 sumRms1;
+        vector_f32 sumRms2;
+        vector_f32 sumRms3;
+        vector_f32 sumMm0;
+        vector_f32 sumMm1;
+        vector_f32 sumMm2;
+        vector_f32 sumMm3;
+        vector_f32 one;
+        uint32_t rmsMaskSize = 1U;
+        uint32_t mmMaskSize = mmSegmentSize;
+        vector_bool rmsMask = plt_b32(rmsMaskSize, POST_UPDATE);
+        vector_bool mmMask = plt_b32(mmMaskSize, POST_UPDATE);
+        vdup(one, 1.0f, rmsMask, MODE_ZEROING);
+
+        {
+            vector_f32 mm0_u0;
+            vector_f32 mm0_u1;
+            vector_f32 mm0_u2;
+            vector_f32 mm0_u3;
+            vector_f32 mm1_u0;
+            vector_f32 mm1_u1;
+            vector_f32 mm1_u2;
+            vector_f32 mm1_u3;
+            vector_f32 mm2_u0;
+            vector_f32 mm2_u1;
+            vector_f32 mm2_u2;
+            vector_f32 mm2_u3;
+            vector_f32 mm3_u0;
+            vector_f32 mm3_u1;
+            vector_f32 mm3_u2;
+            vector_f32 mm3_u3;
+            vector_f32 rms0_u0;
+            vector_f32 rms0_u1;
+            vector_f32 rms0_u2;
+            vector_f32 rms0_u3;
+            vector_f32 rms1_u0;
+            vector_f32 rms1_u1;
+            vector_f32 rms1_u2;
+            vector_f32 rms1_u3;
+            vector_f32 rms2_u0;
+            vector_f32 rms2_u1;
+            vector_f32 rms2_u2;
+            vector_f32 rms2_u3;
+            vector_f32 rms3_u0;
+            vector_f32 rms3_u1;
+            vector_f32 rms3_u2;
+            vector_f32 rms3_u3;
+            vector_f32 sumMm0_u0;
+            vector_f32 sumMm0_u1;
+            vector_f32 sumMm0_u2;
+            vector_f32 sumMm0_u3;
+            vector_f32 sumMm1_u0;
+            vector_f32 sumMm1_u1;
+            vector_f32 sumMm1_u2;
+            vector_f32 sumMm1_u3;
+            vector_f32 sumMm2_u0;
+            vector_f32 sumMm2_u1;
+            vector_f32 sumMm2_u2;
+            vector_f32 sumMm2_u3;
+            vector_f32 sumMm3_u0;
+            vector_f32 sumMm3_u1;
+            vector_f32 sumMm3_u2;
+            vector_f32 sumMm3_u3;
+            vector_f32 sumRms0_u0;
+            vector_f32 sumRms0_u1;
+            vector_f32 sumRms0_u2;
+            vector_f32 sumRms0_u3;
+            vector_f32 sumRms1_u0;
+            vector_f32 sumRms1_u1;
+            vector_f32 sumRms1_u2;
+            vector_f32 sumRms1_u3;
+            vector_f32 sumRms2_u0;
+            vector_f32 sumRms2_u1;
+            vector_f32 sumRms2_u2;
+            vector_f32 sumRms2_u3;
+            vector_f32 sumRms3_u0;
+            vector_f32 sumRms3_u1;
+            vector_f32 sumRms3_u2;
+            vector_f32 sumRms3_u3;
+#pragma unroll 1
+            for (uint32_t row = 0; row < 48; row += 4) {
+                vdup(sumRms0_u0, 0.0f, rmsMask, MODE_ZEROING);
+                vdup(sumRms0_u1, 0.0f, rmsMask, MODE_ZEROING);
+                vdup(sumRms0_u2, 0.0f, rmsMask, MODE_ZEROING);
+                vdup(sumRms0_u3, 0.0f, rmsMask, MODE_ZEROING);
+                vdup(sumRms1_u0, 0.0f, rmsMask, MODE_ZEROING);
+                vdup(sumRms1_u1, 0.0f, rmsMask, MODE_ZEROING);
+                vdup(sumRms1_u2, 0.0f, rmsMask, MODE_ZEROING);
+                vdup(sumRms1_u3, 0.0f, rmsMask, MODE_ZEROING);
+                vdup(sumRms2_u0, 0.0f, rmsMask, MODE_ZEROING);
+                vdup(sumRms2_u1, 0.0f, rmsMask, MODE_ZEROING);
+                vdup(sumRms2_u2, 0.0f, rmsMask, MODE_ZEROING);
+                vdup(sumRms2_u3, 0.0f, rmsMask, MODE_ZEROING);
+                vdup(sumRms3_u0, 0.0f, rmsMask, MODE_ZEROING);
+                vdup(sumRms3_u1, 0.0f, rmsMask, MODE_ZEROING);
+                vdup(sumRms3_u2, 0.0f, rmsMask, MODE_ZEROING);
+                vdup(sumRms3_u3, 0.0f, rmsMask, MODE_ZEROING);
+                vdup(sumMm0_u0, 0.0f, mmMask, MODE_ZEROING);
+                vdup(sumMm0_u1, 0.0f, mmMask, MODE_ZEROING);
+                vdup(sumMm0_u2, 0.0f, mmMask, MODE_ZEROING);
+                vdup(sumMm0_u3, 0.0f, mmMask, MODE_ZEROING);
+                vdup(sumMm1_u0, 0.0f, mmMask, MODE_ZEROING);
+                vdup(sumMm1_u1, 0.0f, mmMask, MODE_ZEROING);
+                vdup(sumMm1_u2, 0.0f, mmMask, MODE_ZEROING);
+                vdup(sumMm1_u3, 0.0f, mmMask, MODE_ZEROING);
+                vdup(sumMm2_u0, 0.0f, mmMask, MODE_ZEROING);
+                vdup(sumMm2_u1, 0.0f, mmMask, MODE_ZEROING);
+                vdup(sumMm2_u2, 0.0f, mmMask, MODE_ZEROING);
+                vdup(sumMm2_u3, 0.0f, mmMask, MODE_ZEROING);
+                vdup(sumMm3_u0, 0.0f, mmMask, MODE_ZEROING);
+                vdup(sumMm3_u1, 0.0f, mmMask, MODE_ZEROING);
+                vdup(sumMm3_u2, 0.0f, mmMask, MODE_ZEROING);
+                vdup(sumMm3_u3, 0.0f, mmMask, MODE_ZEROING);
+#pragma unroll 1
+
+                for (uint16_t loop = 0; loop < fourLoopCount; ++loop) {
+                    uint16_t kBase = loop * 4U;
+                    vlds(rms0_u0,
+                         rmsPartial + (static_cast<uint32_t>(kBase) * rmsStride + (row + 0)), 0,
+                         BRC_B32);
+                    vlds(rms1_u0,
+                         rmsPartial + (static_cast<uint32_t>(kBase + 1U) * rmsStride + (row + 0)),
+                         0, BRC_B32);
+                    vlds(rms2_u0,
+                         rmsPartial + (static_cast<uint32_t>(kBase + 2U) * rmsStride + (row + 0)),
+                         0, BRC_B32);
+                    vlds(rms3_u0,
+                         rmsPartial + (static_cast<uint32_t>(kBase + 3U) * rmsStride + (row + 0)),
+                         0, BRC_B32);
+                    vadd(sumRms0_u0, sumRms0_u0, rms0_u0, rmsMask, MODE_ZEROING);
+                    vadd(sumRms1_u0, sumRms1_u0, rms1_u0, rmsMask, MODE_ZEROING);
+                    vadd(sumRms2_u0, sumRms2_u0, rms2_u0, rmsMask, MODE_ZEROING);
+                    vadd(sumRms3_u0, sumRms3_u0, rms3_u0, rmsMask, MODE_ZEROING);
+
+                    {
+                        __ubuf__ int32_t* cce_load_1_ptr =
+                            (__ubuf__ int32_t*)(mmPartial +
+                                                static_cast<uint32_t>(kBase) * mmGroupStride +
+                                                (row + 0) * fusionSize + mmSegmentOffset);
+                        vector_align cce_load_1_align;
+                        vldas(cce_load_1_align, cce_load_1_ptr);
+                        vldus((vector_s32&)mm0_u0, cce_load_1_align, cce_load_1_ptr);
+                    };
+                    {
+                        __ubuf__ int32_t* cce_load_2_ptr =
+                            (__ubuf__ int32_t*)(mmPartial +
+                                                static_cast<uint32_t>(kBase + 1U) * mmGroupStride +
+                                                (row + 0) * fusionSize + mmSegmentOffset);
+                        vector_align cce_load_2_align;
+                        vldas(cce_load_2_align, cce_load_2_ptr);
+                        vldus((vector_s32&)mm1_u0, cce_load_2_align, cce_load_2_ptr);
+                    };
+                    {
+                        __ubuf__ int32_t* cce_load_3_ptr =
+                            (__ubuf__ int32_t*)(mmPartial +
+                                                static_cast<uint32_t>(kBase + 2U) * mmGroupStride +
+                                                (row + 0) * fusionSize + mmSegmentOffset);
+                        vector_align cce_load_3_align;
+                        vldas(cce_load_3_align, cce_load_3_ptr);
+                        vldus((vector_s32&)mm2_u0, cce_load_3_align, cce_load_3_ptr);
+                    };
+                    {
+                        __ubuf__ int32_t* cce_load_4_ptr =
+                            (__ubuf__ int32_t*)(mmPartial +
+                                                static_cast<uint32_t>(kBase + 3U) * mmGroupStride +
+                                                (row + 0) * fusionSize + mmSegmentOffset);
+                        vector_align cce_load_4_align;
+                        vldas(cce_load_4_align, cce_load_4_ptr);
+                        vldus((vector_s32&)mm3_u0, cce_load_4_align, cce_load_4_ptr);
+                    };
+                    vadd(sumMm0_u0, sumMm0_u0, mm0_u0, mmMask, MODE_ZEROING);
+                    vadd(sumMm1_u0, sumMm1_u0, mm1_u0, mmMask, MODE_ZEROING);
+                    vadd(sumMm2_u0, sumMm2_u0, mm2_u0, mmMask, MODE_ZEROING);
+                    vadd(sumMm3_u0, sumMm3_u0, mm3_u0, mmMask, MODE_ZEROING);
+                }
+#pragma unroll 1
+
+                for (uint16_t loop = 0; loop < fourLoopCount; ++loop) {
+                    uint16_t kBase = loop * 4U;
+                    vlds(rms0_u1,
+                         rmsPartial + (static_cast<uint32_t>(kBase) * rmsStride + (row + 1)), 0,
+                         BRC_B32);
+                    vlds(rms1_u1,
+                         rmsPartial + (static_cast<uint32_t>(kBase + 1U) * rmsStride + (row + 1)),
+                         0, BRC_B32);
+                    vlds(rms2_u1,
+                         rmsPartial + (static_cast<uint32_t>(kBase + 2U) * rmsStride + (row + 1)),
+                         0, BRC_B32);
+                    vlds(rms3_u1,
+                         rmsPartial + (static_cast<uint32_t>(kBase + 3U) * rmsStride + (row + 1)),
+                         0, BRC_B32);
+                    vadd(sumRms0_u1, sumRms0_u1, rms0_u1, rmsMask, MODE_ZEROING);
+                    vadd(sumRms1_u1, sumRms1_u1, rms1_u1, rmsMask, MODE_ZEROING);
+                    vadd(sumRms2_u1, sumRms2_u1, rms2_u1, rmsMask, MODE_ZEROING);
+                    vadd(sumRms3_u1, sumRms3_u1, rms3_u1, rmsMask, MODE_ZEROING);
+
+                    {
+                        __ubuf__ int32_t* cce_load_5_ptr =
+                            (__ubuf__ int32_t*)(mmPartial +
+                                                static_cast<uint32_t>(kBase) * mmGroupStride +
+                                                (row + 1) * fusionSize + mmSegmentOffset);
+                        vector_align cce_load_5_align;
+                        vldas(cce_load_5_align, cce_load_5_ptr);
+                        vldus((vector_s32&)mm0_u1, cce_load_5_align, cce_load_5_ptr);
+                    };
+                    {
+                        __ubuf__ int32_t* cce_load_6_ptr =
+                            (__ubuf__ int32_t*)(mmPartial +
+                                                static_cast<uint32_t>(kBase + 1U) * mmGroupStride +
+                                                (row + 1) * fusionSize + mmSegmentOffset);
+                        vector_align cce_load_6_align;
+                        vldas(cce_load_6_align, cce_load_6_ptr);
+                        vldus((vector_s32&)mm1_u1, cce_load_6_align, cce_load_6_ptr);
+                    };
+                    {
+                        __ubuf__ int32_t* cce_load_7_ptr =
+                            (__ubuf__ int32_t*)(mmPartial +
+                                                static_cast<uint32_t>(kBase + 2U) * mmGroupStride +
+                                                (row + 1) * fusionSize + mmSegmentOffset);
+                        vector_align cce_load_7_align;
+                        vldas(cce_load_7_align, cce_load_7_ptr);
+                        vldus((vector_s32&)mm2_u1, cce_load_7_align, cce_load_7_ptr);
+                    };
+                    {
+                        __ubuf__ int32_t* cce_load_8_ptr =
+                            (__ubuf__ int32_t*)(mmPartial +
+                                                static_cast<uint32_t>(kBase + 3U) * mmGroupStride +
+                                                (row + 1) * fusionSize + mmSegmentOffset);
+                        vector_align cce_load_8_align;
+                        vldas(cce_load_8_align, cce_load_8_ptr);
+                        vldus((vector_s32&)mm3_u1, cce_load_8_align, cce_load_8_ptr);
+                    };
+                    vadd(sumMm0_u1, sumMm0_u1, mm0_u1, mmMask, MODE_ZEROING);
+                    vadd(sumMm1_u1, sumMm1_u1, mm1_u1, mmMask, MODE_ZEROING);
+                    vadd(sumMm2_u1, sumMm2_u1, mm2_u1, mmMask, MODE_ZEROING);
+                    vadd(sumMm3_u1, sumMm3_u1, mm3_u1, mmMask, MODE_ZEROING);
+                }
+#pragma unroll 1
+
+                for (uint16_t loop = 0; loop < fourLoopCount; ++loop) {
+                    uint16_t kBase = loop * 4U;
+                    vlds(rms0_u2,
+                         rmsPartial + (static_cast<uint32_t>(kBase) * rmsStride + (row + 2)), 0,
+                         BRC_B32);
+                    vlds(rms1_u2,
+                         rmsPartial + (static_cast<uint32_t>(kBase + 1U) * rmsStride + (row + 2)),
+                         0, BRC_B32);
+                    vlds(rms2_u2,
+                         rmsPartial + (static_cast<uint32_t>(kBase + 2U) * rmsStride + (row + 2)),
+                         0, BRC_B32);
+                    vlds(rms3_u2,
+                         rmsPartial + (static_cast<uint32_t>(kBase + 3U) * rmsStride + (row + 2)),
+                         0, BRC_B32);
+                    vadd(sumRms0_u2, sumRms0_u2, rms0_u2, rmsMask, MODE_ZEROING);
+                    vadd(sumRms1_u2, sumRms1_u2, rms1_u2, rmsMask, MODE_ZEROING);
+                    vadd(sumRms2_u2, sumRms2_u2, rms2_u2, rmsMask, MODE_ZEROING);
+                    vadd(sumRms3_u2, sumRms3_u2, rms3_u2, rmsMask, MODE_ZEROING);
+
+                    {
+                        __ubuf__ int32_t* cce_load_9_ptr =
+                            (__ubuf__ int32_t*)(mmPartial +
+                                                static_cast<uint32_t>(kBase) * mmGroupStride +
+                                                (row + 2) * fusionSize + mmSegmentOffset);
+                        vector_align cce_load_9_align;
+                        vldas(cce_load_9_align, cce_load_9_ptr);
+                        vldus((vector_s32&)mm0_u2, cce_load_9_align, cce_load_9_ptr);
+                    };
+                    {
+                        __ubuf__ int32_t* cce_load_10_ptr =
+                            (__ubuf__ int32_t*)(mmPartial +
+                                                static_cast<uint32_t>(kBase + 1U) * mmGroupStride +
+                                                (row + 2) * fusionSize + mmSegmentOffset);
+                        vector_align cce_load_10_align;
+                        vldas(cce_load_10_align, cce_load_10_ptr);
+                        vldus((vector_s32&)mm1_u2, cce_load_10_align, cce_load_10_ptr);
+                    };
+                    {
+                        __ubuf__ int32_t* cce_load_11_ptr =
+                            (__ubuf__ int32_t*)(mmPartial +
+                                                static_cast<uint32_t>(kBase + 2U) * mmGroupStride +
+                                                (row + 2) * fusionSize + mmSegmentOffset);
+                        vector_align cce_load_11_align;
+                        vldas(cce_load_11_align, cce_load_11_ptr);
+                        vldus((vector_s32&)mm2_u2, cce_load_11_align, cce_load_11_ptr);
+                    };
+                    {
+                        __ubuf__ int32_t* cce_load_12_ptr =
+                            (__ubuf__ int32_t*)(mmPartial +
+                                                static_cast<uint32_t>(kBase + 3U) * mmGroupStride +
+                                                (row + 2) * fusionSize + mmSegmentOffset);
+                        vector_align cce_load_12_align;
+                        vldas(cce_load_12_align, cce_load_12_ptr);
+                        vldus((vector_s32&)mm3_u2, cce_load_12_align, cce_load_12_ptr);
+                    };
+                    vadd(sumMm0_u2, sumMm0_u2, mm0_u2, mmMask, MODE_ZEROING);
+                    vadd(sumMm1_u2, sumMm1_u2, mm1_u2, mmMask, MODE_ZEROING);
+                    vadd(sumMm2_u2, sumMm2_u2, mm2_u2, mmMask, MODE_ZEROING);
+                    vadd(sumMm3_u2, sumMm3_u2, mm3_u2, mmMask, MODE_ZEROING);
+                }
+#pragma unroll 1
+
+                for (uint16_t loop = 0; loop < fourLoopCount; ++loop) {
+                    uint16_t kBase = loop * 4U;
+                    vlds(rms0_u3,
+                         rmsPartial + (static_cast<uint32_t>(kBase) * rmsStride + (row + 3)), 0,
+                         BRC_B32);
+                    vlds(rms1_u3,
+                         rmsPartial + (static_cast<uint32_t>(kBase + 1U) * rmsStride + (row + 3)),
+                         0, BRC_B32);
+                    vlds(rms2_u3,
+                         rmsPartial + (static_cast<uint32_t>(kBase + 2U) * rmsStride + (row + 3)),
+                         0, BRC_B32);
+                    vlds(rms3_u3,
+                         rmsPartial + (static_cast<uint32_t>(kBase + 3U) * rmsStride + (row + 3)),
+                         0, BRC_B32);
+                    vadd(sumRms0_u3, sumRms0_u3, rms0_u3, rmsMask, MODE_ZEROING);
+                    vadd(sumRms1_u3, sumRms1_u3, rms1_u3, rmsMask, MODE_ZEROING);
+                    vadd(sumRms2_u3, sumRms2_u3, rms2_u3, rmsMask, MODE_ZEROING);
+                    vadd(sumRms3_u3, sumRms3_u3, rms3_u3, rmsMask, MODE_ZEROING);
+
+                    {
+                        __ubuf__ int32_t* cce_load_13_ptr =
+                            (__ubuf__ int32_t*)(mmPartial +
+                                                static_cast<uint32_t>(kBase) * mmGroupStride +
+                                                (row + 3) * fusionSize + mmSegmentOffset);
+                        vector_align cce_load_13_align;
+                        vldas(cce_load_13_align, cce_load_13_ptr);
+                        vldus((vector_s32&)mm0_u3, cce_load_13_align, cce_load_13_ptr);
+                    };
+                    {
+                        __ubuf__ int32_t* cce_load_14_ptr =
+                            (__ubuf__ int32_t*)(mmPartial +
+                                                static_cast<uint32_t>(kBase + 1U) * mmGroupStride +
+                                                (row + 3) * fusionSize + mmSegmentOffset);
+                        vector_align cce_load_14_align;
+                        vldas(cce_load_14_align, cce_load_14_ptr);
+                        vldus((vector_s32&)mm1_u3, cce_load_14_align, cce_load_14_ptr);
+                    };
+                    {
+                        __ubuf__ int32_t* cce_load_15_ptr =
+                            (__ubuf__ int32_t*)(mmPartial +
+                                                static_cast<uint32_t>(kBase + 2U) * mmGroupStride +
+                                                (row + 3) * fusionSize + mmSegmentOffset);
+                        vector_align cce_load_15_align;
+                        vldas(cce_load_15_align, cce_load_15_ptr);
+                        vldus((vector_s32&)mm2_u3, cce_load_15_align, cce_load_15_ptr);
+                    };
+                    {
+                        __ubuf__ int32_t* cce_load_16_ptr =
+                            (__ubuf__ int32_t*)(mmPartial +
+                                                static_cast<uint32_t>(kBase + 3U) * mmGroupStride +
+                                                (row + 3) * fusionSize + mmSegmentOffset);
+                        vector_align cce_load_16_align;
+                        vldas(cce_load_16_align, cce_load_16_ptr);
+                        vldus((vector_s32&)mm3_u3, cce_load_16_align, cce_load_16_ptr);
+                    };
+                    vadd(sumMm0_u3, sumMm0_u3, mm0_u3, mmMask, MODE_ZEROING);
+                    vadd(sumMm1_u3, sumMm1_u3, mm1_u3, mmMask, MODE_ZEROING);
+                    vadd(sumMm2_u3, sumMm2_u3, mm2_u3, mmMask, MODE_ZEROING);
+                    vadd(sumMm3_u3, sumMm3_u3, mm3_u3, mmMask, MODE_ZEROING);
+                }
+#pragma unroll 1
+
+                for (uint16_t tail = 0; tail < tailLoopCount; ++tail) {
+                    uint16_t kIndex = fourLoopCount * 4U + tail;
+                    vlds(rms0_u0,
+                         rmsPartial + (static_cast<uint32_t>(kIndex) * rmsStride + (row + 0)), 0,
+                         BRC_B32);
+                    vadd(sumRms0_u0, sumRms0_u0, rms0_u0, rmsMask, MODE_ZEROING);
+                    {
+                        __ubuf__ int32_t* cce_load_17_ptr =
+                            (__ubuf__ int32_t*)(mmPartial +
+                                                static_cast<uint32_t>(kIndex) * mmGroupStride +
+                                                (row + 0) * fusionSize + mmSegmentOffset);
+                        vector_align cce_load_17_align;
+                        vldas(cce_load_17_align, cce_load_17_ptr);
+                        vldus((vector_s32&)mm0_u0, cce_load_17_align, cce_load_17_ptr);
+                    };
+                    vadd(sumMm0_u0, sumMm0_u0, mm0_u0, mmMask, MODE_ZEROING);
+                }
+#pragma unroll 1
+
+                for (uint16_t tail = 0; tail < tailLoopCount; ++tail) {
+                    uint16_t kIndex = fourLoopCount * 4U + tail;
+                    vlds(rms0_u1,
+                         rmsPartial + (static_cast<uint32_t>(kIndex) * rmsStride + (row + 1)), 0,
+                         BRC_B32);
+                    vadd(sumRms0_u1, sumRms0_u1, rms0_u1, rmsMask, MODE_ZEROING);
+                    {
+                        __ubuf__ int32_t* cce_load_18_ptr =
+                            (__ubuf__ int32_t*)(mmPartial +
+                                                static_cast<uint32_t>(kIndex) * mmGroupStride +
+                                                (row + 1) * fusionSize + mmSegmentOffset);
+                        vector_align cce_load_18_align;
+                        vldas(cce_load_18_align, cce_load_18_ptr);
+                        vldus((vector_s32&)mm0_u1, cce_load_18_align, cce_load_18_ptr);
+                    };
+                    vadd(sumMm0_u1, sumMm0_u1, mm0_u1, mmMask, MODE_ZEROING);
+                }
+#pragma unroll 1
+
+                for (uint16_t tail = 0; tail < tailLoopCount; ++tail) {
+                    uint16_t kIndex = fourLoopCount * 4U + tail;
+                    vlds(rms0_u2,
+                         rmsPartial + (static_cast<uint32_t>(kIndex) * rmsStride + (row + 2)), 0,
+                         BRC_B32);
+                    vadd(sumRms0_u2, sumRms0_u2, rms0_u2, rmsMask, MODE_ZEROING);
+                    {
+                        __ubuf__ int32_t* cce_load_19_ptr =
+                            (__ubuf__ int32_t*)(mmPartial +
+                                                static_cast<uint32_t>(kIndex) * mmGroupStride +
+                                                (row + 2) * fusionSize + mmSegmentOffset);
+                        vector_align cce_load_19_align;
+                        vldas(cce_load_19_align, cce_load_19_ptr);
+                        vldus((vector_s32&)mm0_u2, cce_load_19_align, cce_load_19_ptr);
+                    };
+                    vadd(sumMm0_u2, sumMm0_u2, mm0_u2, mmMask, MODE_ZEROING);
+                }
+#pragma unroll 1
+
+                for (uint16_t tail = 0; tail < tailLoopCount; ++tail) {
+                    uint16_t kIndex = fourLoopCount * 4U + tail;
+                    vlds(rms0_u3,
+                         rmsPartial + (static_cast<uint32_t>(kIndex) * rmsStride + (row + 3)), 0,
+                         BRC_B32);
+                    vadd(sumRms0_u3, sumRms0_u3, rms0_u3, rmsMask, MODE_ZEROING);
+                    {
+                        __ubuf__ int32_t* cce_load_20_ptr =
+                            (__ubuf__ int32_t*)(mmPartial +
+                                                static_cast<uint32_t>(kIndex) * mmGroupStride +
+                                                (row + 3) * fusionSize + mmSegmentOffset);
+                        vector_align cce_load_20_align;
+                        vldas(cce_load_20_align, cce_load_20_ptr);
+                        vldus((vector_s32&)mm0_u3, cce_load_20_align, cce_load_20_ptr);
+                    };
+                    vadd(sumMm0_u3, sumMm0_u3, mm0_u3, mmMask, MODE_ZEROING);
+                }
+                vadd(sumRms0_u0, sumRms0_u0, sumRms3_u0, rmsMask, MODE_ZEROING);
+                vadd(sumRms0_u1, sumRms0_u1, sumRms3_u1, rmsMask, MODE_ZEROING);
+                vadd(sumRms0_u2, sumRms0_u2, sumRms3_u2, rmsMask, MODE_ZEROING);
+                vadd(sumRms0_u3, sumRms0_u3, sumRms3_u3, rmsMask, MODE_ZEROING);
+                vadd(sumRms1_u0, sumRms1_u0, sumRms2_u0, rmsMask, MODE_ZEROING);
+                vadd(sumRms1_u1, sumRms1_u1, sumRms2_u1, rmsMask, MODE_ZEROING);
+                vadd(sumRms1_u2, sumRms1_u2, sumRms2_u2, rmsMask, MODE_ZEROING);
+                vadd(sumRms1_u3, sumRms1_u3, sumRms2_u3, rmsMask, MODE_ZEROING);
+                vadd(sumRms0_u0, sumRms0_u0, sumRms1_u0, rmsMask, MODE_ZEROING);
+                vadd(sumRms0_u1, sumRms0_u1, sumRms1_u1, rmsMask, MODE_ZEROING);
+                vadd(sumRms0_u2, sumRms0_u2, sumRms1_u2, rmsMask, MODE_ZEROING);
+                vadd(sumRms0_u3, sumRms0_u3, sumRms1_u3, rmsMask, MODE_ZEROING);
+                vmuls(sumRms0_u0, sumRms0_u0, scaleMean, rmsMask, MODE_ZEROING);
+                vmuls(sumRms0_u1, sumRms0_u1, scaleMean, rmsMask, MODE_ZEROING);
+                vmuls(sumRms0_u2, sumRms0_u2, scaleMean, rmsMask, MODE_ZEROING);
+                vmuls(sumRms0_u3, sumRms0_u3, scaleMean, rmsMask, MODE_ZEROING);
+                vadds(sumRms0_u0, sumRms0_u0, normEps, rmsMask, MODE_ZEROING);
+                vadds(sumRms0_u1, sumRms0_u1, normEps, rmsMask, MODE_ZEROING);
+                vadds(sumRms0_u2, sumRms0_u2, normEps, rmsMask, MODE_ZEROING);
+                vadds(sumRms0_u3, sumRms0_u3, normEps, rmsMask, MODE_ZEROING);
+                vsqrt(sumRms0_u0, sumRms0_u0, rmsMask, MODE_ZEROING);
+                vsqrt(sumRms0_u1, sumRms0_u1, rmsMask, MODE_ZEROING);
+                vsqrt(sumRms0_u2, sumRms0_u2, rmsMask, MODE_ZEROING);
+                vsqrt(sumRms0_u3, sumRms0_u3, rmsMask, MODE_ZEROING);
+                vdiv(sumRms0_u0, one, sumRms0_u0, rmsMask, MODE_ZEROING);
+                vdiv(sumRms0_u1, one, sumRms0_u1, rmsMask, MODE_ZEROING);
+                vdiv(sumRms0_u2, one, sumRms0_u2, rmsMask, MODE_ZEROING);
+                vdiv(sumRms0_u3, one, sumRms0_u3, rmsMask, MODE_ZEROING);
+                vadd(sumMm0_u0, sumMm0_u0, sumMm3_u0, mmMask, MODE_ZEROING);
+                vadd(sumMm0_u1, sumMm0_u1, sumMm3_u1, mmMask, MODE_ZEROING);
+                vadd(sumMm0_u2, sumMm0_u2, sumMm3_u2, mmMask, MODE_ZEROING);
+                vadd(sumMm0_u3, sumMm0_u3, sumMm3_u3, mmMask, MODE_ZEROING);
+                vadd(sumMm1_u0, sumMm1_u0, sumMm2_u0, mmMask, MODE_ZEROING);
+                vadd(sumMm1_u1, sumMm1_u1, sumMm2_u1, mmMask, MODE_ZEROING);
+                vadd(sumMm1_u2, sumMm1_u2, sumMm2_u2, mmMask, MODE_ZEROING);
+                vadd(sumMm1_u3, sumMm1_u3, sumMm2_u3, mmMask, MODE_ZEROING);
+                vadd(sumMm0_u0, sumMm0_u0, sumMm1_u0, mmMask, MODE_ZEROING);
+                vadd(sumMm0_u1, sumMm0_u1, sumMm1_u1, mmMask, MODE_ZEROING);
+                vadd(sumMm0_u2, sumMm0_u2, sumMm1_u2, mmMask, MODE_ZEROING);
+                vadd(sumMm0_u3, sumMm0_u3, sumMm1_u3, mmMask, MODE_ZEROING);
+                {
+                    __ubuf__ int32_t* cce_store_21_ptr = (__ubuf__ int32_t*)(invRmsOut + (row + 0));
+                    vector_align cce_store_21_align;
+                    vstus(cce_store_21_align, 1U, (vector_s32&)sumRms0_u0, cce_store_21_ptr,
+                          POST_UPDATE);
+                    vstas(cce_store_21_align, cce_store_21_ptr, 0, POST_UPDATE);
+                };
+                {
+                    __ubuf__ int32_t* cce_store_22_ptr = (__ubuf__ int32_t*)(invRmsOut + (row + 1));
+                    vector_align cce_store_22_align;
+                    vstus(cce_store_22_align, 1U, (vector_s32&)sumRms0_u1, cce_store_22_ptr,
+                          POST_UPDATE);
+                    vstas(cce_store_22_align, cce_store_22_ptr, 0, POST_UPDATE);
+                };
+                {
+                    __ubuf__ int32_t* cce_store_23_ptr = (__ubuf__ int32_t*)(invRmsOut + (row + 2));
+                    vector_align cce_store_23_align;
+                    vstus(cce_store_23_align, 1U, (vector_s32&)sumRms0_u2, cce_store_23_ptr,
+                          POST_UPDATE);
+                    vstas(cce_store_23_align, cce_store_23_ptr, 0, POST_UPDATE);
+                };
+                {
+                    __ubuf__ int32_t* cce_store_24_ptr = (__ubuf__ int32_t*)(invRmsOut + (row + 3));
+                    vector_align cce_store_24_align;
+                    vstus(cce_store_24_align, 1U, (vector_s32&)sumRms0_u3, cce_store_24_ptr,
+                          POST_UPDATE);
+                    vstas(cce_store_24_align, cce_store_24_ptr, 0, POST_UPDATE);
+                };
+                {
+                    __ubuf__ int32_t* cce_store_25_ptr =
+                        (__ubuf__ int32_t*)(mmOut + (row + 0) * fusionSize + mmSegmentOffset);
+                    vector_align cce_store_25_align;
+                    vstus(cce_store_25_align, mmSegmentSize, (vector_s32&)sumMm0_u0,
+                          cce_store_25_ptr, POST_UPDATE);
+                    vstas(cce_store_25_align, cce_store_25_ptr, 0, POST_UPDATE);
+                };
+                {
+                    __ubuf__ int32_t* cce_store_26_ptr =
+                        (__ubuf__ int32_t*)(mmOut + (row + 1) * fusionSize + mmSegmentOffset);
+                    vector_align cce_store_26_align;
+                    vstus(cce_store_26_align, mmSegmentSize, (vector_s32&)sumMm0_u1,
+                          cce_store_26_ptr, POST_UPDATE);
+                    vstas(cce_store_26_align, cce_store_26_ptr, 0, POST_UPDATE);
+                };
+                {
+                    __ubuf__ int32_t* cce_store_27_ptr =
+                        (__ubuf__ int32_t*)(mmOut + (row + 2) * fusionSize + mmSegmentOffset);
+                    vector_align cce_store_27_align;
+                    vstus(cce_store_27_align, mmSegmentSize, (vector_s32&)sumMm0_u2,
+                          cce_store_27_ptr, POST_UPDATE);
+                    vstas(cce_store_27_align, cce_store_27_ptr, 0, POST_UPDATE);
+                };
+                {
+                    __ubuf__ int32_t* cce_store_28_ptr =
+                        (__ubuf__ int32_t*)(mmOut + (row + 3) * fusionSize + mmSegmentOffset);
+                    vector_align cce_store_28_align;
+                    vstus(cce_store_28_align, mmSegmentSize, (vector_s32&)sumMm0_u3,
+                          cce_store_28_ptr, POST_UPDATE);
+                    vstas(cce_store_28_align, cce_store_28_ptr, 0, POST_UPDATE);
+                };
+            }
+        }
+    }
+}
+extern "C" __global__ __aicore__ void candidate_kernel(__gm__ uint8_t* input,
+                                                       __gm__ uint8_t* output) {
+    __ubuf__ float* mmPartial = (__ubuf__ float*)get_imm(0);
+    __ubuf__ float* rmsPartial = (__ubuf__ float*)get_imm(49152);
+    __ubuf__ float* mmOut = (__ubuf__ float*)get_imm(49920);
+    __ubuf__ float* invRmsOut = (__ubuf__ float*)get_imm(62208);
+    copy_gm_to_ubuf_align_v2((__ubuf__ uint8_t*)get_imm(0), input, 0, 1, 49920, 0, 0, 0, 0, 0, 0);
+    set_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    wait_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    candidate_vf(mmPartial, rmsPartial, mmOut, invRmsOut);
+    set_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    wait_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    copy_ubuf_to_gm_align_v2(output + 0, (__ubuf__ uint8_t*)mmOut, 0, 1, 12288, 0, 0, 0);
+    copy_ubuf_to_gm_align_v2(output + 12288, (__ubuf__ uint8_t*)invRmsOut, 0, 1, 192, 0, 0, 0);
+}

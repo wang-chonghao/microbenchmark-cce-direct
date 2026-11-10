@@ -1,0 +1,911 @@
+{
+  "target": "dav-920r1-vec",
+  "cann": "9.0.0 local compiler",
+  "compiler": "clang 15.0.5 clang-5c68a1cb1231 2026-04-25T15:46:25+08:00",
+  "kind": "kernel compile and device link only",
+  "camodel_executed": false,
+  "cases": [
+    {
+      "name": "adam_decay-u1_original",
+      "returncode": 0,
+      "source_sha256": "84788467bb500f17cc1fc70220287e836d8e4a8162b8f41d0a02b450540f5bf6",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "adam_decay-u6_original",
+      "returncode": 0,
+      "source_sha256": "bfb6298c31b11b8477c466a335f41b9099c27d87fd27c571d32817717c1d9dd0",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "adam_decay-u6_software",
+      "returncode": 0,
+      "source_sha256": "2a6201f436dfed76ca3a22f7373eee098ed914bb56bf0df457a1189a8ad934e7",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "adam_decay-u7_original",
+      "returncode": 0,
+      "source_sha256": "0003128b3481a13af3d9609df764d11e7e990d68ec2fbf7308b10a3dfb98c08a",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "adam_decay-u7_software",
+      "returncode": 0,
+      "source_sha256": "2ec8d7a3897b73f1b8fb4f95504a175c845de753c62bccdbb8c6d34c67eae2b6",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "bce-u1_original",
+      "returncode": 0,
+      "source_sha256": "ea855b97e1a8a452d6e7e49e4548c53317c0414fec053326367a5041e6895650",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "bce-u5_original",
+      "returncode": 0,
+      "source_sha256": "92255cac3fd77ca453030321a1b89c87ce9dfc697ec82a850c4a458683e1f6a0",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "bce-u5_software",
+      "returncode": 0,
+      "source_sha256": "7ea5866d9c10f4a06bef5cd396dda95a645c63c0796adb1a2c664146c8a0956d",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "deepnorm-u1_original",
+      "returncode": 0,
+      "source_sha256": "09a2ce03fe5c528027622a8df2b7fe8796427d81f353acbc6812590d1d835fc9",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "deepnorm-u8_original",
+      "returncode": 0,
+      "source_sha256": "1bd7278315852452da2e210baf8bdebede47fca2bc15bbab4d8e6b7205b23171",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "deepnorm-u8_software",
+      "returncode": 0,
+      "source_sha256": "b42cff8cd423097e9fbd63125d7c6bdbd8c73524e931e53f437efabcb177a82b",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "focal-u1_original",
+      "returncode": 0,
+      "source_sha256": "b54a2cc06075d44a2a8447a3d8bec9f5eedfbd6876cf9e68b21a126de779fdca",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "focal-u2_original",
+      "returncode": 0,
+      "source_sha256": "d69f3008e822ebfb5c315a33b81fde5803582a7babce64a92b829a4e19a6c7ac",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "focal-u2_software",
+      "returncode": 0,
+      "source_sha256": "1e83da1d547c2f85d27c75ff7b0d1545cc9ca158af6cc757338e6bfc02ef7e85",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "focal-u4_original",
+      "returncode": 0,
+      "source_sha256": "2876fdee9b40fe64f03c29f4020cc3a507cb1ab6633603112dd13b89cb698d36",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "focal-u4_software",
+      "returncode": 0,
+      "source_sha256": "9876ea7d0caabca43b8d61026412587817e054f3d303192fbde786381a39634c",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "focal-u5_original",
+      "returncode": 0,
+      "source_sha256": "bf936e8a874a0d57b12bfda05f5256e55832027fe39abee185b3eb27bad6fa93",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "focal-u5_software",
+      "returncode": 0,
+      "source_sha256": "facf26f1a68665499431b3592836dbabc72aa7f0b80ea48690c872e0cc8c19d0",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "groupnorm-u10_original",
+      "returncode": 0,
+      "source_sha256": "a874ea842d81f8413f6ae180e6d992861fe1eff1d85f2e777d51fd878a23d8f4",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "groupnorm-u10_software",
+      "returncode": 0,
+      "source_sha256": "5e20f5cafade5e7fe4eddf14463e0169212a6187a8ca111cd77cd58e63a37029",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "groupnorm-u11_original",
+      "returncode": 0,
+      "source_sha256": "bfac84c4f7484200d18eda59c72897a7abdd63c600300bf2330268fd4b0131dc",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "groupnorm-u11_software",
+      "returncode": 0,
+      "source_sha256": "d47777efe682dc33a2081efe43ece8e01526557c542119e083d02f70a6f4b940",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "groupnorm-u16_original",
+      "returncode": 0,
+      "source_sha256": "b72c045cbad27bd1b10cfdb5d6ead28db4176db81a50033a78283a235ffc4895",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "groupnorm-u16_software",
+      "returncode": 0,
+      "source_sha256": "0c42455f4598b3dfbbe75578f392e413874683c492a9e7289a812427b647dfcc",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "groupnorm-u1_original",
+      "returncode": 0,
+      "source_sha256": "6fbb72ccd2cd23c5681c216bf9fab42cda20633a7775af66ca1df2b0136eb67d",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "groupnorm-u8_original",
+      "returncode": 0,
+      "source_sha256": "d286501ea715070712b05f83dee9ccd49f0f84ee69536eb9dff1122a2eafdf69",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "groupnorm-u8_software",
+      "returncode": 0,
+      "source_sha256": "ed0b52add6bae7a6282df8910592c23df035765cc1a4c3b5ae930c77492630f8",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "logit-u1_original",
+      "returncode": 0,
+      "source_sha256": "af67b13d83eb86ad6786a85b59cf873e89e535a155c19f1bc027674d0e58e914",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "logit-u3_original",
+      "returncode": 0,
+      "source_sha256": "d8be60fd1484935bca1de448ccd6f2fc476aab4b710ff9ed818435a14d689c21",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "logit-u3_software",
+      "returncode": 0,
+      "source_sha256": "ff152df0b0d4729d6c6ec2437ccabddaddbebca99974fc938252ac34866ed059",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "logit-u4_original",
+      "returncode": 0,
+      "source_sha256": "b089612b64e3ca24e4a9ef8d128eda32668f7252f16e2aa06132ff78a6dd8322",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "logit-u4_software",
+      "returncode": 0,
+      "source_sha256": "d63d716796278f3891871aabea0137135e74ddc58adb66c2c49d948f3e205148",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "logit-u5_original",
+      "returncode": 0,
+      "source_sha256": "86b5a63c9ce41cb8e90968cb10195bc23bf89a71b74ddb6d2a9fd296838f922f",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "logit-u5_software",
+      "returncode": 0,
+      "source_sha256": "def8e616622b6e9eb9f1c82587216f161dbc17066eedc24e0f126a08be7beed2",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "logit-u6_original",
+      "returncode": 0,
+      "source_sha256": "7314128f7202c137652070f1bddd009d63ffc1780b8e3eaa966ce092491b86c1",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "logit-u6_software",
+      "returncode": 0,
+      "source_sha256": "b6f607da0c9857936fae150e5c8310b74219873b2e1fd0dadd9443e3d04a84ba",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "logit-u8_original",
+      "returncode": 0,
+      "source_sha256": "b54f9297e6a4428f33dcbd915096a06da8430c6b2a0bd470358784092a7f9566",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "logit-u8_software",
+      "returncode": 0,
+      "source_sha256": "c5911a0f07e3d9ebca428062300a1e10fd434a8c1820fee56848426d4cd35d4a",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "lstm-u1_original",
+      "returncode": 0,
+      "source_sha256": "9a0e2f25426b245ea7d17699f88f971a755229dd4a7e64226cd8e95ab36f0c0f",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "lstm-u6_original",
+      "returncode": 0,
+      "source_sha256": "ab1e68ff5c5b04478e22afde48c90c5f41208a030a7fc1d6c24c7e5d0ab8755b",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "lstm-u6_software",
+      "returncode": 0,
+      "source_sha256": "30f32e049e6025f1d32034e7eed370d19e6d7a42b652c17eef2fe017b991682f",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "lstm-u7_original",
+      "returncode": 0,
+      "source_sha256": "451e2507040ba80514dfe30ecd7a6b05bc17ab974af88d28fa35c6097f46f404",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0",
+        "-mllvm",
+        "-cce-vf-stack-size=8192"
+      ]
+    },
+    {
+      "name": "lstm-u7_software",
+      "returncode": 0,
+      "source_sha256": "59d750dbb3a8df630183da0593891255f877cf1381bd1d797827c1b5cff1c165",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round2-binary_cross_entropy-u1_original",
+      "returncode": 0,
+      "source_sha256": "aa75f54709d53b7c1124f1df0eb524b85bc20a27b088106567a3172a9754af17",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round2-binary_cross_entropy-u8_original",
+      "returncode": 0,
+      "source_sha256": "54fdfc90038889b5889232ece8c292f6f99fec23ab869ce2f2a8d92a49e0f541",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round2-binary_cross_entropy-u8_software",
+      "returncode": 0,
+      "source_sha256": "d13d18ab5686a516416b7a19398479c0453fbd275ffd2286311a2eb7a75c08eb",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round2-logsigmoid_grad-u12_original",
+      "returncode": 0,
+      "source_sha256": "c7a445832872f4127b4e6cd5ffd3082526bb805fea14b0c44ff72a062988e0b0",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round2-logsigmoid_grad-u12_software",
+      "returncode": 0,
+      "source_sha256": "019c10f8672b3c25f25a9b47d9e687eb6ce85aeb1ccc7b2a107e99f60b6a4232",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round2-logsigmoid_grad-u1_original",
+      "returncode": 0,
+      "source_sha256": "c50c3a04184e2ca8f63c89383ef7da3a52b6905bcc1e5e8f4660c3bf53512e34",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round2-logsigmoid_grad-u4_original",
+      "returncode": 0,
+      "source_sha256": "9a6f931873999275f35a92cb30124e464c1726054de6e99e93f322b8789ddb58",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round2-logsigmoid_grad-u4_software",
+      "returncode": 0,
+      "source_sha256": "ee0725ca1d4cb867fc35823efd901a891edae7f828b5d3a66937ee757c241c8c",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round2-logsigmoid_grad-u8_original",
+      "returncode": 0,
+      "source_sha256": "4ad66baf8d0d0be7f3d2be709d3d8bebbbca6fa8b3e20910e577a2ad14f6b51f",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round2-logsigmoid_grad-u8_software",
+      "returncode": 0,
+      "source_sha256": "2bb5c3d32bc64fdd3e693aed3c132975ef1ead2f1e8e943e38e40bfa6a7c916a",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round2-mish-u12_original",
+      "returncode": 0,
+      "source_sha256": "9836f41c3a37f4d7db519f89c497513b80385df770251a7602c5073e3e1afed8",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round2-mish-u12_software",
+      "returncode": 0,
+      "source_sha256": "cdfcef7a0afa1cf789c11333435fb17a588efd92971b8aa74847a1898f4648ea",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round2-mish-u1_original",
+      "returncode": 0,
+      "source_sha256": "9a6effa2c307772412eeccf29ac41533b0fa68a8865ae86e9fa9ca5e95de9459",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round2-mish-u4_original",
+      "returncode": 0,
+      "source_sha256": "8a88741b4bdc131cede8639407a07553152b8c8e8585f523c8bdc5f3ace0d6ca",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round2-mish-u4_software",
+      "returncode": 0,
+      "source_sha256": "70bb5744afacc4d0072c6db67265c1f5439e417b3bb9dad3861a818b15ef301b",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round2-mish-u8_original",
+      "returncode": 0,
+      "source_sha256": "af1ac409216b53689cc88e9be0c44feefbe857c64e47016834f1093f961bc198",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round2-mish-u8_software",
+      "returncode": 0,
+      "source_sha256": "d1f67005e92ddfd21334d4f65daafc41d16a0656a9be3970e42b80d8d97914c4",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round3-causal_conv-u1_original",
+      "returncode": 0,
+      "source_sha256": "cef30f791a61576148fd0eb853a28e5f42e4211396b737d4aada6933b0a06a27",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round3-causal_conv-u2_original",
+      "returncode": 0,
+      "source_sha256": "32ad7e5989ba38aaea3144b78a1a48946b1740b72872ec895b525f5a9fe207f1",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round3-compressor_softmax-u1_original",
+      "returncode": 0,
+      "source_sha256": "5e296c97d83c9ef1714c05c6f8517a0b9c4e1dcb6d5748734e570b1fc2c2d5e6",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round3-groupnorm_swish_dx-u1_original",
+      "returncode": 0,
+      "source_sha256": "43993202894e1d21aacdc14d37f311eb8ff9218bccd5e13456ac3c2f9f4db842",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round3-groupnorm_swish_dx-u4_original",
+      "returncode": 0,
+      "source_sha256": "204a3a89384abc36ccff762255f4aae0be62993803cdb2db5b5e5829cb7b7a65",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round3-layernorm_dx-u1_original",
+      "returncode": 0,
+      "source_sha256": "6fc2c50e9d53703dad214e72b078d954d5951c8a892b931adfd1dc30914bba9b",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round3-layernorm_dx-u8_original",
+      "returncode": 0,
+      "source_sha256": "8ce1bbf7b685e55d46cadb86824e30658b395d0dccb3c9060de23e6237bc8afd",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round3-logsigmoid-u1_original",
+      "returncode": 0,
+      "source_sha256": "bc636985b7c7e05e2f4a1776946c82228ec0976f168c72d8a8acb29abfa90746",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round3-logsigmoid-u4_original",
+      "returncode": 0,
+      "source_sha256": "0d6418f50dfe200c81cb68b4c20a542ccc18a8bd16d6cadb5b4f3e260dfdc5a0",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round3-logsigmoid-u8_original",
+      "returncode": 0,
+      "source_sha256": "1e9288b6d57a036d1810b2a3ce2779a5088efc6a531359600b09261abcab6bf1",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round3-logsigmoid-u8_software",
+      "returncode": 0,
+      "source_sha256": "0c0a9f53ea7b6665b869c9a1a1bd4ab3e3a8ef602bc9407fe3dde755304d449f",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round3-mhc_partial-u1_original",
+      "returncode": 0,
+      "source_sha256": "fac5ff0993f4e8a7154e2ffed870a6b00e7355611770d003c3936cecc8a5c725",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round3-mhc_partial-u4_original",
+      "returncode": 0,
+      "source_sha256": "e0a94ba1823f2445084127dc3c96e9ba5a584676469ca315f714387df3ce4aeb",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round3-moe_softplus-u1_original",
+      "returncode": 0,
+      "source_sha256": "941afa167145230362b2f80707bc9217c230bcf069f706ad195ca50e135901fc",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round3-moe_softplus-u4_original",
+      "returncode": 0,
+      "source_sha256": "0da9bece4bb3e5541642c1ea0239354d2158afc4d7a7a7d8e7f525401b8e0b94",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round3-moe_softplus-u8_original",
+      "returncode": 0,
+      "source_sha256": "bb65b3511fb5cc21107ee0d44025f1b64bceed399bcc6d78713aa98cf26c3b70",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round3-rmsnorm_dx-u1_original",
+      "returncode": 0,
+      "source_sha256": "bd9fd315d324a70de47ad0d2cd8d228c138d504748c925c4903673476bfae580",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round3-rmsnorm_dx-u8_original",
+      "returncode": 0,
+      "source_sha256": "6b5bd1c490dc2fb6a417cbfa8418629cfc36c27c84236fe35d931d86cedf3d98",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round3-rope_grad-u1_original",
+      "returncode": 0,
+      "source_sha256": "ddf0ef1ad55ef09089502b91fabd663c28b004f69379a1e57c08f064f2b2ee0c",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round3-rope_grad-u4_original",
+      "returncode": 0,
+      "source_sha256": "c40506874fb40e5de20717b6507814b5c7e1c43d0c39c10e59acb6d7711c5ad3",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round3-rope_grad-u8_original",
+      "returncode": 0,
+      "source_sha256": "1051dbb093e32ad840e55dab112ef5e31df2240ca639a6393411846f44b02dc8",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round3-softmax_ce-u1_original",
+      "returncode": 0,
+      "source_sha256": "a120aaf9426769457b3a2e0c19fa544d57f125644d3d4fc93668d3c72e00a35e",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round3-softmax_ce-u4_original",
+      "returncode": 0,
+      "source_sha256": "886a5a0829fb032878cb2d002d22957a7242638e8ff0db3cd4de74493968e50c",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round3-softmax_ce-u8_original",
+      "returncode": 0,
+      "source_sha256": "f9d9f6c7edf9849666bffd9f719ed1fa4fb1fb4484a7d563d5f522aaf9e7b758",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round3-softplus-u1_original",
+      "returncode": 0,
+      "source_sha256": "c0a73ceed6d0758c347ff6cdcfa650005e4c4e6d1e2e544c94d7bb5b125fb6be",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round3-softplus-u8_original",
+      "returncode": 0,
+      "source_sha256": "f0670d0826087eebd137c080964448bb98787c758e28af88265fd7cd7a79c1a2",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "round3-softplus-u8_software",
+      "returncode": 0,
+      "source_sha256": "1eb16831bd506a9daa02327e1d446964bc4478e593008d69241ee6e3548adab0",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "swiglu-u1_original",
+      "returncode": 0,
+      "source_sha256": "bcc3992e8c4e1143ad9b4b84caf482ccdf8770a54d131457444926a19baeeb5f",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "swiglu-u4_original",
+      "returncode": 0,
+      "source_sha256": "8f63ee90d62edb6ca94c4727c42d6ccbfc26ab1042fdea35315f88edfeebceb3",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "swiglu-u4_software",
+      "returncode": 0,
+      "source_sha256": "79d5612b5ad69eea840408d79c2d31723bbaae3d1c50a1698287b4bb119eb6b2",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "swiglu_quant-u1_original",
+      "returncode": 0,
+      "source_sha256": "a3d39ab20e9e8d00cd213111736d4b358fea4aa2f2e0998058abcc16ba33cf36",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "swiglu_quant-u2_original",
+      "returncode": 0,
+      "source_sha256": "07c529df3f4374b4e72c51cc1b9c2274ce915c8b8af19f8603874a01ab3ab215",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "swiglu_quant-u2_software",
+      "returncode": 0,
+      "source_sha256": "75c9e4d20e231ddffc848d4f4f7c224425bcda06333e8a49ceb06fbb2de6cb62",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "swiglu_quant-u4_original",
+      "returncode": 0,
+      "source_sha256": "401c01771ff5756e02477708dd351143c95ad695be5660a81b5b8a762d01b994",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "swiglu_quant-u4_software",
+      "returncode": 0,
+      "source_sha256": "f9b20a4d33f6974fa3bbc1c2e26aa1488f0e3c4bcf31aee2b1bade494cab9d91",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "swiglu_quant-u5_original",
+      "returncode": 0,
+      "source_sha256": "6d7474abdb035a17b4ebcc964d33a878e092a36880a47308c1734b2120c83a2d",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "swiglu_quant-u5_software",
+      "returncode": 0,
+      "source_sha256": "a55dbe5c28a9619b014a7ce8b8a74039d4e9d4d290a913c73a74131f7fa6488f",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "syncbn-u1_original",
+      "returncode": 0,
+      "source_sha256": "fa747095b57384fd9f954ed3aeb26621a5a5afe8a92887f667de6c5dfe679005",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "syncbn-u5_original",
+      "returncode": 0,
+      "source_sha256": "c23b8bf6c27feafabb5025d7290763062cc488d7ee2a9c81f4b5afbdd326527d",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    },
+    {
+      "name": "syncbn-u5_software",
+      "returncode": 0,
+      "source_sha256": "b9d0ca101fac85e8d2d15769be51c66c421b5f8441cd62122cf3ca881e682786",
+      "compiler_flags": [
+        "-mllvm",
+        "-cce-aicore-vec-misched=0"
+      ]
+    }
+  ]
+}

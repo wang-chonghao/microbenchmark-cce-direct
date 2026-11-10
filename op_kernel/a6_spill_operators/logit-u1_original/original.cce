@@ -1,0 +1,91 @@
+/**
+ * Copyright (c) 2025 Huawei Technologies Co., Ltd.
+ * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+ * CANN Open Software License Agreement Version 2.0 (the "License").
+ * Please refer to the License for details. You may not use this file except in compliance with the License.
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+ * See LICENSE in the root of the software repository for the full text of the License.
+ */
+#include "kernel_operator.h"
+#include <cfloat>
+#include <type_traits>
+__aicore__ inline void candidate_vf(__ubuf__ float* xAddr, __ubuf__ float* dyAddr) {
+    float epslion = 0.0f, selectValue = 0.0f, nanValue = __builtin_nanf("");
+    int64_t dataCount = 1024;
+    constexpr float SUBNORMAL_NORM_SCALE = 8388608.0f;
+
+    float lo = epslion;
+    float hi = static_cast<float>(1.0) - epslion;
+
+    __VEC_SCOPE__ {
+        vector_f32 regX;
+        vector_f32 regDy;
+        vector_f32 regTmp;
+        vector_f32 regOmx;
+        vector_f32 regDen;
+        vector_f32 regXS;
+        vector_f32 regDyS;
+        vector_f32 regScale;
+        vector_f32 regMinNormal;
+        vector_f32 regOut;
+        vector_f32 regLo;
+        vector_f32 regHi;
+        vector_f32 regInvalid;
+        vector_f32 regNan;
+        vector_bool preg0;
+        vector_bool maskGE;
+        vector_bool maskLE;
+        vector_bool maskValid;
+        vector_bool maskNotNan;
+        vector_bool maskSub;
+        constexpr uint32_t vfLen = 256 / sizeof(float);
+        uint32_t count = static_cast<uint32_t>(dataCount);
+        uint16_t vfLoopNum = static_cast<uint16_t>((count + vfLen - 1) / vfLen);
+
+        vdup(regLo, lo, pset_b32(PAT_ALL), MODE_ZEROING);
+        vdup(regHi, hi, pset_b32(PAT_ALL), MODE_ZEROING);
+        vdup(regInvalid, selectValue, pset_b32(PAT_ALL), MODE_ZEROING);
+        vdup(regNan, nanValue, pset_b32(PAT_ALL), MODE_ZEROING);
+
+        vdup(regScale, SUBNORMAL_NORM_SCALE, pset_b32(PAT_ALL), MODE_ZEROING);
+        vdup(regMinNormal, FLT_MIN, pset_b32(PAT_ALL), MODE_ZEROING);
+
+        for (uint16_t i = 0; i < vfLoopNum; i++) {
+            uint32_t rem = count - static_cast<uint32_t>(i) * vfLen;
+            preg0 = plt_b32(rem, POST_UPDATE);
+            vlds(regX, xAddr + i * vfLen, 0, NORM);
+            vlds(regDy, dyAddr + i * vfLen, 0, NORM);
+            vmuls(regTmp, regX, static_cast<float>(-1.0), preg0, MODE_ZEROING);
+            vadds(regOmx, regTmp, static_cast<float>(1.0), preg0, MODE_ZEROING);
+            vmul(regDen, regX, regOmx, preg0, MODE_ZEROING);
+            vmuls(regXS, regX, SUBNORMAL_NORM_SCALE, preg0, MODE_ZEROING);
+            vmul(regXS, regXS, regOmx, preg0, MODE_ZEROING);
+            vmuls(regDyS, regDy, SUBNORMAL_NORM_SCALE, preg0, MODE_ZEROING);
+            vcmp_lt(maskSub, regX, regMinNormal, preg0);
+            vsel(regDen, regXS, regDen, maskSub);
+            vsel(regDy, regDyS, regDy, maskSub);
+            vdiv(regDy, regDy, regDen, preg0, MODE_ZEROING);
+            vcmp_ge(maskGE, regX, regLo, preg0);
+            vcmp_le(maskLE, regX, regHi, preg0);
+            pand(maskValid, maskGE, maskLE, preg0);
+            vsel(regOut, regDy, regInvalid, maskValid);
+
+            vcmp_eq(maskNotNan, regX, regX, preg0);
+            vsel(regOut, regOut, regNan, maskNotNan);
+            vsts(regOut, xAddr + i * vfLen, 0, NORM_B32, preg0);
+        }
+    }
+}
+extern "C" __global__ __aicore__ void candidate_kernel(__gm__ uint8_t* input,
+                                                       __gm__ uint8_t* output) {
+    __ubuf__ float* xAddr = (__ubuf__ float*)get_imm(0);
+    __ubuf__ float* dyAddr = (__ubuf__ float*)get_imm(4096);
+    copy_gm_to_ubuf_align_v2((__ubuf__ uint8_t*)get_imm(0), input, 0, 1, 8192, 0, 0, 0, 0, 0, 0);
+    set_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    wait_flag(PIPE_MTE2, PIPE_V, (event_t)0);
+    candidate_vf(xAddr, dyAddr);
+    set_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    wait_flag(PIPE_V, PIPE_MTE3, (event_t)0);
+    copy_ubuf_to_gm_align_v2(output + 0, (__ubuf__ uint8_t*)xAddr, 0, 1, 4096, 0, 0, 0);
+}
