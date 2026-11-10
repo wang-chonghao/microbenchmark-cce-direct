@@ -1,0 +1,336 @@
+// A6 完整运行入口；GM 输入 FP32，GM 输出 FP16，block_dim=1。
+// 原 VF 保留不变；按行 softmax 由 check_softmax.py 独立校验。
+// MB_KERNEL softmax_12x1024_a6_no_membar
+// MB_TENSOR input input fp32 12x1024
+// MB_TENSOR output output fp16 12x1024
+#if __NPU_ARCH__ != 9201
+#error "需要 A6 dav-920r1-vec 编译目标"
+#endif
+
+#ifdef __CCE_KT_TEST__
+#define __aicore__
+#else
+#define __aicore__ [aicore]
+#endif
+
+// Pair-granularity three-stage pipeline for an experimental UB dependency design.
+// The runtime row loop remains generic; each inner iteration overlaps MAX, SUM,
+// and normalization work with SUM leading NORM by two rows (rows >= 3).
+__attribute__((always_inline)) inline [aicore] void
+attention_softmax_8row_deferbar1024_simd_ub_fixed(
+    __ubuf__ float *memA,
+    __ubuf__ float *memB,
+    __ubuf__ half *memOutput) {
+
+    constexpr int rows = 12;
+    constexpr int cols = 1024;
+
+    __VEC_SCOPE__ {
+        vector_bool pat_all_b32 = pset_b32(PAT_ALL);
+        vector_bool pat_lane0_b32 = pset_b32(PAT_VL1);
+        vector_f32 max_acc0;
+        vector_f32 max_acc1;
+        vector_f32 max_scalar;
+        vector_f32 max_store;
+
+        vector_f32 sum_x0;
+        vector_f32 sum_x1;
+        vector_f32 sum_exp0;
+        vector_f32 sum_exp1;
+        vector_f32 sum_acc;
+        vector_f32 sum_tmp;
+        vector_f32 vec_one;
+        vector_f32 sum_inv;
+        vector_f32 sum_store;
+        vector_f32 norm_store;
+
+        vector_f32 norm_exp0;
+        vector_f32 norm_exp1;
+        vector_f16 norm_half0;
+        vector_f16 norm_half1;
+
+        vdup(vec_one, 1.0f, pat_lane0_b32, MODE_ZEROING);
+
+        // Prologue: S1(0).
+        vlds(max_acc0, memA, 0 * cols, NORM);
+        vlds(max_acc1, memA, 0 * cols + 64, NORM);
+        #pragma unroll(1)
+        for (uint16_t pair = 1; pair < cols / 128; ++pair) {
+            int offset = 0 * cols + 128 * pair;
+            vlds(sum_x0, memA, offset, NORM);
+            vlds(sum_x1, memA, offset + 64, NORM);
+            vmax(max_acc0, max_acc0, sum_x0, pat_all_b32);
+            vmax(max_acc1, max_acc1, sum_x1, pat_all_b32);
+        }
+        vmax(max_acc0, max_acc0, max_acc1, pat_all_b32);
+        vcmax(max_scalar, max_acc0, pat_all_b32, MODE_ZEROING);
+        vdup(max_store, max_scalar, pat_all_b32, POS_LOWEST, MODE_ZEROING);
+
+        // Prologue: pair-granularity S1(1) + S2(0).
+        vlds(max_acc0, memA, 1 * cols, NORM);
+        vlds(max_acc1, memA, 1 * cols + 64, NORM);
+        vlds(sum_x0, memA, 0 * cols, NORM);
+        vlds(sum_x1, memA, 0 * cols + 64, NORM);
+        vexpdif(sum_exp0, sum_x0, max_store, pat_all_b32, PART_EVEN);
+        vexpdif(sum_exp1, sum_x1, max_store, pat_all_b32, PART_EVEN);
+        vadd(sum_acc, sum_exp0, sum_exp1, pat_all_b32);
+        vsts(sum_exp0, memB, 0 * cols, NORM_B32, pat_all_b32);
+        vsts(sum_exp1, memB, 0 * cols + 64, NORM_B32, pat_all_b32);
+        #pragma unroll(1)
+        for (uint16_t pair = 1; pair < cols / 128; ++pair) {
+            int max_offset = 1 * cols + 128 * pair;
+            vlds(sum_x0, memA, max_offset, NORM);
+            vlds(sum_x1, memA, max_offset + 64, NORM);
+            vmax(max_acc0, max_acc0, sum_x0, pat_all_b32);
+            vmax(max_acc1, max_acc1, sum_x1, pat_all_b32);
+
+            int sum_offset = 0 * cols + 128 * pair;
+            vlds(sum_x0, memA, sum_offset, NORM);
+            vlds(sum_x1, memA, sum_offset + 64, NORM);
+            vexpdif(sum_exp0, sum_x0, max_store, pat_all_b32, PART_EVEN);
+            vexpdif(sum_exp1, sum_x1, max_store, pat_all_b32, PART_EVEN);
+            vadd(sum_tmp, sum_exp0, sum_exp1, pat_all_b32);
+            vadd(sum_acc, sum_acc, sum_tmp, pat_all_b32);
+            vsts(sum_exp0, memB, sum_offset, NORM_B32, pat_all_b32);
+            vsts(sum_exp1, memB, sum_offset + 64, NORM_B32, pat_all_b32);
+        }
+        vmax(max_acc0, max_acc0, max_acc1, pat_all_b32);
+        vcmax(max_scalar, max_acc0, pat_all_b32, MODE_ZEROING);
+        vdup(max_store, max_scalar, pat_all_b32, POS_LOWEST, MODE_ZEROING);
+
+        vcadd(max_scalar, sum_acc, pat_all_b32, MODE_ZEROING);
+        vdiv(sum_inv, vec_one, max_scalar, pat_lane0_b32);
+        vdup(norm_store, sum_inv, pat_all_b32, POS_LOWEST, MODE_ZEROING);
+
+
+        // Prologue: pair-granularity M(2) + S(1), delaying the first NORM.
+        vlds(max_acc0, memA, 2 * cols, NORM);
+        vlds(max_acc1, memA, 2 * cols + 64, NORM);
+        vlds(sum_x0, memA, 1 * cols, NORM);
+        vlds(sum_x1, memA, 1 * cols + 64, NORM);
+        vexpdif(sum_exp0, sum_x0, max_store, pat_all_b32, PART_EVEN);
+        vexpdif(sum_exp1, sum_x1, max_store, pat_all_b32, PART_EVEN);
+        vadd(sum_acc, sum_exp0, sum_exp1, pat_all_b32);
+        vsts(sum_exp0, memB, 1 * cols, NORM_B32, pat_all_b32);
+        vsts(sum_exp1, memB, 1 * cols + 64, NORM_B32, pat_all_b32);
+        #pragma unroll(1)
+        for (uint16_t pair = 1; pair < cols / 128; ++pair) {
+            int max_offset = 2 * cols + 128 * pair;
+            vlds(sum_x0, memA, max_offset, NORM);
+            vlds(sum_x1, memA, max_offset + 64, NORM);
+            vmax(max_acc0, max_acc0, sum_x0, pat_all_b32);
+            vmax(max_acc1, max_acc1, sum_x1, pat_all_b32);
+
+            int sum_offset = 1 * cols + 128 * pair;
+            vlds(sum_x0, memA, sum_offset, NORM);
+            vlds(sum_x1, memA, sum_offset + 64, NORM);
+            vexpdif(sum_exp0, sum_x0, max_store, pat_all_b32, PART_EVEN);
+            vexpdif(sum_exp1, sum_x1, max_store, pat_all_b32, PART_EVEN);
+            vadd(sum_tmp, sum_exp0, sum_exp1, pat_all_b32);
+            vadd(sum_acc, sum_acc, sum_tmp, pat_all_b32);
+            vsts(sum_exp0, memB, sum_offset, NORM_B32, pat_all_b32);
+            vsts(sum_exp1, memB, sum_offset + 64, NORM_B32, pat_all_b32);
+        }
+        vmax(max_acc0, max_acc0, max_acc1, pat_all_b32);
+        vcmax(max_scalar, max_acc0, pat_all_b32, MODE_ZEROING);
+        vdup(max_store, max_scalar, pat_all_b32, POS_LOWEST, MODE_ZEROING);
+
+        vcadd(max_scalar, sum_acc, pat_all_b32, MODE_ZEROING);
+        vdiv(sum_inv, vec_one, max_scalar, pat_lane0_b32);
+
+        // Steady state: each pair overlaps S1(i), S2(i-1), and S3(i-3).
+        #pragma unroll(1)
+        for (uint16_t pipe_i = 3; pipe_i < rows; ++pipe_i) {
+            int sum_row = pipe_i - 1;
+            int norm_row = pipe_i - 3;
+
+            vlds(max_acc0, memA, pipe_i * cols, NORM);
+            vlds(max_acc1, memA, pipe_i * cols + 64, NORM);
+
+            vlds(sum_x0, memA, sum_row * cols, NORM);
+            vlds(sum_x1, memA, sum_row * cols + 64, NORM);
+            vexpdif(sum_exp0, sum_x0, max_store, pat_all_b32, PART_EVEN);
+            vexpdif(sum_exp1, sum_x1, max_store, pat_all_b32, PART_EVEN);
+            vadd(sum_acc, sum_exp0, sum_exp1, pat_all_b32);
+            vsts(sum_exp0, memB, sum_row * cols, NORM_B32, pat_all_b32);
+            vsts(sum_exp1, memB, sum_row * cols + 64, NORM_B32, pat_all_b32);
+
+            vlds(norm_exp0, memB, norm_row * cols, NORM);
+            vlds(norm_exp1, memB, norm_row * cols + 64, NORM);
+            vmul(norm_exp0, norm_exp0, norm_store, pat_all_b32);
+            vmul(norm_exp1, norm_exp1, norm_store, pat_all_b32);
+            vcvt(norm_half0, norm_exp0, pat_all_b32, ROUND_R, RS_ENABLE, PART_EVEN);
+            vsts(norm_half0, memOutput, norm_row * cols, PK_B32, pat_all_b32);
+            vcvt(norm_half1, norm_exp1, pat_all_b32, ROUND_R, RS_ENABLE, PART_EVEN);
+            vsts(norm_half1, memOutput, norm_row * cols + 64, PK_B32, pat_all_b32);
+
+            #pragma unroll(1)
+            for (uint16_t pair = 1; pair < cols / 128; ++pair) {
+                int max_offset = pipe_i * cols + 128 * pair;
+                vlds(sum_x0, memA, max_offset, NORM);
+                vlds(sum_x1, memA, max_offset + 64, NORM);
+                vmax(max_acc0, max_acc0, sum_x0, pat_all_b32);
+                vmax(max_acc1, max_acc1, sum_x1, pat_all_b32);
+
+                int sum_offset = sum_row * cols + 128 * pair;
+                vlds(sum_x0, memA, sum_offset, NORM);
+                vlds(sum_x1, memA, sum_offset + 64, NORM);
+                vexpdif(sum_exp0, sum_x0, max_store, pat_all_b32, PART_EVEN);
+                vexpdif(sum_exp1, sum_x1, max_store, pat_all_b32, PART_EVEN);
+                vadd(sum_tmp, sum_exp0, sum_exp1, pat_all_b32);
+                vadd(sum_acc, sum_acc, sum_tmp, pat_all_b32);
+                vsts(sum_exp0, memB, sum_offset, NORM_B32, pat_all_b32);
+                vsts(sum_exp1, memB, sum_offset + 64, NORM_B32, pat_all_b32);
+
+                int norm_offset = norm_row * cols + 128 * pair;
+                vlds(norm_exp0, memB, norm_offset, NORM);
+                vlds(norm_exp1, memB, norm_offset + 64, NORM);
+                vmul(norm_exp0, norm_exp0, norm_store, pat_all_b32);
+                vmul(norm_exp1, norm_exp1, norm_store, pat_all_b32);
+                vcvt(norm_half0, norm_exp0, pat_all_b32, ROUND_R, RS_ENABLE, PART_EVEN);
+                vsts(norm_half0, memOutput, norm_offset, PK_B32, pat_all_b32);
+                vcvt(norm_half1, norm_exp1, pat_all_b32, ROUND_R, RS_ENABLE, PART_EVEN);
+                vsts(norm_half1, memOutput, norm_offset + 64, PK_B32, pat_all_b32);
+            }
+
+            vmax(max_acc0, max_acc0, max_acc1, pat_all_b32);
+            vcmax(max_scalar, max_acc0, pat_all_b32, MODE_ZEROING);
+            vdup(max_store, max_scalar, pat_all_b32, POS_LOWEST, MODE_ZEROING);
+
+            vdup(norm_store, sum_inv, pat_all_b32, POS_LOWEST, MODE_ZEROING);
+            vcadd(max_scalar, sum_acc, pat_all_b32, MODE_ZEROING);
+            vdiv(sum_inv, vec_one, max_scalar, pat_lane0_b32);
+        }
+
+        // Epilogue: pair-granularity S2(rows-1) + S3(rows-3).
+        int sum_row = rows - 1;
+        int norm_row = rows - 3;
+        vlds(sum_x0, memA, sum_row * cols, NORM);
+        vlds(sum_x1, memA, sum_row * cols + 64, NORM);
+        vexpdif(sum_exp0, sum_x0, max_store, pat_all_b32, PART_EVEN);
+        vexpdif(sum_exp1, sum_x1, max_store, pat_all_b32, PART_EVEN);
+        vadd(sum_acc, sum_exp0, sum_exp1, pat_all_b32);
+        vsts(sum_exp0, memB, sum_row * cols, NORM_B32, pat_all_b32);
+        vsts(sum_exp1, memB, sum_row * cols + 64, NORM_B32, pat_all_b32);
+
+        vlds(norm_exp0, memB, norm_row * cols, NORM);
+        vlds(norm_exp1, memB, norm_row * cols + 64, NORM);
+        vmul(norm_exp0, norm_exp0, norm_store, pat_all_b32);
+        vmul(norm_exp1, norm_exp1, norm_store, pat_all_b32);
+        vcvt(norm_half0, norm_exp0, pat_all_b32, ROUND_R, RS_ENABLE, PART_EVEN);
+        vsts(norm_half0, memOutput, norm_row * cols, PK_B32, pat_all_b32);
+        vcvt(norm_half1, norm_exp1, pat_all_b32, ROUND_R, RS_ENABLE, PART_EVEN);
+        vsts(norm_half1, memOutput, norm_row * cols + 64, PK_B32, pat_all_b32);
+
+        #pragma unroll(1)
+        for (uint16_t pair = 1; pair < cols / 128; ++pair) {
+            int sum_offset = sum_row * cols + 128 * pair;
+            vlds(sum_x0, memA, sum_offset, NORM);
+            vlds(sum_x1, memA, sum_offset + 64, NORM);
+            vexpdif(sum_exp0, sum_x0, max_store, pat_all_b32, PART_EVEN);
+            vexpdif(sum_exp1, sum_x1, max_store, pat_all_b32, PART_EVEN);
+            vadd(sum_tmp, sum_exp0, sum_exp1, pat_all_b32);
+            vadd(sum_acc, sum_acc, sum_tmp, pat_all_b32);
+            vsts(sum_exp0, memB, sum_offset, NORM_B32, pat_all_b32);
+            vsts(sum_exp1, memB, sum_offset + 64, NORM_B32, pat_all_b32);
+
+            int norm_offset = norm_row * cols + 128 * pair;
+            vlds(norm_exp0, memB, norm_offset, NORM);
+            vlds(norm_exp1, memB, norm_offset + 64, NORM);
+            vmul(norm_exp0, norm_exp0, norm_store, pat_all_b32);
+            vmul(norm_exp1, norm_exp1, norm_store, pat_all_b32);
+            vcvt(norm_half0, norm_exp0, pat_all_b32, ROUND_R, RS_ENABLE, PART_EVEN);
+            vsts(norm_half0, memOutput, norm_offset, PK_B32, pat_all_b32);
+            vcvt(norm_half1, norm_exp1, pat_all_b32, ROUND_R, RS_ENABLE, PART_EVEN);
+            vsts(norm_half1, memOutput, norm_offset + 64, PK_B32, pat_all_b32);
+        }
+        vdup(norm_store, sum_inv, pat_all_b32, POS_LOWEST, MODE_ZEROING);
+        vcadd(max_scalar, sum_acc, pat_all_b32, MODE_ZEROING);
+        vdiv(sum_inv, vec_one, max_scalar, pat_lane0_b32);
+
+        // Drain the penultimate normalization row.
+        int penultimate_norm_row = rows - 2;
+        vlds(norm_exp0, memB, penultimate_norm_row * cols, NORM);
+        vlds(norm_exp1, memB, penultimate_norm_row * cols + 64, NORM);
+        vmul(norm_exp0, norm_exp0, norm_store, pat_all_b32);
+        vmul(norm_exp1, norm_exp1, norm_store, pat_all_b32);
+        vcvt(norm_half0, norm_exp0, pat_all_b32, ROUND_R, RS_ENABLE, PART_EVEN);
+        vsts(norm_half0, memOutput, penultimate_norm_row * cols, PK_B32, pat_all_b32);
+        vcvt(norm_half1, norm_exp1, pat_all_b32, ROUND_R, RS_ENABLE, PART_EVEN);
+        vsts(norm_half1, memOutput, penultimate_norm_row * cols + 64, PK_B32, pat_all_b32);
+        #pragma unroll(1)
+        for (uint16_t pair = 1; pair < cols / 128; ++pair) {
+            int norm_offset = penultimate_norm_row * cols + 128 * pair;
+            vlds(norm_exp0, memB, norm_offset, NORM);
+            vlds(norm_exp1, memB, norm_offset + 64, NORM);
+            vmul(norm_exp0, norm_exp0, norm_store, pat_all_b32);
+            vmul(norm_exp1, norm_exp1, norm_store, pat_all_b32);
+            vcvt(norm_half0, norm_exp0, pat_all_b32, ROUND_R, RS_ENABLE, PART_EVEN);
+            vsts(norm_half0, memOutput, norm_offset, PK_B32, pat_all_b32);
+            vcvt(norm_half1, norm_exp1, pat_all_b32, ROUND_R, RS_ENABLE, PART_EVEN);
+            vsts(norm_half1, memOutput, norm_offset + 64, PK_B32, pat_all_b32);
+        }
+
+        vdup(sum_store, sum_inv, pat_all_b32, POS_LOWEST, MODE_ZEROING);
+
+        // Drain the final normalization row.
+        int final_norm_row = rows - 1;
+        vlds(norm_exp0, memB, final_norm_row * cols, NORM);
+        vlds(norm_exp1, memB, final_norm_row * cols + 64, NORM);
+        vmul(norm_exp0, norm_exp0, sum_store, pat_all_b32);
+        vmul(norm_exp1, norm_exp1, sum_store, pat_all_b32);
+        vcvt(norm_half0, norm_exp0, pat_all_b32, ROUND_R, RS_ENABLE, PART_EVEN);
+        vsts(norm_half0, memOutput, final_norm_row * cols, PK_B32, pat_all_b32);
+        vcvt(norm_half1, norm_exp1, pat_all_b32, ROUND_R, RS_ENABLE, PART_EVEN);
+        vsts(norm_half1, memOutput, final_norm_row * cols + 64, PK_B32, pat_all_b32);
+        #pragma unroll(1)
+        for (uint16_t pair = 1; pair < cols / 128; ++pair) {
+            int norm_offset = final_norm_row * cols + 128 * pair;
+            vlds(norm_exp0, memB, norm_offset, NORM);
+            vlds(norm_exp1, memB, norm_offset + 64, NORM);
+            vmul(norm_exp0, norm_exp0, sum_store, pat_all_b32);
+            vmul(norm_exp1, norm_exp1, sum_store, pat_all_b32);
+            vcvt(norm_half0, norm_exp0, pat_all_b32, ROUND_R, RS_ENABLE, PART_EVEN);
+            vsts(norm_half0, memOutput, norm_offset, PK_B32, pat_all_b32);
+            vcvt(norm_half1, norm_exp1, pat_all_b32, ROUND_R, RS_ENABLE, PART_EVEN);
+            vsts(norm_half1, memOutput, norm_offset + 64, PK_B32, pat_all_b32);
+        }
+    }
+}
+
+
+extern "C" __global__ __aicore__
+void softmax_12x1024_a6_no_membar(__gm__ float* input, __gm__ half* output)
+{
+    if (get_block_idx() != 0) {
+        return;
+    }
+    constexpr uint32_t elements = 12 * 1024;
+    constexpr uint32_t outputBytes = elements * sizeof(half);
+    // memB 的 exp 后另留 0B 给三循环的 memMax/memSum。
+    // UB 共预留 122912B，不含编译器额外 VF 栈。
+    __ubuf__ float* memA = (__ubuf__ float*)get_imm(0x0000);
+    __ubuf__ float* memB = (__ubuf__ float*)get_imm(0xc000);
+    __ubuf__ half* memOutput = (__ubuf__ half*)get_imm(0x18000);
+    __ubuf__ uint32_t* offsets = (__ubuf__ uint32_t*)get_imm(0x1e000);
+
+    nddma_desc inputDesc(nddma_desc::loop_desc(elements, 1, 1));
+    nddma_out_to_ub(memA, input, 0, inputDesc, 0, NEAREST_PADDING, 0);
+    set_flag(PIPE_MTE2, PIPE_V, EVENT_ID0);
+    wait_flag(PIPE_MTE2, PIPE_V, EVENT_ID0);
+
+    attention_softmax_8row_deferbar1024_simd_ub_fixed(memA, memB, memOutput);
+
+    offsets[0] = 0;
+    pipe_barrier(PIPE_ALL);
+    set_flag(PIPE_V, PIPE_MTE3, EVENT_ID0);
+    wait_flag(PIPE_V, PIPE_MTE3, EVENT_ID0);
+    set_flag(PIPE_S, PIPE_MTE3, EVENT_ID1);
+    wait_flag(PIPE_S, PIPE_MTE3, EVENT_ID1);
+    // outputBytes 是 FP16 输出的字节数，uint32_t 转换不改变位模式。
+    scatter_ubuf_to_gm(reinterpret_cast<__gm__ uint32_t*>(output),
+                       reinterpret_cast<__ubuf__ uint32_t*>(memOutput),
+                       0, 0, offsets, 0, outputBytes, 0, 1);
+    set_flag(PIPE_MTE3, PIPE_S, EVENT_ID0);
+    wait_flag(PIPE_MTE3, PIPE_S, EVENT_ID0);
+}

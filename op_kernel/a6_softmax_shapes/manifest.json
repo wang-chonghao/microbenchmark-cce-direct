@@ -1,0 +1,399 @@
+{
+  "ub_budget_bytes": 253952,
+  "note": "仅完整 kernel 源码与编译验证；没有 A6 CAModel 数值通过结论。32 行不在本次范围内。",
+  "cases": [
+    {
+      "shape": [
+        8,
+        1024
+      ],
+      "variant": "no_membar",
+      "kernel": "rows8/no_membar.cce",
+      "kernel_name": "softmax_8x1024_a6_no_membar",
+      "sha256": "d8a5cb477e24e9273b9ea9d367d4e23465909ef92e3788564d0efc417584986c",
+      "vf_source": "../rows8/gap2/source/kernel.cce",
+      "vf_source_sha256": "070889258b74dadc00447f04b0abe900b7fe7849d4012d517cb3bf1a02bb635a",
+      "static_membar_count": 0,
+      "block_dim": 1,
+      "ub_regions": [
+        {
+          "name": "memA",
+          "start": 0,
+          "end": 32768
+        },
+        {
+          "name": "memB_exp",
+          "start": 32768,
+          "end": 65536
+        },
+        {
+          "name": "memB_scalars",
+          "start": 65536,
+          "end": 65536
+        },
+        {
+          "name": "memOutput",
+          "start": 65536,
+          "end": 81920
+        },
+        {
+          "name": "offsets",
+          "start": 81920,
+          "end": 81952
+        }
+      ],
+      "ub_reserved_bytes": 81952,
+      "name": "softmax_rows8_no_membar",
+      "source": "rows8/no_membar.cce",
+      "source_sha256": "d8a5cb477e24e9273b9ea9d367d4e23465909ef92e3788564d0efc417584986c",
+      "family": "softmax",
+      "golden": "stable_softmax_fp32_to_fp16",
+      "origin": "a6_softmax_fp16_row_scaling/runnable_a6/rows8/no_membar.cce"
+    },
+    {
+      "shape": [
+        8,
+        1024
+      ],
+      "variant": "three_loop",
+      "kernel": "rows8/three_loop.cce",
+      "kernel_name": "softmax_8x1024_a6_three_loop",
+      "sha256": "291449b54608d11b5c73f8576055fd53d9a7917ce0ff913b3f36bdeb1ea3c004",
+      "vf_source": "../rows8/three_loop/source/kernel.cce",
+      "vf_source_sha256": "890204998b5f4cc7d4a3819462d849140aa14f565846f2a336d9ff408aea41ba",
+      "static_membar_count": 2,
+      "block_dim": 1,
+      "ub_regions": [
+        {
+          "name": "memA",
+          "start": 0,
+          "end": 32768
+        },
+        {
+          "name": "memB_exp",
+          "start": 32768,
+          "end": 65536
+        },
+        {
+          "name": "memB_scalars",
+          "start": 65536,
+          "end": 65600
+        },
+        {
+          "name": "memOutput",
+          "start": 65600,
+          "end": 81984
+        },
+        {
+          "name": "offsets",
+          "start": 81984,
+          "end": 82016
+        }
+      ],
+      "ub_reserved_bytes": 82016,
+      "name": "softmax_rows8_three_loop",
+      "source": "rows8/three_loop.cce",
+      "source_sha256": "291449b54608d11b5c73f8576055fd53d9a7917ce0ff913b3f36bdeb1ea3c004",
+      "family": "softmax",
+      "golden": "stable_softmax_fp32_to_fp16",
+      "origin": "a6_softmax_fp16_row_scaling/runnable_a6/rows8/three_loop.cce"
+    },
+    {
+      "shape": [
+        12,
+        1024
+      ],
+      "variant": "no_membar",
+      "kernel": "rows12/no_membar.cce",
+      "kernel_name": "softmax_12x1024_a6_no_membar",
+      "sha256": "43a15eef6fc23c0bb01e2936085af565b88ba3acf23d48cf83c86cd30a7ef7e1",
+      "vf_source": "../rows12/gap2/source/kernel.cce",
+      "vf_source_sha256": "fdc8cf2390a164cf86e3507f9dddfbf862ab3b4ddd6a6b0d7b0d98e893cf17e8",
+      "static_membar_count": 0,
+      "block_dim": 1,
+      "ub_regions": [
+        {
+          "name": "memA",
+          "start": 0,
+          "end": 49152
+        },
+        {
+          "name": "memB_exp",
+          "start": 49152,
+          "end": 98304
+        },
+        {
+          "name": "memB_scalars",
+          "start": 98304,
+          "end": 98304
+        },
+        {
+          "name": "memOutput",
+          "start": 98304,
+          "end": 122880
+        },
+        {
+          "name": "offsets",
+          "start": 122880,
+          "end": 122912
+        }
+      ],
+      "ub_reserved_bytes": 122912,
+      "name": "softmax_rows12_no_membar",
+      "source": "rows12/no_membar.cce",
+      "source_sha256": "43a15eef6fc23c0bb01e2936085af565b88ba3acf23d48cf83c86cd30a7ef7e1",
+      "family": "softmax",
+      "golden": "stable_softmax_fp32_to_fp16",
+      "origin": "a6_softmax_fp16_row_scaling/runnable_a6/rows12/no_membar.cce"
+    },
+    {
+      "shape": [
+        12,
+        1024
+      ],
+      "variant": "three_loop",
+      "kernel": "rows12/three_loop.cce",
+      "kernel_name": "softmax_12x1024_a6_three_loop",
+      "sha256": "ee90e8586427c80840cd19ba2731c586743e7843e1ff9a41dcdf2d8291a664e1",
+      "vf_source": "../rows12/three_loop/source/kernel.cce",
+      "vf_source_sha256": "1239a988dc75413667b0d2527e0f27de0124f9b6de9bd2073c7f858d3f2c3795",
+      "static_membar_count": 2,
+      "block_dim": 1,
+      "ub_regions": [
+        {
+          "name": "memA",
+          "start": 0,
+          "end": 49152
+        },
+        {
+          "name": "memB_exp",
+          "start": 49152,
+          "end": 98304
+        },
+        {
+          "name": "memB_scalars",
+          "start": 98304,
+          "end": 98400
+        },
+        {
+          "name": "memOutput",
+          "start": 98400,
+          "end": 122976
+        },
+        {
+          "name": "offsets",
+          "start": 122976,
+          "end": 123008
+        }
+      ],
+      "ub_reserved_bytes": 123008,
+      "name": "softmax_rows12_three_loop",
+      "source": "rows12/three_loop.cce",
+      "source_sha256": "ee90e8586427c80840cd19ba2731c586743e7843e1ff9a41dcdf2d8291a664e1",
+      "family": "softmax",
+      "golden": "stable_softmax_fp32_to_fp16",
+      "origin": "a6_softmax_fp16_row_scaling/runnable_a6/rows12/three_loop.cce"
+    },
+    {
+      "shape": [
+        16,
+        1024
+      ],
+      "variant": "no_membar",
+      "kernel": "rows16/no_membar.cce",
+      "kernel_name": "softmax_16x1024_a6_no_membar",
+      "sha256": "f33f9d3e26dabaa459c84be5212efd2b8c5d9d9068dfe3696201b4b34e756e64",
+      "vf_source": "../rows16/gap2/source/kernel.cce",
+      "vf_source_sha256": "5f0fa09f751d9396b09defa570e179a79f98de9407115e356e546ebc4fc90d08",
+      "static_membar_count": 0,
+      "block_dim": 1,
+      "ub_regions": [
+        {
+          "name": "memA",
+          "start": 0,
+          "end": 65536
+        },
+        {
+          "name": "memB_exp",
+          "start": 65536,
+          "end": 131072
+        },
+        {
+          "name": "memB_scalars",
+          "start": 131072,
+          "end": 131072
+        },
+        {
+          "name": "memOutput",
+          "start": 131072,
+          "end": 163840
+        },
+        {
+          "name": "offsets",
+          "start": 163840,
+          "end": 163872
+        }
+      ],
+      "ub_reserved_bytes": 163872,
+      "name": "softmax_rows16_no_membar",
+      "source": "rows16/no_membar.cce",
+      "source_sha256": "f33f9d3e26dabaa459c84be5212efd2b8c5d9d9068dfe3696201b4b34e756e64",
+      "family": "softmax",
+      "golden": "stable_softmax_fp32_to_fp16",
+      "origin": "a6_softmax_fp16_row_scaling/runnable_a6/rows16/no_membar.cce"
+    },
+    {
+      "shape": [
+        16,
+        1024
+      ],
+      "variant": "three_loop",
+      "kernel": "rows16/three_loop.cce",
+      "kernel_name": "softmax_16x1024_a6_three_loop",
+      "sha256": "2b450028bf99f03b4d79f56d99107d8b71d60dc092c3590d9caca1759b8d934f",
+      "vf_source": "../rows16/three_loop/source/kernel.cce",
+      "vf_source_sha256": "469d866b327f0c76af4658678c690d9435c9c1330ebaeb95ebc689b69832ab2c",
+      "static_membar_count": 2,
+      "block_dim": 1,
+      "ub_regions": [
+        {
+          "name": "memA",
+          "start": 0,
+          "end": 65536
+        },
+        {
+          "name": "memB_exp",
+          "start": 65536,
+          "end": 131072
+        },
+        {
+          "name": "memB_scalars",
+          "start": 131072,
+          "end": 131200
+        },
+        {
+          "name": "memOutput",
+          "start": 131200,
+          "end": 163968
+        },
+        {
+          "name": "offsets",
+          "start": 163968,
+          "end": 164000
+        }
+      ],
+      "ub_reserved_bytes": 164000,
+      "name": "softmax_rows16_three_loop",
+      "source": "rows16/three_loop.cce",
+      "source_sha256": "2b450028bf99f03b4d79f56d99107d8b71d60dc092c3590d9caca1759b8d934f",
+      "family": "softmax",
+      "golden": "stable_softmax_fp32_to_fp16",
+      "origin": "a6_softmax_fp16_row_scaling/runnable_a6/rows16/three_loop.cce"
+    },
+    {
+      "shape": [
+        24,
+        1024
+      ],
+      "variant": "no_membar",
+      "kernel": "rows24/no_membar.cce",
+      "kernel_name": "softmax_24x1024_a6_no_membar",
+      "sha256": "8bce93ef22996ab9693b546c2e6ff67c7ab4cc4b15ac7e9f4ea7bd4d6835c982",
+      "vf_source": "../rows24/gap2/source/kernel.cce",
+      "vf_source_sha256": "7158b9e08a36696dc6e1ba0d44a230fb21e1eb74342d94701a0117422fcdab55",
+      "static_membar_count": 0,
+      "block_dim": 1,
+      "ub_regions": [
+        {
+          "name": "memA",
+          "start": 0,
+          "end": 98304
+        },
+        {
+          "name": "memB_exp",
+          "start": 98304,
+          "end": 196608
+        },
+        {
+          "name": "memB_scalars",
+          "start": 196608,
+          "end": 196608
+        },
+        {
+          "name": "memOutput",
+          "start": 196608,
+          "end": 245760
+        },
+        {
+          "name": "offsets",
+          "start": 245760,
+          "end": 245792
+        }
+      ],
+      "ub_reserved_bytes": 245792,
+      "name": "softmax_rows24_no_membar",
+      "source": "rows24/no_membar.cce",
+      "source_sha256": "8bce93ef22996ab9693b546c2e6ff67c7ab4cc4b15ac7e9f4ea7bd4d6835c982",
+      "family": "softmax",
+      "golden": "stable_softmax_fp32_to_fp16",
+      "origin": "a6_softmax_fp16_row_scaling/runnable_a6/rows24/no_membar.cce"
+    },
+    {
+      "shape": [
+        24,
+        1024
+      ],
+      "variant": "three_loop",
+      "kernel": "rows24/three_loop.cce",
+      "kernel_name": "softmax_24x1024_a6_three_loop",
+      "sha256": "b7392b38386f8338dfa4e7b3dcdc27144f2debc7afdf2e201e2b536d824b6294",
+      "vf_source": "../rows24/three_loop/source/kernel.cce",
+      "vf_source_sha256": "c132145bfc1e4c1c9e10ad81cba8e636c7c78b894a0abed7d90861f38e56d304",
+      "static_membar_count": 2,
+      "block_dim": 1,
+      "ub_regions": [
+        {
+          "name": "memA",
+          "start": 0,
+          "end": 98304
+        },
+        {
+          "name": "memB_exp",
+          "start": 98304,
+          "end": 196608
+        },
+        {
+          "name": "memB_scalars",
+          "start": 196608,
+          "end": 196800
+        },
+        {
+          "name": "memOutput",
+          "start": 196800,
+          "end": 245952
+        },
+        {
+          "name": "offsets",
+          "start": 245952,
+          "end": 245984
+        }
+      ],
+      "ub_reserved_bytes": 245984,
+      "name": "softmax_rows24_three_loop",
+      "source": "rows24/three_loop.cce",
+      "source_sha256": "b7392b38386f8338dfa4e7b3dcdc27144f2debc7afdf2e201e2b536d824b6294",
+      "family": "softmax",
+      "golden": "stable_softmax_fp32_to_fp16",
+      "origin": "a6_softmax_fp16_row_scaling/runnable_a6/rows24/three_loop.cce"
+    }
+  ],
+  "excluded": [
+    {
+      "shape": [
+        32,
+        1024
+      ],
+      "reason": "Full buffers exceed 248 KiB UB budget; tiling would change the experiment."
+    }
+  ]
+}
