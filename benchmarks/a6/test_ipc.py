@@ -1,4 +1,5 @@
 import json
+import importlib.util
 from pathlib import Path
 import tempfile
 import unittest
@@ -33,16 +34,28 @@ def fixture(root, prefix='core0.veccore0'):
 
 
 class IPCTests(unittest.TestCase):
+    @unittest.skipUnless(importlib.util.find_spec('matplotlib'), 'Optional PNG dependency missing')
+    def test_png_export(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            data = ipc.measure(fixture(root/'logs'), 'done', 'compute', 2, 100)
+            target = root/'comparison.png'
+            ipc.plot_png(target, 'IPC comparison', [('original', data), ('software', data)])
+            self.assertEqual(target.read_bytes()[:8], b'\x89PNG\r\n\x1a\n')
+            self.assertGreater(target.stat().st_size, 1000)
+
     def test_cycles_and_zero_padding(self):
         with tempfile.TemporaryDirectory() as tmp:
             logs = fixture(Path(tmp))
             result = ipc.measure(logs, 'done', 'compute', 2, 100)
-            self.assertEqual(result['counts'], [2, 0, 1])
-            self.assertEqual(result['ipc'], [1, 1, .5])
+            self.assertEqual(result['counts'], [2, 0, 1, 0, 0])
+            self.assertEqual(result['ipc'], [1, 1, .5, .5, 0])
+            self.assertEqual(result['last_cycle'], 12)
+            self.assertEqual(result['plot_last_cycle'], 14)
             self.assertEqual(result['average_ipc'], 1)
             self.assertEqual(result['status'], 'observed')
             self.assertEqual(ipc.measure(logs, 'exu-issue', 'compute', 1, 100)['first_cycle'], 6)
-            self.assertEqual(ipc.measure(logs, 'popped', 'compute', 1, 100)['counts'], [1, 1, 1])
+            self.assertEqual(ipc.measure(logs, 'popped', 'compute', 1, 100)['counts'], [1, 1, 1, 0])
 
     def test_rotation_and_partial(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -58,6 +71,7 @@ class IPCTests(unittest.TestCase):
             result = ipc.measure(logs, 'done', 'compute', 2, 100)
             self.assertEqual(result['status'], 'partial')
             self.assertEqual(result['missing_exu_matched_events'], 2)
+            self.assertEqual(result['tail_padding_cycles'], 0)
 
     def test_missing_and_ambiguous(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -88,7 +102,7 @@ class IPCTests(unittest.TestCase):
             for svg in out.glob('*.svg'):
                 self.assertEqual(ET.parse(svg).getroot().tag, '{http://www.w3.org/2000/svg}svg')
             for csv in out.glob('*.csv'):
-                self.assertEqual(len(csv.read_text().splitlines()), 4)
+                self.assertEqual(len(csv.read_text().splitlines()), 14)
             self.assertTrue((out/'index.html').exists())
 
 

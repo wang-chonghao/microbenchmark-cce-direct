@@ -1,6 +1,6 @@
 # 批量画 CAmodel IPC
 
-`plot_a6_ipc.py` 只依赖 Python 标准库，无需 matplotlib 或联网安装。它读取已有日志，不重新运行模型，不修改/删除原始结果。
+`plot_a6_ipc.py` 默认 SVG/CSV 只依赖 Python 标准库。额外输出 PNG 时需要 matplotlib。它读取已有日志，不重新运行模型，不修改/删除原始结果。
 
 在仓库根目录执行：
 
@@ -16,6 +16,15 @@ python plot_a6_ipc.py --input results/a6_exu2_run1 --output results/a6_exu2_ipc
 ```
 
 输出目录必须尚不存在。完成后用浏览器打开输出目录下的 `index.html`，可浏览全部图。
+
+输出 PNG（单例和叠加图都会生成，SVG/CSV 仍保留）：
+
+```bash
+python -m pip install matplotlib
+python plot_a6_ipc.py --input results/a6_softmax_run1 --output results/a6_softmax_ipc_png --compare --png
+```
+
+请在自己的 Python 虚拟环境中安装；如果系统 Python 禁止 pip 安装，可先创建并激活虚拟环境。PNG 使用无显示器的 Agg 后端，不需要桌面环境。
 
 ## IPC 口径
 
@@ -33,6 +42,8 @@ IPC[t] = sum(count[t-window+1 : t+1]) / window
 ```
 
 窗口左端不足时按零填充，分母仍为 window。`--window 1` 就是逐周期计数。CSV 保留所有中间零事件周期，不只输出有事件的周期。
+
+末尾额外补 window 个零事件周期，让滑动窗口排空并回到 0。它们只是绘图补齐，不是日志观测或 kernel 结束时间；CSV 用 `is_tail_padding=1` 标记。`last_cycle`、`span_cycles`、平均 IPC 不包含补齐部分；`plot_last_cycle` 包含它。缺少匹配事件的 `partial` 用例不补零，避免暗示它已执行结束。
 
 平均值 `average_ipc = 指令数 / (最后事件cycle - 首事件cycle + 1)`，这是所选事件跨度上的观测平均值，**不是整个 kernel 时间的 IPC**。图的默认零点是每条曲线自己的首个所选事件，不是 VF 启动时间。`--absolute-cycle` 可保留日志绝对 cycle，但不同运行的绝对起点不一定可比。
 
@@ -57,7 +68,8 @@ python plot_a6_ipc.py --input /path/to/log_ca --output results/ipc_all_rv --scop
 ## 输出
 
 - 每例一个 SVG，可直接插入支持 SVG 的文档或浏览器打开。
-- 每例一个 CSV：`absolute_cycle, relative_cycle, instruction_count, window_ipc`。
+- 每例一个 CSV：`absolute_cycle, relative_cycle, instruction_count, window_ipc, is_tail_padding`。
+- 指定 `--png` 时每例及对比图额外输出 PNG。
 - `summary.json`：指令数、事件跨度、平均 IPC、单周期峰值、窗口峰值、opcode 分布、观察到的 EXU、源日志列表及缺失情况。
 - `index.html`：全部图的浏览入口。
 - 使用 `--compare` 时额外生成叠加图。

@@ -73,7 +73,12 @@ def measure(logs, metric, scope, window, max_cycles):
     span = last - first + 1
     if span > max_cycles:
         raise ValueError(f'Cycle span {span} exceeds --max-cycles {max_cycles}')
-    per_cycle = [counts.get(c, 0) for c in range(first, last + 1)]
+    # Visualization only: drain a complete trailing window, without changing
+    # measured duration/average. Incomplete logs must not imply execution ended.
+    tail = window if not missing else 0
+    if span + tail > max_cycles:
+        raise ValueError('Event span plus window tail exceeds --max-cycles')
+    per_cycle = [counts.get(c, 0) for c in range(first, last + 1)] + [0] * tail
     ipc, total = [], 0
     for i, n in enumerate(per_cycle):
         total += n
@@ -81,6 +86,7 @@ def measure(logs, metric, scope, window, max_cycles):
             total -= per_cycle[i-window]
         ipc.append(total / window)
     return dict(first_cycle=first, last_cycle=last, span_cycles=span, instructions=len(events),
+                plot_last_cycle=last+tail, tail_padding_cycles=tail,
                 average_ipc=len(events)/span, peak_cycle_ipc=max(per_cycle), peak_window_ipc=max(ipc),
                 window=window, metric=metric, scope=scope, duplicates_removed=duplicates,
                 missing_exu_matched_events=missing, status='partial' if missing else 'observed',
@@ -91,7 +97,7 @@ def measure(logs, metric, scope, window, max_cycles):
 def plot_svg(path, title, curves, absolute=False):
     colors = ['#087f8c', '#d1495b', '#7b4ab5', '#438a36']
     width, height, left, top, pw, ph = 1200, 440, 85, 100, 1080, 260
-    xmax = max((c['last_cycle'] if absolute else c['span_cycles']-1) for _, c in curves)
+    xmax = max((c['plot_last_cycle'] if absolute else len(c['ipc'])-1) for _, c in curves)
     xmin = min(c['first_cycle'] for _, c in curves) if absolute else 0
     ymax = max(1.0, max(c['peak_window_ipc'] for _, c in curves) * 1.1)
     esc = html.escape
@@ -124,10 +130,33 @@ def plot_svg(path, title, curves, absolute=False):
         lines.append(f'<polyline points="{" ".join(points)}" fill="none" stroke="{colors[j % len(colors)]}" stroke-width="1.4"/>')
     c = curves[0][1]
     axis = 'absolute model cycle' if absolute else 'cycles since each curve first selected event'
-    lines.extend([f'<text x="{left}" y="405">{esc(axis)}; trailing window={c["window"]} cycles, left zero-padded</text>',
+    lines.extend([f'<text x="{left}" y="405">{esc(axis)}; window={c["window"]}; zero tail for display only (not measured kernel end)</text>',
                   f'<text x="{left}" y="426">{esc(LABELS[c["metric"]])}; scope={esc(c["scope"])}; full-resolution CSV, SVG min/max envelope if &gt;3000 cycles</text>',
                   '</g></svg>'])
     path.write_text('\n'.join(lines))
+
+
+def plot_png(path, title, curves, absolute=False):
+    import matplotlib
+    matplotlib.use('Agg')
+    from matplotlib import pyplot as plt
+    fig, ax = plt.subplots(figsize=(12, 4.8), layout='constrained')
+    colors = ['#087f8c', '#d1495b', '#7b4ab5', '#438a36']
+    for j, (label, c) in enumerate(curves):
+        start = c['first_cycle'] if absolute else 0
+        ax.plot(range(start, start+len(c['ipc'])), c['ipc'], color=colors[j % len(colors)],
+                linewidth=1.1, label=f'{label}\navg={c["average_ipc"]:.4f}, N={c["instructions"]}, {c["status"]}')
+    c = curves[0][1]
+    ax.set_title(title, fontsize=13, wrap=True)
+    axis = 'Absolute model cycle' if absolute else 'Cycles since each curve first selected event'
+    ax.set_xlabel(f'{axis}\n{LABELS[c["metric"]]}; scope={c["scope"]}; window={c["window"]}\n'
+                  'Zero tail is display padding, not measured kernel end', fontsize=9)
+    ax.set_ylabel('Instructions / cycle')
+    ax.set_ylim(bottom=0)
+    ax.grid(alpha=.25)
+    ax.legend(fontsize=8, loc='upper right')
+    fig.savefig(path, dpi=160)
+    plt.close(fig)
 
 
 def main():
@@ -140,11 +169,17 @@ def main():
     p.add_argument('--max-cycles', type=int, default=2_000_000)
     p.add_argument('--absolute-cycle', action='store_true')
     p.add_argument('--compare', action='store_true', help='Overlay original/software or softmax variants when both are present')
+    p.add_argument('--png', action='store_true', help='Also export PNG; requires matplotlib')
     args = p.parse_args()
     if args.window < 1 or args.max_cycles < 1:
         p.error('window and max-cycles must be positive')
     if args.metric == 'exu-issue' and args.scope == 'all-rv':
         p.error('EXU issue cannot include non-EXU RV instructions')
+    if args.png:
+        try:
+            import matplotlib
+        except ImportError:
+            p.error('--png requires matplotlib: install it in this Python environment with python -m pip install matplotlib')
     root, out = args.input.resolve(), args.output.resolve()
     if not root.is_dir():
         p.error('input directory does not exist')
@@ -167,10 +202,13 @@ def main():
             record.update(svg=slug+'.svg', csv=slug+'.csv')
             with (out/record['csv']).open('w', newline='') as stream:
                 writer = csv.writer(stream)
-                writer.writerow(['absolute_cycle', 'relative_cycle', 'instruction_count', 'window_ipc'])
+                writer.writerow(['absolute_cycle', 'relative_cycle', 'instruction_count', 'window_ipc', 'is_tail_padding'])
                 for i, (n, ipc) in enumerate(zip(data['counts'], data['ipc'])):
-                    writer.writerow([data['first_cycle']+i, i, n, ipc])
+                    writer.writerow([data['first_cycle']+i, i, n, ipc, int(i >= data['span_cycles'])])
             plot_svg(out/record['svg'], label, [(label, data)], args.absolute_cycle)
+            if args.png:
+                record['png'] = slug+'.png'
+                plot_png(out/record['png'], label, [(label, data)], args.absolute_cycle)
             sections.append(f'<h2>{html.escape(label)}</h2><a href="{record["csv"]}">CSV</a><img src="{record["svg"]}" alt="IPC plot"/>')
             if args.compare:
                 match = re.fullmatch(r'(.*)_(original|software|no_membar|three_loop)', label)
@@ -191,6 +229,10 @@ def main():
         plot_svg(out/name, label + ' comparison', curves, args.absolute_cycle)
         sections.insert(0, f'<h2>{html.escape(label)} comparison</h2><img src="{name}" alt="IPC comparison"/>')
         comparisons.append(dict(name=label, status='plotted', svg=name))
+        if args.png:
+            png = name.removesuffix('.svg')+'.png'
+            plot_png(out/png, label + ' comparison', curves, args.absolute_cycle)
+            comparisons[-1]['png'] = png
     (out/'summary.json').write_text(json.dumps(dict(metric=args.metric, scope=args.scope,
         window=args.window, cases=records, comparisons=comparisons), indent=2)+'\n')
     (out/'index.html').write_text('<!doctype html><html><head><meta charset="utf-8"><title>CAmodel IPC</title>'
