@@ -34,6 +34,19 @@ def fixture(root, prefix='core0.veccore0'):
 
 
 class IPCTests(unittest.TestCase):
+    def test_variant_colors_ignore_order(self):
+        for index in (0, 1, 3):
+            self.assertEqual(ipc.curve_color('softmax_rows8_three_loop', index), '#2166ac')
+            self.assertEqual(ipc.curve_color('softmax_rows8_no_membar', index), '#2ca02c')
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            data = ipc.measure(fixture(root/'logs'), 'done', 'compute', 2, 100)
+            target = root/'comparison.svg'
+            ipc.plot_svg(target, 'Colors', [('softmax_rows8_no_membar', data),
+                                           ('softmax_rows8_three_loop', data)])
+            lines = ET.parse(target).findall('.//{http://www.w3.org/2000/svg}polyline')
+            self.assertEqual([line.attrib['stroke'] for line in lines], ['#2ca02c', '#2166ac'])
+
     @unittest.skipUnless(importlib.util.find_spec('matplotlib'), 'Optional PNG dependency missing')
     def test_png_export(self):
         with tempfile.TemporaryDirectory() as tmp:

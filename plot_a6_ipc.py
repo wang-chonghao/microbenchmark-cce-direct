@@ -19,6 +19,15 @@ LABELS = {'done': 'instruction completion', 'popped': 'instruction popped (not E
           'exu-issue': 'EXU issue'}
 
 
+def curve_color(label, index):
+    """Bind softmax colors to variants, independently of discovery order."""
+    if label.endswith('_three_loop'):
+        return '#2166ac'
+    if label.endswith(('_no_membar', '_giant_loop', '_gap2')):
+        return '#2ca02c'
+    return ['#087f8c', '#d1495b', '#7b4ab5', '#438a36'][index % 4]
+
+
 def discover(root):
     groups = defaultdict(lambda: defaultdict(list))
     for base, dirs, files in os.walk(root, followlinks=False):
@@ -95,7 +104,6 @@ def measure(logs, metric, scope, window, max_cycles):
 
 
 def plot_svg(path, title, curves, absolute=False):
-    colors = ['#087f8c', '#d1495b', '#7b4ab5', '#438a36']
     width, height, left, top, pw, ph = 1200, 440, 85, 100, 1080, 260
     xmax = max((c['plot_last_cycle'] if absolute else len(c['ipc'])-1) for _, c in curves)
     xmin = min(c['first_cycle'] for _, c in curves) if absolute else 0
@@ -107,7 +115,7 @@ def plot_svg(path, title, curves, absolute=False):
              '<text transform="translate(18,255) rotate(-90)" text-anchor="middle">instructions / cycle</text>',
              f'<text x="{left}" y="28" font-size="17">{esc(title[:120])}</text>']
     for j, (label, c) in enumerate(curves):
-        color = colors[j % len(colors)]
+        color = curve_color(label, j)
         lines.append(f'<text x="{left}" y="{50+j*19}" fill="{color}">{esc(label[:100])} | avg={c["average_ipc"]:.4f} | N={c["instructions"]} | {c["status"]}</text>')
     for i in range(6):
         y, value = top+ph-i*ph/5, ymax*i/5
@@ -115,7 +123,7 @@ def plot_svg(path, title, curves, absolute=False):
                       f'<text x="{left-10}" y="{y+4}" text-anchor="end">{value:.2f}</text>'])
         x, cycle = left+i*pw/5, xmin+(xmax-xmin)*i/5
         lines.append(f'<text x="{x}" y="{top+ph+24}" text-anchor="middle">{cycle:.0f}</text>')
-    for j, (_, c) in enumerate(curves):
+    for j, (label, c) in enumerate(curves):
         # Keep the CSV at full resolution; SVG uses min/max envelopes when large.
         step = max(1, math.ceil(len(c['ipc'])/3000))
         points = []
@@ -127,7 +135,7 @@ def plot_svg(path, title, curves, absolute=False):
                 x = left+(cycle-xmin)*pw/max(1, xmax-xmin)
                 y = top+ph-c['ipc'][i]*ph/ymax
                 points.append(f'{x:.2f},{y:.2f}')
-        lines.append(f'<polyline points="{" ".join(points)}" fill="none" stroke="{colors[j % len(colors)]}" stroke-width="1.4"/>')
+        lines.append(f'<polyline points="{" ".join(points)}" fill="none" stroke="{curve_color(label, j)}" stroke-width="1.4"/>')
     c = curves[0][1]
     axis = 'absolute model cycle' if absolute else 'cycles since each curve first selected event'
     lines.extend([f'<text x="{left}" y="405">{esc(axis)}; window={c["window"]}; zero tail for display only (not measured kernel end)</text>',
@@ -141,10 +149,9 @@ def plot_png(path, title, curves, absolute=False):
     matplotlib.use('Agg')
     from matplotlib import pyplot as plt
     fig, ax = plt.subplots(figsize=(12, 4.8), layout='constrained')
-    colors = ['#087f8c', '#d1495b', '#7b4ab5', '#438a36']
     for j, (label, c) in enumerate(curves):
         start = c['first_cycle'] if absolute else 0
-        ax.plot(range(start, start+len(c['ipc'])), c['ipc'], color=colors[j % len(colors)],
+        ax.plot(range(start, start+len(c['ipc'])), c['ipc'], color=curve_color(label, j),
                 linewidth=1.1, label=f'{label}\navg={c["average_ipc"]:.4f}, N={c["instructions"]}, {c["status"]}')
     c = curves[0][1]
     ax.set_title(title, fontsize=13, wrap=True)

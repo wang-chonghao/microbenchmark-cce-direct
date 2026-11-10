@@ -17,6 +17,8 @@ python plot_a6_ipc.py --input results/a6_exu2_run1 --output results/a6_exu2_ipc
 
 输出目录必须尚不存在。完成后用浏览器打开输出目录下的 `index.html`，可浏览全部图。
 
+Softmax 配色固定按版本绑定：三循环 `three_loop` 为蓝色 `#2166ac`，giant loop 融合版 `no_membar` 为绿色 `#2ca02c`。PNG/SVG、单例图/对比图均一致，不随读取顺序改变；其他算子的配色保持不变。
+
 输出 PNG（单例和叠加图都会生成，SVG/CSV 仍保留）：
 
 ```bash
